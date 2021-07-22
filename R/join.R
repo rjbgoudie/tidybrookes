@@ -144,6 +144,23 @@ left_join_filter_pivot <- function(x, ...){
 }
 
 
+#' Summarise (standardised) data during a time period
+#'
+#' Left joins an `adm` data frame with another data frame (with a
+#' `person_id` for linking and with the relevant datetime called `datetime`),
+#' and filter to only those rows of `y` with `datetime` within the specified
+#' time period.
+#'
+#' @param x An `adm` data frame
+#' @param y A (tidy) data frame, with a `datetime` column
+#' @param during The time period to extract data for, one of: `"during_visit"`,
+#'   `"during_icu"`
+#'
+#' @return
+#' A data frame, with a row for each `y` measurement during the relevant
+#' time period for each patient. Note that rows of the `adm` data will be
+#' repeated multiple times (one for each `y` measurement data point).
+#' @author R.J.B. Goudie
 summarise_during <- function(x,
                              y,
                              during,
@@ -229,6 +246,23 @@ summarise_during <- function(x,
 
 # TODO buffer = "date"
 
+#' Left join adm data with other (standardised) data
+#'
+#' Left joins an `adm` data frame with another data frame (with a
+#' `person_id` for linking and with the relevant datetime called `datetime`),
+#' and filter to only those rows of `y` with `datetime` within the specified
+#' time period.
+#'
+#' @param x An `adm` data frame
+#' @param y A (tidy) data frame, with a `datetime` column
+#' @param during The time period to extract data for, one of: `"during_visit"`,
+#'   `"during_icu"`
+#'
+#' @return
+#' A data frame, with a row for each `y` measurement during the relevant
+#' time period for each patient. Note that rows of the `adm` data will be
+#' repeated multiple times (one for each `y` measurement data point).
+#' @author R.J.B. Goudie
 all_during <- function(x,
                        y,
                        during,
@@ -275,6 +309,19 @@ normalise_dataframe <- function(x, type = "fsheet"){
     arrange(datetime)
 }
 
+#' Left join with fsheet data
+#'
+#' @param x An `adm` data frame
+#' @param y A (tidy) `fsheet` data frame: with `person_id`, `symbol`,
+#'   `value_as_number` (TODO) and `measurement_datetime`.
+#' @param during The time period to extract data for, one of: `"during_visit"`,
+#'   `"during_icu"`
+#'
+#' @return
+#' A data frame, with a row for each fsheet measurement during the relevant
+#' time period for each patient. Note that rows of the `adm` data will be
+#' repeated multiple times (one for each fsheet measurement data point).
+#' @author R.J.B. Goudie
 fsheet_all_during <- function(x, y, during){
   y_standardised <- normalise_dataframe(y, type = "fsheet")
 
