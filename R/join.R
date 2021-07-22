@@ -1,5 +1,9 @@
 #' Inner join according to a filter and summarise in one
 #'
+#' Inner join two data frames according to some columns (`join_by`), but then
+#' remove some of the rows according to the `filter_condition` (which is run
+#' after grouping via `filter_by`).
+#'
 #' @param x A data frame
 #' @param y A data frame
 #' @param join_by A character vector of variables to join `x` and `y` by
@@ -7,27 +11,17 @@
 #'   filtering
 #' @param filter_condition An expression that indicates whether the
 #'   corresponding row should be included
-#' @param type Either `"slice"`, `"summarise`, or `"none` (for to return all
-#'   values)
-#' @param formula An expression for slicing or summarising
 #'
 #' @return A data frame, with all rows of `x` (potentially duplicated) with at
 #' least one matching `y`
 #' row, where the match is determined by joining by `join_by` and then
 #' filtering using the `filter_condition`, under the `filter_by` grouping.
-#'
-#' Where `type` is `"none"` all matched rows in `y`.
-#' Where `type` is `"slice`, rows satifying the `formula` under `slice` are
-#' returned
-#' Where `type` is `"summarise`, a new `summary` column is returned
 #' @author R.J.B. Goudie
 inner_join_filter <- function(x,
                               y,
                               join_by,
                               filter_by,
-                              filter_condition,
-                              type,
-                              formula){
+                              filter_condition){
   filter_condition <- enquo(filter_condition)
   formula <- enquo(formula)
 
@@ -41,16 +35,6 @@ inner_join_filter <- function(x,
     filter(satisfies_filter_condition) %>%
     group_by(!!! filter_by_symbol) %>%
     select(-satisfies_filter_condition)
-
-  if (type == "slice"){
-    out <- out %>%
-      slice(!! formula)
-  } else if (type == "summarise"){
-    out <- out %>%
-      summarise(!! formula)
-  } else if (type == "none"){
-    out <- out
-  }
 }
 
 #' Left join according to a filter and summarise in one
@@ -63,10 +47,6 @@ inner_join_filter <- function(x,
 #' A match is determined by joining by `join_by` and then
 #' filtering using the `filter_condition`, under the `filter_by` grouping.
 #'
-#' Where `type` is `"none"` all matched rows in `y`.
-#' Where `type` is `"slice`, rows satifying the `formula` under `slice` are
-#' returned
-#' Where `type` is `"summarise`, a new `summary` column is returned
 #' @author R.J.B. Goudie
 left_join_filter <- function(x, y, ...){
   out <- inner_join_filter(x = x,
@@ -93,6 +73,12 @@ left_join_filter <- function(x, y, ...){
 #' column (or columns) to get the cell values from (`values_from`).
 #'
 #' @return A data frame
+#' Where `type` is `"none"` all matched rows in `y`.
+#' Where `type` is `"slice`, rows satifying the `formula` under `slice` are
+#' returned
+#' Where `type` is `"summarise`, a new `summary` column is returned
+
+#'
 #' @author R.J.B. Goudie
 inner_join_filter_pivot <- function(x,
                                     y,
@@ -112,9 +98,15 @@ inner_join_filter_pivot <- function(x,
     y = y,
     join_by = join_by,
     filter_by = filter_by,
-    filter_condition = !! filter_condition,
-    type = type,
-    formula = !! formula)
+    filter_condition = !! filter_condition)
+
+  if (type == "slice"){
+    out <- out %>%
+      slice(!! formula)
+  } else if (type == "summarise"){
+    out <- out %>%
+      summarise(!! formula)
+  }
 
   if (!is.null(summary_name)){
     summary_name <- paste0("_", summary_name)
@@ -253,8 +245,7 @@ all_during <- function(x,
                       datetime >= icu_start_datetime &
                        datetime <= icu_end_datetime,
                     is.na(icu_end_datetime) ~
-                      datetime >= icu_start_datetime),
-        type = "none")
+                      datetime >= icu_start_datetime))
   } else if (during == "during_visit"){
     out <- x %>%
       left_join_filter(
@@ -266,8 +257,7 @@ all_during <- function(x,
                       datetime >= visit_start_datetime &
                        datetime <= visit_end_datetime,
                     is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime),
-        type = "none")
+                      datetime >= visit_start_datetime))
   } else {
     stop("unexpected during value")
   }

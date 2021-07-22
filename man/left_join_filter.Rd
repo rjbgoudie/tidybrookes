@@ -17,11 +17,6 @@ Where there is no matching \code{y} row, \code{NA}s will be present.
 
 A match is determined by joining by \code{join_by} and then
 filtering using the \code{filter_condition}, under the \code{filter_by} grouping.
-
-Where \code{type} is \code{"none"} all matched rows in \code{y}.
-Where \code{type} is \verb{"slice}, rows satifying the \code{formula} under \code{slice} are
-returned
-Where \code{type} is \verb{"summarise}, a new \code{summary} column is returned
 }
 \description{
 Left join according to a filter and summarise in one

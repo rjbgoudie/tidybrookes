@@ -4,7 +4,7 @@
 \alias{inner_join_filter}
 \title{Inner join according to a filter and summarise in one}
 \usage{
-inner_join_filter(x, y, join_by, filter_by, filter_condition, type, formula)
+inner_join_filter(x, y, join_by, filter_by, filter_condition)
 }
 \arguments{
 \item{x}{A data frame}
@@ -18,25 +18,17 @@ filtering}
 
 \item{filter_condition}{An expression that indicates whether the
 corresponding row should be included}
-
-\item{type}{Either \code{"slice"}, \verb{"summarise}, or \verb{"none} (for to return all
-values)}
-
-\item{formula}{An expression for slicing or summarising}
 }
 \value{
 A data frame, with all rows of \code{x} (potentially duplicated) with at
 least one matching \code{y}
 row, where the match is determined by joining by \code{join_by} and then
 filtering using the \code{filter_condition}, under the \code{filter_by} grouping.
-
-Where \code{type} is \code{"none"} all matched rows in \code{y}.
-Where \code{type} is \verb{"slice}, rows satifying the \code{formula} under \code{slice} are
-returned
-Where \code{type} is \verb{"summarise}, a new \code{summary} column is returned
 }
 \description{
-Inner join according to a filter and summarise in one
+Inner join two data frames according to some columns (\code{join_by}), but then
+remove some of the rows according to the \code{filter_condition} (which is run
+after grouping via \code{filter_by}).
 }
 \author{
 R.J.B. Goudie

@@ -39,6 +39,10 @@ column (or columns) to get the cell values from (\code{values_from}).}
 }
 \value{
 A data frame
+Where \code{type} is \code{"none"} all matched rows in \code{y}.
+Where \code{type} is \verb{"slice}, rows satifying the \code{formula} under \code{slice} are
+returned
+Where \code{type} is \verb{"summarise}, a new \code{summary} column is returned
 }
 \description{
 Inner join according to a filter and summarise in one
