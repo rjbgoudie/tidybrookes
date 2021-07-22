@@ -184,7 +184,7 @@ test_that("median within visit", {
       type = "summarise",
       formula = tibble(value = median(value),
                        datetime = NA),
-      summary_name = "median")
+      names_suffix = "median")
 
   expect_equal(
     joined$weight_median_during_visit,
@@ -238,7 +238,7 @@ test_that("median within visit, with multiple results", {
       type = "summarise",
       formula = tibble(value = median(value),
                        datetime = NA),
-      summary_name = "median"
+      names_suffix = "median"
     )
 
   expect_equal(

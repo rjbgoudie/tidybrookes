@@ -10,12 +10,12 @@ inner_join_filter_pivot(
   join_by,
   filter_by,
   filter_condition,
-  type = "none",
+  type = "summary",
   formula,
-  summary_name = NULL,
   pivot_by,
   names_from,
-  values_from
+  values_from,
+  names_suffix = NULL
 )
 }
 \arguments{
@@ -31,18 +31,18 @@ filtering}
 \item{filter_condition}{An expression that indicates whether the
 corresponding row should be included}
 
-\item{summary_name}{A character string for naming the summary output}
-
 \item{names_from, values_from}{A pair of arguments describing which column
 (or columns) to get the name of the output column (\code{names_from}), and which
 column (or columns) to get the cell values from (\code{values_from}).}
+
+\item{names_suffix}{A character string for naming the summary output}
 }
 \value{
 A data frame
 Where \code{type} is \code{"none"} all matched rows in \code{y}.
 Where \code{type} is \verb{"slice}, rows satifying the \code{formula} under \code{slice} are
 returned
-Where \code{type} is \verb{"summarise}, a new \code{summary} column is returned
+Where \code{type} is \code{"summarise"}, a new \code{summary} column is returned
 }
 \description{
 Inner join according to a filter and summarise in one
