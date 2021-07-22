@@ -67,8 +67,8 @@ left_join_filter <- function(x, y, ...){
 #'   filtering
 #' @param filter_condition An expression that indicates whether the
 #'   corresponding row should be included
-#' @param names_from,values_from A pair of arguments describing which column
-#' (or columns) to get the name of the output column (`names_from`), and which
+#' @param group_by,values_from A pair of arguments describing which column
+#' (or columns) to get the name of the output column (`group_by`), and which
 #' column (or columns) to get the cell values from (`values_from`).
 #' @param names_suffix A character string for naming the summary output
 #'
@@ -79,31 +79,27 @@ left_join_filter <- function(x, y, ...){
 #' Where `type` is `"summarise"`, a new `summary` column is returned
 #'
 #' @author R.J.B. Goudie
-inner_join_filter_pivot <- function(x,
-                                    y,
-                                    join_by,
-                                    filter_by,
-                                    filter_condition,
-                                    type = "summary",
-                                    formula,
-                                    pivot_by,
-                                    names_from,
-                                    values_from,
-                                    names_suffix = NULL){
-  filter_condition <- enquo(filter_condition)
+summarise_pivot_wider <- function(x,
+                                  type = "summary",
+                                  formula,
+                                  pivot_by,
+                                  group_by,
+                                  values_from,
+                                  names_suffix = NULL){
   formula <- enquo(formula)
-  out <- inner_join_filter(
-    x = x,
-    y = y,
-    join_by = join_by,
-    filter_by = filter_by,
-    filter_condition = !! filter_condition)
+
+  group_and_pivot_by <- c(pivot_by, group_by)
+  group_and_pivot_by <- as.list(group_and_pivot_by)
+  group_and_pivot_by_symbol <- rlang::syms(group_and_pivot_by)
+
+  x <- x %>%
+    group_by(!!! group_and_pivot_by_symbol)
 
   if (type == "slice"){
-    out <- out %>%
+    out <- x %>%
       slice(!! formula)
   } else if (type == "summarise"){
-    out <- out %>%
+    out <- x %>%
       summarise(!! formula)
   }
 
@@ -123,10 +119,10 @@ inner_join_filter_pivot <- function(x,
   out <- out %>%
     pivot_wider(
       id_cols = all_of(pivot_by),
-      names_from = all_of(names_from),
+      names_from = all_of(group_by),
       values_from = all_of(values_from),
       names_glue = paste0("__new__{",
-                          names_from, "}",
+                          group_by, "}",
                           names_suffix,
                           "_{.value}")
     ) %>%
@@ -134,15 +130,6 @@ inner_join_filter_pivot <- function(x,
     select(!starts_with("__new__"), sort(colnames(.))) %>%
     rename_with(.fn = colnames_strip_new)
 }
-
-#' @inheritParams inner_join_filter_pivot
-left_join_filter_pivot <- function(x, ...){
-  out <- inner_join_filter_pivot(x = x, ...)
-  # join again to x on common columns, so that anyone WITHOUT a y is included
-  by <- intersect(colnames(x), colnames(out))
-  left_join(x, out, by = by)
-}
-
 
 #' Summarise (standardised) data during a time period
 #'
@@ -166,81 +153,22 @@ summarise_during <- function(x,
                              during,
                              type = "none",
                              formula,
-                             names_from,
+                             group_by,
                              values_from,
                              names_suffix){
   formula <- enquo(formula)
-  if (during == "during_icu"){
-    out <- x %>%
-      left_join_filter_pivot(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(icu_end_datetime) ~
-                      datetime >= icu_start_datetime &
-                       datetime <= icu_end_datetime,
-                    is.na(icu_end_datetime) ~
-                      datetime >= icu_start_datetime),
-        type = type,
-        formula = !! formula,
-        pivot_by = c("person_id", "visit_id"),
-        names_from = names_from,
-        values_from = values_from,
-        names_suffix = names_suffix)
-  } else if (during == "during_visit"){
-    out <- x %>%
-      left_join_filter_pivot(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime &
-                       datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime),
-        type = type,
-        formula = !! formula,
-        pivot_by = c("person_id", "visit_id"),
-        names_from = names_from,
-        values_from = values_from,
-        names_suffix = names_suffix)
-  } else if (during == "before_end_visit"){
-    out <- x %>%
-      left_join_filter_pivot(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      TRUE),
-        type = type,
-        formula = !! formula,
-        pivot_by = c("person_id", "visit_id"),
-        names_from = names_from,
-        values_from = values_from,
-        names_suffix = names_suffix)
-  } else if (during == "before_end_icu"){
-    out <- x %>%
-      left_join_filter_pivot(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(icu_end_datetime) ~
-                      datetime <= icu_end_datetime,
-                    is.na(icu_end_datetime) ~
-                      TRUE),
-        type = type,
-        formula = !! formula,
-        pivot_by = c("person_id", "visit_id"),
-        names_from = names_from,
-        values_from = values_from,
-        names_suffix = names_suffix)
-  }
+  out <- x %>%
+    all_during(y,
+               during = during,
+               group_by = group_by)
+
+  out <- out %>%
+    summarise_pivot_wider(type = type,
+                          formula = !! formula,
+                          pivot_by = c("person_id", "visit_id"),
+                          group_by = group_by,
+                          values_from = values_from,
+                          names_suffix = names_suffix)
   out
 }
 
@@ -345,10 +273,9 @@ fsheet_summarise_during <- function(x,
                    during = during,
                    type = type,
                    formula = !! formula,
-                   names_from = "symbol",
+                   group_by = "symbol",
                    values_from = c("value", "datetime"),
-                   names_suffix = glue("{names_suffix}_{during}")
-                   )
+                   names_suffix = glue("{names_suffix}_{during}"))
 }
 
 fsheet_first_during <- function(...){
