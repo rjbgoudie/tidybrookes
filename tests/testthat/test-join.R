@@ -181,8 +181,10 @@ test_that("median within visit", {
     fsheet_summarise_during(
       fsheet_data_test,
       during = "during_visit",
-      summary_name = "median",
-      summary_fn = c(value = median, datetime = function(x) NA))
+      type = "summarise",
+      formula = tibble(value = median(value),
+                       datetime = NA),
+      summary_name = "median")
 
   expect_equal(
     joined$weight_median_during_visit,
@@ -233,8 +235,11 @@ test_that("median within visit, with multiple results", {
     fsheet_summarise_during(
       fsheet_data_test,
       during = "during_visit",
-      summary_name = "median",
-      summary_fn = c(value = median, datetime = function(x) NA))
+      type = "summarise",
+      formula = tibble(value = median(value),
+                       datetime = NA),
+      summary_name = "median"
+    )
 
   expect_equal(
     joined$news2_median_during_visit,

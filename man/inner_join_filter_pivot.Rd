@@ -15,7 +15,6 @@ inner_join_filter_pivot(
   pivot_by,
   names_from,
   values_from,
-  values_fn,
   values_fn_name = NULL
 )
 }
@@ -35,10 +34,6 @@ corresponding row should be included}
 \item{names_from, values_from}{A pair of arguments describing which column
 (or columns) to get the name of the output column (\code{names_from}), and which
 column (or columns) to get the cell values from (\code{values_from}).}
-
-\item{values_fn}{a function applied to the value in each cell in the output.
-You will typically use this when the combination of \code{id_cols} and \code{value}
-column does not uniquely identify an observation}
 
 \item{values_fn_name}{A character string for naming the output of \code{values_fn}}
 }
