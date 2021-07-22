@@ -12,10 +12,10 @@ inner_join_filter_pivot(
   filter_condition,
   type = "none",
   formula,
+  summary_name = NULL,
   pivot_by,
   names_from,
-  values_from,
-  values_fn_name = NULL
+  values_from
 )
 }
 \arguments{
@@ -31,11 +31,11 @@ filtering}
 \item{filter_condition}{An expression that indicates whether the
 corresponding row should be included}
 
+\item{summary_name}{A character string for naming the summary output}
+
 \item{names_from, values_from}{A pair of arguments describing which column
 (or columns) to get the name of the output column (\code{names_from}), and which
 column (or columns) to get the cell values from (\code{values_from}).}
-
-\item{values_fn_name}{A character string for naming the output of \code{values_fn}}
 }
 \value{
 A data frame

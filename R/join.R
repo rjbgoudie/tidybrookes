@@ -87,10 +87,10 @@ left_join_filter <- function(x, y, ...){
 #'   filtering
 #' @param filter_condition An expression that indicates whether the
 #'   corresponding row should be included
+#' @param summary_name A character string for naming the summary output
 #' @param names_from,values_from A pair of arguments describing which column
 #' (or columns) to get the name of the output column (`names_from`), and which
 #' column (or columns) to get the cell values from (`values_from`).
-#' @param values_fn_name A character string for naming the output of `values_fn`
 #'
 #' @return A data frame
 #' @author R.J.B. Goudie
@@ -101,10 +101,10 @@ inner_join_filter_pivot <- function(x,
                                     filter_condition,
                                     type = "none",
                                     formula,
+                                    summary_name = NULL,
                                     pivot_by,
                                     names_from,
-                                    values_from,
-                                    values_fn_name = NULL){
+                                    values_from){
   filter_condition <- enquo(filter_condition)
   formula <- enquo(formula)
   out <- inner_join_filter(
@@ -116,8 +116,8 @@ inner_join_filter_pivot <- function(x,
     type = type,
     formula = !! formula)
 
-  if (!is.null(values_fn_name)){
-    values_fn_name <- paste0("_", values_fn_name)
+  if (!is.null(summary_name)){
+    summary_name <- paste0("_", summary_name)
   }
 
   colnames_strip_new <- function(colname){
@@ -136,7 +136,7 @@ inner_join_filter_pivot <- function(x,
       values_from = all_of(values_from),
       names_glue = paste0("__new__{",
                           names_from, "}",
-                          values_fn_name,
+                          summary_name,
                           "_{.value}")
     ) %>%
     rename_with(.fn = colnames_strip_value) %>%
@@ -160,8 +160,7 @@ summarise_during <- function(x,
                              formula,
                              summary_name,
                              names_from,
-                             values_from,
-                             values_fn_name = NULL){
+                             values_from){
   formula <- enquo(formula)
   if (during == "during_icu"){
     out <- x %>%
@@ -177,10 +176,10 @@ summarise_during <- function(x,
                       datetime >= icu_start_datetime),
         type = type,
         formula = !! formula,
+        summary_name = summary_name,
         pivot_by = c("person_id", "visit_id"),
         names_from = names_from,
-        values_from = values_from,
-        values_fn_name = values_fn_name)
+        values_from = values_from)
   } else if (during == "during_visit"){
     out <- x %>%
       left_join_filter_pivot(
@@ -195,10 +194,10 @@ summarise_during <- function(x,
                       datetime >= visit_start_datetime),
         type = type,
         formula = !! formula,
+        summary_name = summary_name,
         pivot_by = c("person_id", "visit_id"),
         names_from = names_from,
-        values_from = values_from,
-        values_fn_name = values_fn_name)
+        values_from = values_from)
   } else if (during == "before_end_visit"){
     out <- x %>%
       left_join_filter_pivot(
@@ -212,10 +211,10 @@ summarise_during <- function(x,
                       TRUE),
         type = type,
         formula = !! formula,
+        summary_name = summary_name,
         pivot_by = c("person_id", "visit_id"),
         names_from = names_from,
-        values_from = values_from,
-        values_fn_name = values_fn_name)
+        values_from = values_from)
   } else if (during == "before_end_icu"){
     out <- x %>%
       left_join_filter_pivot(
@@ -229,10 +228,10 @@ summarise_during <- function(x,
                       TRUE),
         type = type,
         formula = !! formula,
+        summary_name = summary_name,
         pivot_by = c("person_id", "visit_id"),
         names_from = names_from,
-        values_from = values_from,
-        values_fn_name = values_fn_name)
+        values_from = values_from)
   }
   out
 }
@@ -312,8 +311,7 @@ fsheet_summarise_during <- function(x,
                    formula = !! formula,
                    summary_name = glue("{summary_name}_{during}"),
                    names_from = "symbol",
-                   values_from = c("value", "datetime"),
-                   values_fn_name = glue("{summary_name}_{during}"))
+                   values_from = c("value", "datetime"))
 }
 
 fsheet_first_during <- function(...){
