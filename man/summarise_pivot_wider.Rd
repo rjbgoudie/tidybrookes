@@ -2,14 +2,14 @@
 % Please edit documentation in R/join.R
 \name{summarise_pivot_wider}
 \alias{summarise_pivot_wider}
-\title{Inner join according to a filter and summarise in one}
+\title{Summarise (or slice) data then pivot data wider}
 \usage{
 summarise_pivot_wider(
   x,
-  type = "summary",
+  type = "summarise",
   formula,
-  pivot_by,
-  group_by,
+  id_cols,
+  names_from,
   values_from,
   names_suffix = NULL
 )
@@ -17,31 +17,32 @@ summarise_pivot_wider(
 \arguments{
 \item{x}{A data frame}
 
-\item{group_by, values_from}{A pair of arguments describing which column
+\item{type}{Either \code{"summarise"} or \code{"slice"}}
+
+\item{formula}{A formula specifying the summarise or slice to perform}
+
+\item{id_cols}{A set of columns that uniquely identifies each observation.}
+
+\item{names_from, values_from}{A pair of arguments describing which column
 (or columns) to get the name of the output column (\code{group_by}), and which
 column (or columns) to get the cell values from (\code{values_from}).}
 
-\item{names_suffix}{A character string for naming the summary output}
-
-\item{y}{A data frame}
-
-\item{join_by}{A character vector of variables to join \code{x} and \code{y} by}
-
-\item{filter_by}{A character vector indicating the grouping to use when
-filtering}
-
-\item{filter_condition}{An expression that indicates whether the
-corresponding row should be included}
+\item{names_suffix}{A character string for naming the summarised output}
 }
 \value{
 A data frame
-Where \code{type} is \code{"none"} all matched rows in \code{y}.
-Where \code{type} is \verb{"slice}, rows satifying the \code{formula} under \code{slice} are
-returned
-Where \code{type} is \code{"summarise"}, a new \code{summary} column is returned
 }
 \description{
-Inner join according to a filter and summarise in one
+Summarise (or slice if \code{type = "summarise"}) data grouped by
+\code{c(id_cols, names_from)}, using the supplied \code{formula}.
+}
+\details{
+The pivot the data wider, so that \code{names_from} appears in columns, with
+the values taken from \code{values_from}
+
+The new columns are sorted alphabetically (so that, for example, \code{x} and
+\code{x_datetime} are adjacent), and column names ending in \verb{_value} are
+shortened
 }
 \author{
 R.J.B. Goudie

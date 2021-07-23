@@ -10,7 +10,7 @@ summarise_during(
   during,
   type = "none",
   formula,
-  group_by,
+  names_from,
   values_from,
   names_suffix
 )

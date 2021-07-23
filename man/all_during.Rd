@@ -4,7 +4,7 @@
 \alias{all_during}
 \title{Left join adm data with other (standardised) data}
 \usage{
-all_during(x, y, during, group_by)
+all_during(x, y, during, names_from)
 }
 \arguments{
 \item{x}{An \code{adm} data frame}

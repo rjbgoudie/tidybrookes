@@ -26,9 +26,9 @@ row, where the match is determined by joining by \code{join_by} and then
 filtering using the \code{filter_condition}, under the \code{filter_by} grouping.
 }
 \description{
-Inner join two data frames according to some columns (\code{join_by}), but then
+Join two data frames according to some columns (\code{join_by}), but then
 remove some of the rows according to the \code{filter_condition} (which is run
-after grouping via \code{filter_by}).
+after grouping via \code{filter_by}). This amounts to an inner join.
 }
 \author{
 R.J.B. Goudie
