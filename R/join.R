@@ -91,6 +91,10 @@ summarise_pivot_wider <- function(x,
                                   names_suffix = NULL){
   formula <- enquo(formula)
 
+  # magic string to add to the start of new column names to allow identification
+  # of new columns
+  magic_prefix <- "__new__"
+
   id_and_names_cols <- c(id_cols, names_from)
   id_and_names_cols <- as.list(id_and_names_cols)
   id_and_names_cols_symbol <- rlang::syms(id_and_names_cols)
@@ -111,7 +115,8 @@ summarise_pivot_wider <- function(x,
   }
 
   colnames_strip_new <- function(colname){
-    case_when(str_starts(colname, "__new__") ~ str_remove(colname, "^__new__"),
+    case_when(str_starts(colname, magic_prefix) ~
+                str_remove(colname, glue("^", magic_prefix)),
               TRUE ~ colname)
   }
 
@@ -125,12 +130,12 @@ summarise_pivot_wider <- function(x,
       id_cols = all_of(id_cols),
       names_from = all_of(names_from),
       values_from = all_of(values_from),
-      names_glue = paste0("__new__{",
+      names_glue = paste0(magic_prefix,  "{",
                           names_from, "}",
                           names_suffix,
                           "_{.value}")) %>%
     rename_with(.fn = colnames_strip_value) %>%
-    select(!starts_with("__new__"), sort(colnames(.))) %>%
+    select(!starts_with(magic_prefix), sort(colnames(.))) %>%
     rename_with(.fn = colnames_strip_new)
 }
 
