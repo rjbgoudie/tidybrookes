@@ -95,6 +95,8 @@ summarise_pivot_wider <- function(x,
   # of new columns
   magic_prefix <- "__new__"
 
+  suffix_to_remove <- "_value"
+
   id_and_names_cols <- c(id_cols, names_from)
   id_and_names_cols <- as.list(id_and_names_cols)
   id_and_names_cols_symbol <- rlang::syms(id_and_names_cols)
@@ -120,8 +122,9 @@ summarise_pivot_wider <- function(x,
               TRUE ~ colname)
   }
 
-  colnames_strip_value <- function(colname){
-    case_when(str_ends(colname, "_value") ~ str_remove(colname, "_value$"),
+  colnames_strip_suffix_to_remove <- function(colname){
+    case_when(str_ends(colname, suffix_to_remove) ~
+                str_remove(colname, glue("{suffix_to_remove}$")),
               TRUE ~ colname)
   }
 
@@ -134,7 +137,7 @@ summarise_pivot_wider <- function(x,
                           names_from, "}",
                           names_suffix,
                           "_{.value}")) %>%
-    rename_with(.fn = colnames_strip_value) %>%
+    rename_with(.fn = colnames_strip_suffix_to_remove) %>%
     select(!starts_with(magic_prefix), sort(colnames(.))) %>%
     rename_with(.fn = colnames_strip_new)
 }
