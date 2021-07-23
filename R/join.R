@@ -1,8 +1,8 @@
 #' Inner join according to a filter and summarise in one
 #'
-#' Inner join two data frames according to some columns (`join_by`), but then
+#' Join two data frames according to some columns (`join_by`), but then
 #' remove some of the rows according to the `filter_condition` (which is run
-#' after grouping via `filter_by`).
+#' after grouping via `filter_by`). This amounts to an inner join.
 #'
 #' @param x A data frame
 #' @param y A data frame
