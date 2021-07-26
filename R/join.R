@@ -58,10 +58,20 @@ left_join_filter <- function(x, y, ...){
   left_join(x, out, by = by)
 }
 
-summarise_or_pivot <- function(x,
-                               type = "summarise",
-                               formula,
-                               group_by){
+#' Summarise or slice grouped data
+#'
+#' @param x A data frame
+#' @param type Either `"summarise"` or `"slice"`
+#' @param formula An expression describing the summarise or slice
+#' @param group_by A character vector listing columns that should be used
+#'   to group the summarise or slice
+#' @return
+#' A summarised (or sliced) data frame, usually with one row per group
+#' @author R.J.B. Goudie
+grouped_summarise_or_slice <- function(x,
+                                       type = "summarise",
+                                       formula,
+                                       group_by){
   formula <- enquo(formula)
 
   group_by <- as.list(group_by)
@@ -79,13 +89,36 @@ summarise_or_pivot <- function(x,
   }
 }
 
+#' Split a data frame into number and character value rows
+#'
+#' Determine whether to use the `value_as_number` or `value_as_character`
+#' column for each row of a data frame.
+#'
+#' - Where a suitable `type` col is present, this is used to split the rows
+#' - Where only a `value_as_number` column is present (no `value_as_character`
+#'   is present), then all rows are assumed numeric
+#' - Similar when only a `value_as_character` column is present
+#'
+#' @param x A data frame
+#'
+#' @return
+#' A list with 4 components:
+#' - `any_numeric` a logical indicating whether any rows are numbers
+#' - `any_character` a logical indicating whether any rows are characters
+#' - `numeric` A data frame containing numeric rows
+#' - `character` A data frame containing character rows
 split_data_by_type <- function(x){
   has_value_as_number_col <- "value_as_number" %in% colnames(x)
   has_value_as_character_col <- "value_as_character" %in% colnames(x)
   has_type_col <- "type" %in% colnames(x)
 
+  if (has_type_col){
+    possible_types <- c("numeric", "character")
+    type_col_is_numeric_or_character <- all(unique(x$type) %in% possible_types)
+  }
+
   clearly_specifies_types <-
-    has_value_as_number_col & has_value_as_character_col & has_type_col
+    has_type_col && type_col_is_numeric_or_character
   has_only_value_as_number_col <-
     has_value_as_number_col & !has_value_as_character_col
   has_only_value_as_character_col <-
@@ -109,12 +142,46 @@ split_data_by_type <- function(x){
     x_character <- x
     x_numeric <- NULL
   } else {
-    stop("unexpected2")
+    stop("Could not establish whether to use numeric or character values")
   }
   list(any_numeric = any_numeric,
        any_character = any_character,
        numeric = x_numeric,
        character = x_character)
+}
+
+#' Tidy pivot_wider dataframe
+#'
+#' Moves new columns to the end, and sorts them (so that values and datetimes
+#' are adjacent). The suffixes `_value_as_number` and `_value_as_character` are
+#' also stripped to provide nicer column names
+#'
+#' @param x A data frame
+#' @param magic_prefix A character string, providing the prefix that indicates
+#'   which columns are "new"
+#' @return
+#' The data frame `x`, which renamed and reorder columns
+relocate_and_clean_new_cols <- function(x, magic_prefix){
+  colnames_strip_new <- function(colname){
+    case_when(str_starts(colname, magic_prefix) ~
+                str_remove(colname, glue("^", magic_prefix)),
+              TRUE ~ colname)
+  }
+
+  # remove these default names to produce cleaner column names
+  suffix_to_remove_number <- "_value_as_number"
+  suffix_to_remove_character <- "_value_as_character"
+
+  x %>%
+    select(!starts_with(magic_prefix), sort(colnames(.))) %>%
+    rename_with(.fn = function(colname){
+      case_when(str_ends(colname, suffix_to_remove_character) ~
+                  str_remove(colname, glue("{suffix_to_remove_character}$")),
+                str_ends(colname, suffix_to_remove_number) ~
+                  str_remove(colname, glue("{suffix_to_remove_number}$")),
+                TRUE ~ colname)
+    }) %>%
+    rename_with(.fn = colnames_strip_new)
 }
 
 #' Summarise (or slice) data then pivot data wider
@@ -141,82 +208,63 @@ split_data_by_type <- function(x){
 #' @return A data frame
 #'
 #' @author R.J.B. Goudie
-  summarise_pivot_wider <- function(x,
-                                    type = "summarise",
-                                    formula,
-                                    id_cols,
-                                    names_from,
-                                    values_from,
-                                    names_suffix = NULL){
-    formula <- enquo(formula)
-    out <- summarise_or_pivot(x,
-                              type = type,
-                             formula = !! formula,
-                             group_by = c(id_cols, names_from))
+summarise_pivot_wider <- function(x,
+                                  type = "summarise",
+                                  formula,
+                                  id_cols,
+                                  names_from,
+                                  values_from,
+                                  names_suffix = NULL){
+  formula <- enquo(formula)
+  out <- grouped_summarise_or_slice(x,
+                                    type = type,
+                                    formula = !! formula,
+                                    group_by = c(id_cols, names_from))
 
-    # magic string to add to the start of new column names to allow identification
-    # of new columns
-    magic_prefix <- "__new__"
+  # Prefix for new column names to allow identification of new columns
+  magic_prefix <- "__new__"
 
-    suffix_to_remove_number <- "_value_as_number"
-    suffix_to_remove_character <- "_value_as_character"
-
-    if (!is.null(names_suffix)){
-      names_suffix <- paste0("_", names_suffix)
-    }
-
-    colnames_strip_new <- function(colname){
-      case_when(str_starts(colname, magic_prefix) ~
-                  str_remove(colname, glue("^", magic_prefix)),
-                TRUE ~ colname)
-    }
-
-    colnames_strip_suffix_to_remove <- function(colname, suffix){
-      case_when(str_ends(colname, suffix) ~
-                  str_remove(colname, glue("{suffix}$")),
-                TRUE ~ colname)
-    }
-
-    out_split <- split_data_by_type(out)
-
-    if (out_split$any_numeric){
-      out_numeric <- out_split$numeric %>%
-        pivot_wider(
-          id_cols = all_of(id_cols),
-          names_from = all_of(names_from),
-          values_from = all_of(setdiff(values_from, "value_as_character")),
-          names_glue = paste0(magic_prefix,  "{",
-                              names_from, "}",
-                              names_suffix,
-                              "_{.value}")) %>%
-        rename_with(.fn = function(x) colnames_strip_suffix_to_remove(x, suffix_to_remove_number))
-    }
-    if (out_split$any_character){
-      out_character <- out_split$character %>%
-        pivot_wider(
-          id_cols = all_of(id_cols),
-          names_from = all_of(names_from),
-          values_from = all_of(setdiff(values_from, "values_as_number")),
-          names_glue = paste0(magic_prefix,  "{",
-                              names_from, "}",
-                              names_suffix,
-                              "_{.value}")) %>%
-        rename_with(.fn = function(x) colnames_strip_suffix_to_remove(x, suffix_to_remove_character))
-    }
-
-    if (out_split$any_numeric & out_split$any_character){
-      out <- full_join(out_numeric, out_character)
-    } else if (out_split$any_numeric){
-      out <- out_numeric
-    } else if (out_split$any_character){
-      out <- out_character
-    } else {
-      stop("Neither numeric or character output from slice/summary found")
-    }
-    out  %>%
-      select(!starts_with(magic_prefix), sort(colnames(.))) %>%
-      rename_with(.fn = colnames_strip_new)
+  if (!is.null(names_suffix)){
+    names_suffix <- paste0("_", names_suffix)
   }
+
+  names_glue <- paste0(magic_prefix,  "{",
+                       names_from, "}",
+                       names_suffix,
+                       "_{.value}")
+
+  out_split <- split_data_by_type(out)
+
+  if (out_split$any_numeric){
+    out_numeric <- out_split$numeric %>%
+      pivot_wider(
+        id_cols = all_of(id_cols),
+        names_from = all_of(names_from),
+        values_from = all_of(setdiff(values_from, "value_as_character")),
+        names_glue = names_glue)
+  }
+
+  if (out_split$any_character){
+    out_character <- out_split$character %>%
+      pivot_wider(
+        id_cols = all_of(id_cols),
+        names_from = all_of(names_from),
+        values_from = all_of(setdiff(values_from, "values_as_number")),
+        names_glue = names_glue)
+  }
+
+  if (out_split$any_numeric & out_split$any_character){
+    out <- full_join(out_numeric, out_character)
+  } else if (out_split$any_numeric){
+    out <- out_numeric
+  } else if (out_split$any_character){
+    out <- out_character
+  } else {
+    stop("Neither numeric or character output from slice/summary found")
+  }
+
+  relocate_and_clean_new_cols(out, magic_prefix = magic_prefix)
+}
 
 #' Summarise (standardised) data during a time period
 #'
