@@ -182,7 +182,7 @@ test_that("median within visit", {
       fsheet_data_test,
       during = "during_visit",
       type = "summarise",
-      formula = tibble(value = median(value),
+      formula = tibble(value_as_number = median(value_as_number),
                        datetime = NA),
       names_suffix = "median")
 
@@ -236,7 +236,7 @@ test_that("median within visit, with multiple results", {
       fsheet_data_test,
       during = "during_visit",
       type = "summarise",
-      formula = tibble(value = median(value),
+      formula = tibble(value_as_number = median(value_as_number),
                        datetime = NA),
       names_suffix = "median"
     )
@@ -297,7 +297,7 @@ test_that("fsheet_all_during retains patients without fsheet data", {
 
   expect_equal(joined$symbol, c(rep("news2", 3), NA))
   expect_equal(
-    joined$value,
+    joined$value_as_number,
     c(c(5, 10, 12), NA))
   expect_equal(
     joined$datetime,

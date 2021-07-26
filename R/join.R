@@ -95,7 +95,8 @@ summarise_pivot_wider <- function(x,
   # of new columns
   magic_prefix <- "__new__"
 
-  suffix_to_remove <- "_value"
+  suffix_to_remove_number <- "_value_as_number"
+  suffix_to_remove_character <- "_value_as_character"
 
   id_and_names_cols <- c(id_cols, names_from)
   id_and_names_cols <- as.list(id_and_names_cols)
@@ -122,22 +123,74 @@ summarise_pivot_wider <- function(x,
               TRUE ~ colname)
   }
 
-  colnames_strip_suffix_to_remove <- function(colname){
-    case_when(str_ends(colname, suffix_to_remove) ~
-                str_remove(colname, glue("{suffix_to_remove}$")),
+  colnames_strip_suffix_to_remove <- function(colname, suffix){
+    case_when(str_ends(colname, suffix) ~
+                str_remove(colname, glue("{suffix}$")),
               TRUE ~ colname)
   }
 
-  out <- out %>%
-    pivot_wider(
-      id_cols = all_of(id_cols),
-      names_from = all_of(names_from),
-      values_from = all_of(values_from),
-      names_glue = paste0(magic_prefix,  "{",
-                          names_from, "}",
-                          names_suffix,
-                          "_{.value}")) %>%
-    rename_with(.fn = colnames_strip_suffix_to_remove) %>%
+  has_value_as_number <- "value_as_number" %in% colnames(out)
+  has_value_as_character <- "value_as_character" %in% colnames(out)
+  has_type <- "type" %in% colnames(out)
+
+  if (has_value_as_number & has_value_as_character & has_type){
+    out_numeric <- out %>%
+      filter(type == "numeric")
+    out_character <- out %>%
+      filter(type == "character")
+    any_numeric <- nrow(out_numeric) > 0
+    any_character <- nrow(out_character) > 0
+  } else if (has_value_as_number & !has_value_as_character){
+    # only numbers
+    any_numeric <- TRUE
+    any_character <- FALSE
+    values_from <- setdiff(values_from, "value_as_character")
+    out_numeric <- out
+  } else if (!has_value_as_number & has_value_as_character){
+    # only characters
+    any_numeric <- FALSE
+    as_character <- TRUE
+    values_from <- setdiff(values_from, "value_as_number")
+    out_character <- out
+  } else {
+    stop("unexpected2")
+  }
+
+  if (any_numeric){
+    out_numeric <- out_numeric %>%
+      pivot_wider(
+        id_cols = all_of(id_cols),
+        names_from = all_of(names_from),
+        values_from = all_of(values_from),
+        names_glue = paste0(magic_prefix,  "{",
+                            names_from, "}",
+                            names_suffix,
+                            "_{.value}")) %>%
+      rename_with(.fn = function(x) colnames_strip_suffix_to_remove(x, suffix_to_remove_number))
+  }
+
+  if (any_character){
+    out_character <- out_character %>%
+      pivot_wider(
+        id_cols = all_of(id_cols),
+        names_from = all_of(names_from),
+        values_from = all_of(values_from),
+        names_glue = paste0(magic_prefix,  "{",
+                            names_from, "}",
+                            names_suffix,
+                            "_{.value}")) %>%
+      rename_with(.fn = function(x) colnames_strip_suffix_to_remove(x, suffix_to_remove_character))
+  }
+  if (any_numeric & any_character){
+    out <- full_join(out_numeric, out_character)
+  } else if (any_numeric){
+    out <- out_numeric
+  } else if (any_character){
+    out <- out_character
+  } else {
+    stop("unexpected")
+  }
+  out  %>%
     select(!starts_with(magic_prefix), sort(colnames(.))) %>%
     rename_with(.fn = colnames_strip_new)
 }
@@ -241,7 +294,9 @@ normalise_dataframe <- function(x, type = "fsheet"){
     x <- x %>%
       select(person_id = person_id,
              symbol = symbol,
-             value = value_as_number, # TODO make generic
+             value_as_number = value_as_number,
+             value_as_character = value_as_character,
+             type = type,
              datetime = measurement_datetime)
   }
   x %>%
@@ -285,7 +340,9 @@ fsheet_summarise_during <- function(x,
                    type = type,
                    formula = !! formula,
                    names_from = "symbol",
-                   values_from = c("value", "datetime"),
+                   values_from = c("value_as_number",
+                                   "value_as_character",
+                                   "datetime"),
                    names_suffix = glue("{names_suffix}_{during}"))
 }
 
