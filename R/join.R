@@ -107,7 +107,7 @@ grouped_summarise_or_slice <- function(x,
 #' - `any_character` a logical indicating whether any rows are characters
 #' - `numeric` A data frame containing numeric rows
 #' - `character` A data frame containing character rows
-split_data_by_type <- function(x){
+split_by_type <- function(x){
   has_value_as_number_col <- "value_as_number" %in% colnames(x)
   has_value_as_character_col <- "value_as_character" %in% colnames(x)
   has_type_col <- "type" %in% colnames(x)
@@ -150,7 +150,7 @@ split_data_by_type <- function(x){
        character = x_character)
 }
 
-#' Tidy pivot_wider dataframe
+#' Tidy pivot_wider dataframe column names and arrangement
 #'
 #' Moves new columns to the end, and sorts them (so that values and datetimes
 #' are adjacent). The suffixes `_value_as_number` and `_value_as_character` are
@@ -192,9 +192,9 @@ relocate_and_clean_new_cols <- function(x, magic_prefix){
 #' The pivot the data wider, so that `names_from` appears in columns, with
 #' the values taken from `values_from`
 #'
-#' The new columns are sorted alphabetically (so that, for example, `x` and
-#' `x_datetime` are adjacent), and column names ending in `_value` are
-#' shortened
+#' New columns are added to the end, are sorted (so that values and datetimes
+#' are adjacent). The suffixes `_value_as_number` and `_value_as_character` are
+#' also stripped to provide nicer column names.
 #'
 #' @param x A data frame
 #' @param type Either `"summarise"` or `"slice"`
@@ -233,7 +233,7 @@ summarise_pivot_wider <- function(x,
                        names_suffix,
                        "_{.value}")
 
-  out_split <- split_data_by_type(out)
+  out_split <- split_by_type(out)
 
   if (out_split$any_numeric){
     out_numeric <- out_split$numeric %>%
@@ -277,6 +277,10 @@ summarise_pivot_wider <- function(x,
 #' @param y A (tidy) data frame, with a `datetime` column
 #' @param during The time period to extract data for, one of: `"during_visit"`,
 #'   `"during_icu"`
+#' @param names_from,values_from A pair of arguments describing which column
+#' (or columns) to get the name of the output column (`group_by`), and which
+#' column (or columns) to get the cell values from (`values_from`).
+#' @param names_suffix A character string for naming the summarised output
 #'
 #' @return
 #' A data frame, with a row for each `y` measurement during the relevant
@@ -288,8 +292,10 @@ summarise_during <- function(x,
                              during,
                              type = "none",
                              formula,
-                             names_from,
-                             values_from,
+                             names_from = "symbol",
+                             values_from = c("value_as_number",
+                                             "value_as_character",
+                                             "datetime"),
                              names_suffix){
   formula <- enquo(formula)
   out <- x %>%
@@ -307,8 +313,6 @@ summarise_during <- function(x,
   out
 }
 
-# TODO buffer = "date"
-
 #' Left join adm data with other (standardised) data
 #'
 #' Left joins an `adm` data frame with another data frame (with a
@@ -320,6 +324,8 @@ summarise_during <- function(x,
 #' @param y A (tidy) data frame, with a `datetime` column
 #' @param during The time period to extract data for, one of: `"during_visit"`,
 #'   `"during_icu"`
+#' @param names_from A character vector containing the names of columns that
+#' should be used to filter by (in addition to those implied by `during`).
 #'
 #' @return
 #' A data frame, with a row for each `y` measurement during the relevant
@@ -329,7 +335,7 @@ summarise_during <- function(x,
 all_during <- function(x,
                        y,
                        during,
-                       names_from){
+                       names_from = "symbol"){
   if (during == "during_icu"){
     out <- x %>%
       left_join_filter(
@@ -378,7 +384,8 @@ normalise_dataframe <- function(x, type = "fsheet"){
 #'
 #' @param x An `adm` data frame
 #' @param y A (tidy) `fsheet` data frame: with `person_id`, `symbol`,
-#'   `value_as_number` (TODO) and `measurement_datetime`.
+#'   `value_as_number` (or `value_as_character`; or both, plus a `type` column
+#'   indicating which to use when summarising) and `measurement_datetime`.
 #' @param during The time period to extract data for, one of: `"during_visit"`,
 #'   `"during_icu"`
 #'
@@ -392,8 +399,7 @@ fsheet_all_during <- function(x, y, during){
 
   all_during(x = x,
              y = y_standardised,
-             during = during,
-             names_from = "symbol")
+             during = during)
 }
 
 fsheet_summarise_during <- function(x,
@@ -410,10 +416,6 @@ fsheet_summarise_during <- function(x,
                    during = during,
                    type = type,
                    formula = !! formula,
-                   names_from = "symbol",
-                   values_from = c("value_as_number",
-                                   "value_as_character",
-                                   "datetime"),
                    names_suffix = glue("{names_suffix}_{during}"))
 }
 

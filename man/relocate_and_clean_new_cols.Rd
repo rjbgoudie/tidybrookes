@@ -2,7 +2,7 @@
 % Please edit documentation in R/join.R
 \name{relocate_and_clean_new_cols}
 \alias{relocate_and_clean_new_cols}
-\title{Tidy pivot_wider dataframe}
+\title{Tidy pivot_wider dataframe column names and arrangement}
 \usage{
 relocate_and_clean_new_cols(x, magic_prefix)
 }

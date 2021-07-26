@@ -4,7 +4,7 @@
 \alias{all_during}
 \title{Left join adm data with other (standardised) data}
 \usage{
-all_during(x, y, during, names_from)
+all_during(x, y, during, names_from = "symbol")
 }
 \arguments{
 \item{x}{An \code{adm} data frame}
@@ -13,6 +13,9 @@ all_during(x, y, during, names_from)
 
 \item{during}{The time period to extract data for, one of: \code{"during_visit"},
 \code{"during_icu"}}
+
+\item{names_from}{A character vector containing the names of columns that
+should be used to filter by (in addition to those implied by \code{during}).}
 }
 \value{
 A data frame, with a row for each \code{y} measurement during the relevant

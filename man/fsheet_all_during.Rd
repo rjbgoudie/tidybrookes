@@ -10,7 +10,8 @@ fsheet_all_during(x, y, during)
 \item{x}{An \code{adm} data frame}
 
 \item{y}{A (tidy) \code{fsheet} data frame: with \code{person_id}, \code{symbol},
-\code{value_as_number} (TODO) and \code{measurement_datetime}.}
+\code{value_as_number} (or \code{value_as_character}; or both, plus a \code{type} column
+indicating which to use when summarising) and \code{measurement_datetime}.}
 
 \item{during}{The time period to extract data for, one of: \code{"during_visit"},
 \code{"during_icu"}}

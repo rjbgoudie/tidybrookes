@@ -40,9 +40,9 @@ Summarise (or slice if \code{type = "summarise"}) data grouped by
 The pivot the data wider, so that \code{names_from} appears in columns, with
 the values taken from \code{values_from}
 
-The new columns are sorted alphabetically (so that, for example, \code{x} and
-\code{x_datetime} are adjacent), and column names ending in \verb{_value} are
-shortened
+New columns are added to the end, are sorted (so that values and datetimes
+are adjacent). The suffixes \verb{_value_as_number} and \verb{_value_as_character} are
+also stripped to provide nicer column names.
 }
 \author{
 R.J.B. Goudie

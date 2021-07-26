@@ -10,8 +10,8 @@ summarise_during(
   during,
   type = "none",
   formula,
-  names_from,
-  values_from,
+  names_from = "symbol",
+  values_from = c("value_as_number", "value_as_character", "datetime"),
   names_suffix
 )
 }
@@ -22,6 +22,12 @@ summarise_during(
 
 \item{during}{The time period to extract data for, one of: \code{"during_visit"},
 \code{"during_icu"}}
+
+\item{names_from, values_from}{A pair of arguments describing which column
+(or columns) to get the name of the output column (\code{group_by}), and which
+column (or columns) to get the cell values from (\code{values_from}).}
+
+\item{names_suffix}{A character string for naming the summarised output}
 }
 \value{
 A data frame, with a row for each \code{y} measurement during the relevant
