@@ -1,13 +1,13 @@
-"STUDY_SUBJECT_DIGEST","fsd_id","line","flo.meas_id","MEASURE_TIME","disp_name","measured_value","meas_comment","template","form"
-"AA","5","61","1234",2021-01-03 17:00:00,"Weight","4125","","IP Vitals","Vital signs"
-"AA","5","61","1234",2021-01-02 09:00:00,"Other","dummy","","IP Vitals","Vital signs"
-"AA","5","61","1234",2021-01-04 09:00:00,"Weight","4035","","IP Vitals","Vital signs"
-"AA","5","61","1234",2021-01-01 08:59:00,"Weight","4025","","IP Vitals","Vital signs"
-"BB","10909029","60","10",2021-01-21 08:59:00,"SpO2","93","","IP Vitals","Vital signs"
-"BB","10909029","60","10",2021-01-23 08:59:00,"SpO2","49.9","","IP Vitals","Vital signs"
-"CC","10926333","239","1234",2021-01-03 17:00:00,"NEWS2 score","10","","IP Vitals","Vital signs"
-"CC","10931608","61","1234",2021-01-02 09:00:00,"Resp Rate","29","","IP Vitals","Vital signs"
-"CC","10926333","239","1234",2021-01-04 09:00:00,"NEWS2 score","12","","IP Vitals","Vital signs"
-"CC","10926333","239","1234",2021-01-01 08:59:00,"NEWS2 score","5","","IP Vitals","Vital signs"
-"CC","10926333","239","1234",2021-01-02 08:59:00,"NEWS2 score"," ","","IP Vitals","Vital signs"
-"DD","10909029","60","10",,"SpO2","93","","IP Vitals","Vital signs"
+STUDY_SUBJECT_DIGEST,fsd_id,line,flo.meas_id,MEASURE_TIME,disp_name,measured_value,meas_comment,template,form
+AA,5,61,1234,2021-01-03 17:00:00,Weight,4125,,IP Vitals,Vital signs
+AA,5,61,1234,2021-01-02 09:00:00,Other,dummy,,IP Vitals,Vital signs
+AA,5,61,1234,2021-01-04 09:00:00,Weight,4035,,IP Vitals,Vital signs
+AA,5,61,1234,2021-01-01 08:59:00,Weight,4025,,IP Vitals,Vital signs
+BB,10909029,60,10,2021-01-21 08:59:00,SpO2,93,,IP Vitals,Vital signs
+BB,10909029,60,10,2021-01-23 08:59:00,SpO2,49.9,,IP Vitals,Vital signs
+CC,10926333,239,1234,2021-01-03 17:00:00,NEWS2 score,10,,IP Vitals,Vital signs
+CC,10931608,61,1234,2021-01-02 09:00:00,Resp Rate,29,,IP Vitals,Vital signs
+CC,10926333,239,1234,2021-01-04 09:00:00,NEWS2 score,12,,IP Vitals,Vital signs
+CC,10926333,239,1234,2021-01-01 08:59:00,NEWS2 score,5,,IP Vitals,Vital signs
+CC,10926333,239,1234,2021-01-02 08:59:00,NEWS2 score, ,,IP Vitals,Vital signs
+DD,10909029,60,10,,SpO2,93,,IP Vitals,Vital signs
