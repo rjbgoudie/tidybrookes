@@ -110,7 +110,7 @@ summarise_pivot_wider <- function(x,
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
-        values_from = all_of(setdiff(values_from, "values_as_number")),
+        values_from = all_of(setdiff(values_from, "value_as_number")),
         names_glue = names_glue)
   }
 
