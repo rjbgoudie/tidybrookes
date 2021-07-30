@@ -1,4 +1,3 @@
-
 test_that("chooses within visit", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
@@ -249,8 +248,6 @@ test_that("median within visit, with multiple results", {
     NA)
 })
 
-
-
 test_that("fsheet_all_during retains patients without fsheet data", {
   # DD has no NEWS2 data
   fsheet_raw_test <-
@@ -305,4 +302,100 @@ test_that("fsheet_all_during retains patients without fsheet data", {
       ymd_hms("2021-01-03 17:00:00", tz = "Europe/London"),
       ymd_hms("2021-01-04 09:00:00", tz = "Europe/London"),
       ymd_hms(NA, tz = "Europe/London")))
+})
+
+test_that("character fsheet data handled", {
+  fsheet_raw_test <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("fsheet.csv"),
+      col_types = "fsheet"
+    ) %>%
+    fsheet_rename %>%
+    filter(person_id %in% "EE")
+
+  fsheet_def <- list() %>%
+    fsheet_add(
+      symbol = "acvpu",
+      title = "ACVPU",
+      names = c("NEWS2/MEOWS: ACVPU"),
+      search_pattern = c("acvpu"),
+      search_exclude = c(),
+      type = "character",
+      expect_after =
+        (value_as_character %in% c("A", "C", "V", "P", "U")))
+
+    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+
+    demo_adm_raw <-
+      read_tidybrookes_csv(
+        file = tidybrookes_example("adm.csv"),
+        col_types = "adm"
+      ) %>%
+      adm_rename %>%
+      filter(person_id %in% c("EE"))
+
+  joined <- demo_adm_raw %>%
+        fsheet_all_during(
+          fsheet_data_test,
+          during = "during_visit")
+
+  expect_equal(joined$symbol, c("acvpu"))
+  expect_equal(joined$value_as_number, c(NA_real_))
+  expect_equal(joined$value_as_character, c("A"))
+})
+
+test_that("mixed numeric and character fsheet data handled", {
+  fsheet_raw_test <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("fsheet.csv"),
+      col_types = "fsheet"
+    ) %>%
+    fsheet_rename %>%
+    filter(person_id %in% "FF")
+
+  fsheet_def <- list() %>%
+    fsheet_add(
+      symbol = "acvpu",
+      title = "ACVPU",
+      names = c("NEWS2/MEOWS: ACVPU"),
+      search_pattern = c("acvpu"),
+      search_exclude = c(),
+      type = "character",
+      expect_after =
+        (value_as_character %in% c("A", "C", "V", "P", "U"))) %>%
+    fsheet_add(
+      symbol = "news2",
+      title = "NEWS2",
+      names = c("NEWS2 score"),
+      search_pattern = c("news2", "news"),
+      search_exclude = c(),
+      silently_exclude_na_when = TRUE,
+      silently_exclude_when =
+        (value == " " |
+           value == "E" # some kind of typo
+        ),
+      value_as_number_fn =
+        case_when(value == "3mm" ~ 3,
+                  TRUE ~ value_as_number),
+      expect_after =
+        (value_as_number %in% 0:17))
+
+  fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+
+  demo_adm_raw <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("adm.csv"),
+      col_types = "adm"
+    ) %>%
+    adm_rename %>%
+    filter(person_id %in% c("FF"))
+
+  joined <- demo_adm_raw %>%
+    fsheet_all_during(
+      fsheet_data_test,
+      during = "during_visit")
+
+  expect_equal(joined$symbol, c("news2", "acvpu"))
+  expect_equal(joined$value_as_number, c(10, NA_real_))
+  expect_equal(joined$value_as_character, c(NA_character_, "P"))
 })

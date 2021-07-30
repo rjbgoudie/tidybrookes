@@ -153,10 +153,11 @@ fsheet_extract <- function(x, fsheet_def, errors = stop){
   if (length(fsheet_def) == 1 & "symbol" %in% names(fsheet_def)){
     fsheet_extract_single(x, fsheet_def)
   } else {
-    bind_rows(lapply(fsheet_def, function(y){
+    out <- bind_rows(lapply(fsheet_def, function(y){
       cat(paste0("\nExtracting ", y$title, " (", y$symbol, "): "))
       fsheet_extract_single(x, y, errors = errors)
     }))
+    out %>% arrange(symbol, measurement_datetime)
   }
 }
 
