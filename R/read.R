@@ -1,5 +1,5 @@
 #' @importFrom readr read_csv cols col_character col_integer col_double locale col_datetime
-read_tidybrookes_csv <- function(file, col_types){
+read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
   if (col_types == "adm"){
       col_types <- cols(
         STUDY_SUBJECT_DIGEST = col_character(),
@@ -46,6 +46,7 @@ read_tidybrookes_csv <- function(file, col_types){
   }
   read_csv(file = file,
            col_types = col_types,
-           locale = locale(tz = "Europe/London")) %>%
+           locale = locale(tz = "Europe/London"),
+           n_max = n_max) %>%
     as_tibble
 }
