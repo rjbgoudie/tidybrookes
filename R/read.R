@@ -20,7 +20,7 @@ read_tidybrookes_csv <- function(file, col_types){
       STUDY_SUBJECT_DIGEST = col_character(),
       fsd_id = col_integer(),
       line = col_integer(),
-      flo.meas_id = col_double(),
+      `flo-meas_id` = col_double(),
       MEASURE_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       disp_name = col_character(),
       measured_value = col_character(),

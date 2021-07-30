@@ -11,7 +11,7 @@ fsheet_rename <- function(x){
       comment = meas_comment,
       measurement_datetime = MEASURE_TIME,
       data_id = fsd_id,
-      measurement_id = flo.meas_id,
+      measurement_id = "flo-meas_id",
       line_id = line,
       template = template,
       form = form)
@@ -30,7 +30,7 @@ fsheet_unrename <- function(x){
       meas_comment = comment,
       MEASURE_TIME = measurement_datetime,
       fsd_id = data_id,
-      flo.meas_id = measurement_id,
+      `flo-meas_id` = measurement_id,
       line = line_id,
       template = template,
       form = form)
