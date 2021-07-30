@@ -193,12 +193,12 @@ test_that("median within visit", {
     NA)
 })
 
-test_that("median within visit, with multiple results", {
+test_that("median and max within visit, with multiple results", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
       file = tidybrookes_example("fsheet.csv"),
       col_types = "fsheet"
-      ) %>%
+    ) %>%
     fsheet_rename %>%
     filter(person_id == "CC")
 
@@ -246,6 +246,19 @@ test_that("median within visit, with multiple results", {
   expect_equal(
     joined$news2_median_during_visit_datetime,
     NA)
+
+
+  # test max during visit
+  joined2 <- demo_adm_raw %>%
+    fsheet_max_during(fsheet_data_test,
+                      during = "during_visit")
+
+  expect_equal(
+    joined2$news2_max_during_visit,
+    max(c(10, 12, 5)))
+  expect_equal(
+    joined2$news2_max_during_visit_datetime,
+    ymd_hms("2021-01-04 09:00:00", tz = "Europe/London"))
 })
 
 test_that("fsheet_all_during retains patients without fsheet data", {

@@ -50,3 +50,10 @@ fsheet_last_during <- function(...){
                           formula = which.max(datetime),
                           names_suffix = "last")
 }
+
+fsheet_max_during <- function(..., names_suffix = "max"){
+  fsheet_summarise_during(...,
+                          type = "slice",
+                          formula = which.max(value_as_number),
+                          names_suffix = names_suffix)
+}
