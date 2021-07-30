@@ -259,6 +259,18 @@ test_that("median and max within visit, with multiple results", {
   expect_equal(
     joined2$news2_max_during_visit_datetime,
     ymd_hms("2021-01-04 09:00:00", tz = "Europe/London"))
+
+  # test max during initial 24h of visit
+  joined3 <- demo_adm_raw %>%
+    fsheet_max_during(fsheet_data_test,
+                      during = "during_visit_initial_24h")
+
+  expect_equal(
+    joined3$news2_max_during_visit_initial_24h,
+    max(c(5)))
+  expect_equal(
+    joined3$news2_max_during_visit_initial_24h_datetime,
+    ymd_hms("2021-01-01 08:59:00", tz = "Europe/London"))
 })
 
 test_that("fsheet_all_during retains patients without fsheet data", {
