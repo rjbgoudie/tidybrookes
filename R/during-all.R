@@ -21,20 +21,8 @@ all_during <- function(x,
                        y,
                        during,
                        names_from = "symbol"){
-  if (during == "during_icu"){
-    out <- x %>%
-      left_join_filter(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(icu_end_datetime) ~
-                      datetime >= icu_start_datetime &
-                       datetime <= icu_end_datetime,
-                    is.na(icu_end_datetime) ~
-                      datetime >= icu_start_datetime))
-  } else if (during == "during_visit"){
-    out <- x %>%
+ if (during == "during_visit"){
+   out <- x %>%
       left_join_filter(
         y,
         join_by = "person_id",
@@ -45,10 +33,44 @@ all_during <- function(x,
                        datetime <= visit_end_datetime,
                     is.na(visit_end_datetime) ~
                       datetime >= visit_start_datetime))
-  } else {
-    stop("unexpected during value")
-  }
+ } else if (during == "during_icu"){
+   out <- x %>%
+     left_join_filter(
+       y,
+       join_by = "person_id",
+       filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
+       filter_condition =
+         case_when(!is.na(icu_end_datetime) ~
+                     datetime >= icu_start_datetime &
+                      datetime <= icu_end_datetime,
+                   is.na(icu_end_datetime) ~
+                     datetime >= icu_start_datetime))
+ } else {
+   stop("all_during does not know how to hangle this `during` value:",
+        during)
+ }
   out
+}
+
+#' Left join according to a filter and summarise in one
+#'
+#' @inheritParams inner_join_filter
+#'
+#' @return A data frame, with all rows of `x`, potentially duplicated.
+#' Where there is no matching `y` row, `NA`s will be present.
+#'
+#' A match is determined by joining by `join_by` and then
+#' filtering using the `filter_condition`, under the `filter_by` grouping.
+#'
+#' @author R.J.B. Goudie
+left_join_filter <- function(x, y, ...){
+  out <- inner_join_filter(x = x,
+                           y = y,
+                           ...)
+
+  # join again to x on common columns, so that anyone WITHOUT a y is included
+  by <- intersect(colnames(x), colnames(out))
+  left_join(x, out, by = by)
 }
 
 #' Inner join according to a filter and summarise in one
@@ -88,25 +110,4 @@ inner_join_filter <- function(x,
     filter(satisfies_filter_condition) %>%
     group_by(!!! filter_by_symbol) %>%
     select(-satisfies_filter_condition)
-}
-
-#' Left join according to a filter and summarise in one
-#'
-#' @inheritParams inner_join_filter
-#'
-#' @return A data frame, with all rows of `x`, potentially duplicated.
-#' Where there is no matching `y` row, `NA`s will be present.
-#'
-#' A match is determined by joining by `join_by` and then
-#' filtering using the `filter_condition`, under the `filter_by` grouping.
-#'
-#' @author R.J.B. Goudie
-left_join_filter <- function(x, y, ...){
-  out <- inner_join_filter(x = x,
-                           y = y,
-                           ...)
-
-  # join again to x on common columns, so that anyone WITHOUT a y is included
-  by <- intersect(colnames(x), colnames(out))
-  left_join(x, out, by = by)
 }
