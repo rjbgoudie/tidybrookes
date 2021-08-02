@@ -163,10 +163,12 @@ tests_add <- function(test_def,
 #'
 #' @return
 #' A data frame with the following columns:
-#' `person_id`, `symbol`, `value`, `censoring`, `ordered_datetime`,
-#' `collected_datetime`, `received_datetime`, `result_datetime`,
-#' `ordering_department_name`, `range_low`, `range_high`, `unit`,
-#' `name`, `title`, `method`, `group`
+#' `person_id`, `symbol`, `value_as_number`, `value_as_character`,
+#' `censoring`, `ordered_datetime`, `collected_datetime`, `received_datetime`,
+#' `result_datetime`, `ordering_department_name`, `range_low`, `range_high`,
+#' `unit`, `name`, `title`, `method`, `group`, `type`
+#'
+#' The result will be sorted by collected_datetime
 #' @author R.J.B. Goudie
 tests_extract <- function(x, tests_def, errors = stop){
   if (length(tests_def) == 1 & "symbol" %in% names(tests_def)){
@@ -318,7 +320,8 @@ tests_extract_single <- function(x, test_def, errors = stop){
   cat(nrow(out), "extracted.")
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,
-           -value_original, -is_too_high, -is_too_low)
+           -value_original, -is_too_high, -is_too_low) %>%
+    arrange(collected_datetime)
 }
 
 
