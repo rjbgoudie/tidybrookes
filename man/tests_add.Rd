@@ -34,7 +34,8 @@ tests_add(
 \arguments{
 \item{test_def}{A list of existing test definitions to add this to}
 
-\item{symbol}{A short name for the flowsheet item. This should be a character vector that is suitable to use as an R object name}
+\item{symbol}{A short name for the flowsheet item. This should be a
+character vector that is suitable to use as an R object name}
 
 \item{title}{The full name for the test item, suitable for using in
 figure titles etc}
@@ -92,7 +93,8 @@ specifying a condition that should be \code{TRUE} in the processed (output) data
 for most values. Values outside this range are NOT excluded: this is purely
 for setting default scales of plots etc}
 
-\item{range_discard_below, range_discard_above}{This pair set the lower and #'   upper range for the flowsheet item. Values outside this range are
+\item{range_discard_below, range_discard_above}{This pair set the lower and
+upper range for the flowsheet item. Values outside this range are
 EXCLUDED.}
 }
 \description{
