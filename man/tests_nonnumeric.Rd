@@ -7,14 +7,16 @@
 tests_nonnumeric(x)
 }
 \arguments{
-\item{x}{A test data frame, with \code{value} column}
+\item{x}{A test data frame, with \code{value_as_number} column, after fixing
+up various odd values etc}
 }
 \value{
 The rows of the supplied data frame that are \code{NA} after conversion to
 to numeric form
 }
 \description{
-Helper function to extract nonnumeric test values
+This tests whether everything that remains (after exclusions and conversion)
+is numeric, which should be the case for \code{type = "numeric"} tests.
 }
 \author{
 R.J.B. Goudie
