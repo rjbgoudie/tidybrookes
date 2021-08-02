@@ -74,3 +74,48 @@ test_that("Tests handle character values", {
 
   expect_identical(tests_data_demo$value_as_character, "Arterial blood")
 })
+
+test_that("Tests handle unexpected character values", {
+  # CC has unexpected value in BLOOD SPECIMEN TYPE
+  tests_raw_demo <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("tests.csv"),
+      col_types = "tests") %>%
+    tests_rename %>%
+    filter(person_id %in% c("BB", "CC"))
+
+    tests_def <- list() %>%
+    tests_add(
+      symbol = "blood_specimen_type_bg",
+      title = "Blood specimen type",
+      names_cuh = "POC BLOOD SPECIMEN TYPE",
+      names_external = NA,
+      search_pattern = c("Specimen type"),
+      search_exclude = c(),
+      type = "character",
+      silently_exclude_na_when = FALSE,
+      value_as_character_fn = case_when(
+        value_original == "Arterial blood" ~ "Arterial blood",
+        value_original == "Arterial Blood" ~ "Arterial blood",
+        value_original == "Blood" ~ "Blood",
+        value_original == "Capillary blood" ~ "Capillary blood",
+        value_original == "Capillary Blood" ~ "Capillary blood",
+        value_original == "Mixed blood" ~ "Mixed blood",
+        value_original == "Venous blood" ~ "Venous blood",
+        value_original == "Venous Blood" ~ "Venous blood"),
+      expect_before =
+        (value_original %in% c("Arterial blood", "Venous blood", "Arterial Blood",
+                               "Blood", "Mixed blood", "Capillary blood",
+                               "Venous Blood", "Capillary Blood")),
+      expect_after =
+        (value_as_character %in% c("Arterial blood", "Venous blood", "Blood",
+                                   "Mixed blood", "Capillary blood")))
+
+    # supress warnings, since this gives warning on both expect_before and
+    # expect_after
+    suppressWarnings({
+      expect_warning(tests_extract(tests_raw_demo, tests_def),
+                     regexp = "expect_after|expect_before")
+    })
+
+})

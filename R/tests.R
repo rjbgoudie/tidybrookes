@@ -175,13 +175,21 @@ tests_extract <- function(x, tests_def, errors = stop){
     tests_extract_single(x, tests_def)
   } else {
     bind_rows(lapply(tests_def, function(y){
-      cat(paste0("\nExtracting ", y$title, " (", y$symbol, "): "))
+      inform(format_error_bullets(c(
+        glue("Extracting {y$title} ({y$symbol})"))))
       tests_extract_single(x, y, errors = errors)
     }))
   }
 }
 
 tests_extract_single <- function(x, test_def, errors = stop){
+
+  possible_new <- tests_check_for_new(x, test_def)
+  if (nrow(possible_new) > 0){
+    warn(format_error_bullets(c(
+      i = glue("{nrow(possible_new)} possible new test names"))))
+  }
+
   # Filter to only CUH tests
   out <- x %>%
     filter(name %in% test_def$names_cuh)
@@ -199,17 +207,22 @@ tests_extract_single <- function(x, test_def, errors = stop){
     filter(!(!!test_def$expect_before))
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
-      select(group, name, value_original, range_low, range_high, unit)
-    errors("unexpected cases\n", print(unexpected))
+        select(group, name, value_original, range_low, range_high, unit)
+      expect_before_str <- as_label(test_def$expect_before)
+    unexpected_nrow <- nrow(unexpected)
+    warn(format_error_bullets(c(x = glue("{unexpected_nrow} rows not satisfying ",
+                                         "expect_before condition"))))
   }
 
   # Remove duplicate rows
-  nrow_data_original <- nrow(out)
-  out <- out %>%
+    nrow_data_original <- nrow(out)
+    out <- out %>%
     distinct
   nrow_data_distinct <- nrow(out)
   if (nrow_data_original != nrow_data_distinct){
-    cat(nrow_data_original - nrow_data_distinct, "duplicate rows discarded. ")
+    inform(format_error_bullets(c(
+      i = glue("{nrow_data_original - nrow_data_distinct}",
+               "duplicate rows discarded"))))
   }
 
   # Exclude NAs when requested
@@ -218,7 +231,8 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
   n_silently_exclude_na <- nrow(out) - sum(!out$will_silently_exclude_na)
   if (n_silently_exclude_na > 0){
-    cat(n_silently_exclude_na, "NAs excluded. ")
+    inform(format_error_bullets(c(
+      i = glue("{n_silently_exclude_na} NAs excluded"))))
   }
 
   # Exclude other rows when requested
@@ -228,7 +242,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
   n_silently_exclude <- nrow(out) - sum(!out$will_silently_exclude)
   if (n_silently_exclude > 0){
-    cat(n_silently_exclude, "excluded. ")
+    inform(format_error_bullets(c(i = glue("{n_silently_exclude} rows excluded"))))
   }
 
   out <- out %>%
@@ -256,13 +270,14 @@ tests_extract_single <- function(x, test_def, errors = stop){
   if (test_def$type == "numeric"){
     nonnumeric <- tests_nonnumeric(out)
     if (nrow(nonnumeric) > 0){
-      errors("*** Non-numeric value found ***\n",
-             print(nonnumeric %>%
-                     group_by(value_original) %>%
-                     select(value_original, value_as_number,
-                            value_as_character) %>%
-                     distinct),
-             "\n")
+      nonnumeric <- nonnumeric %>%
+        group_by(value_original) %>%
+        select(value_original, value_as_number,
+               value_as_character) %>%
+        distinct
+      errors("Unhandled non-numeric value remain in data frame:\n\n",
+             print(nonnumeric),
+             "\n\n")
     }
   }
 
@@ -279,10 +294,9 @@ tests_extract_single <- function(x, test_def, errors = stop){
       filter(!is_too_high)
     n_discard_too_high <- nrow_data_prior_too_high - nrow(out)
     if (n_discard_too_high > 0){
-      cat(paste0(n_discard_too_high,
-                 " excluded since >",
-                 test_def$range_discard_above,
-                 ". "))
+      inform(format_error_bullets(c(
+        i = glue("{n_discard_too_high} excluded since >",
+                 "{test_def$range_discard_above}"))))
     }
   } else {
     out <- out %>%
@@ -297,10 +311,9 @@ tests_extract_single <- function(x, test_def, errors = stop){
       filter(!is_too_low)
     n_discard_too_low <- nrow_data_prior_too_low - nrow(out)
     if (n_discard_too_low > 0){
-      cat(paste0(n_discard_too_low,
-                 " excluded since <",
-                 test_def$range_discard_below,
-                 ". "))
+      inform(format_error_bullets(c(
+        i = glue("{n_discard_too_low} excluded since <",
+                 "{test_def$range_discard_below}"))))
     }
   } else {
     out <- out %>%
@@ -313,11 +326,13 @@ tests_extract_single <- function(x, test_def, errors = stop){
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
       select(group, name, value_original, range_low, range_high, unit)
-    errors("unexpected cases\n", print(unexpected))
+    warn(format_error_bullets(c(
+      x = glue("{nrow(unexpected)} rows not satisfying ",
+               "expect_after condition"))))
   }
 
   # Return result
-  cat(nrow(out), "extracted.")
+    inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,
            -value_original, -is_too_high, -is_too_low) %>%
@@ -342,10 +357,9 @@ tests_check_for_new <- function(x,
   test_def$search_pattern <- paste0(test_def$search_pattern, collapse = "|")
   x %>%
     filter(str_detect(name, regex(test_def$search_pattern, ignore_case = TRUE)) &
-             (!x[[name]] %in% c(test_def$names_cuh, test_def$search_exclude)) &
+             (!name %in% c(test_def$names_cuh, test_def$search_exclude)) &
              (!group %in% test_def$search_exclude_group)) %>%
-    group_by(name) %>%
-    tally
+    count(name)
 }
 
 #' Widen test data
