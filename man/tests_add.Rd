@@ -13,14 +13,17 @@ tests_add(
   search_pattern,
   search_exclude = NA,
   search_exclude_group = NA,
+  type = "numeric",
   silently_exclude_na_when = FALSE,
   silently_exclude_when = FALSE,
   censoring_fn = case_when(TRUE ~ NA_character_),
-  value_fn = case_when(TRUE ~ value_numeric),
-  unit_rescale_fn = case_when(TRUE ~ value),
+  value_as_number_fn = if_else(type == "numeric", case_when(TRUE ~ value_as_number),
+    case_when(TRUE ~ NA_real_)),
+  value_as_character_fn = if_else(type == "numeric", case_when(TRUE ~ NA_character_),
+    case_when(TRUE ~ value_as_character)),
+  unit_rescale_fn = case_when(TRUE ~ value_as_number),
   unit_relabel_fn = case_when(TRUE ~ unit),
   expect_before = TRUE,
-  expect_after_all_numeric = TRUE,
   expect_after = TRUE,
   range_mainly_low = NA,
   range_mainly_high = NA,
@@ -54,6 +57,9 @@ same test are added in future.}
 (\code{TestGroupName} in raw format) that are known NOT to be relevant to
 this test.}
 
+\item{type}{Whether flowsheet item is a number or a string. Either
+\code{"numeric"} or \code{"character"}}
+
 \item{silently_exclude_na_when}{An expression that returns a logical value,
 specifying the circumstances when \code{NA} values should be automatically
 excluded.}
@@ -64,8 +70,11 @@ excluded}
 
 \item{censoring_fn}{A function specifying the value of the \code{censoring} column}
 
-\item{value_fn}{A function specifying how to generate the
-\code{value} column}
+\item{value_as_number_fn}{A function specifying how to generate the
+\code{value_as_number} column}
+
+\item{value_as_character_fn}{A function specifying how to generate the
+\code{value_as_character} column}
 
 \item{unit_rescale_fn}{A function specifying how to rescale the result
 values. By default, does not rescale.}
@@ -75,8 +84,6 @@ the result values. By default, does not rescale.}
 
 \item{expect_before}{An expression that returns a logical value,
 specifying a condition that should be \code{TRUE} in the raw data}
-
-\item{expect_after_all_numeric}{Should all output be numeric?}
 
 \item{expect_after}{An expression that returns a logical value,
 specifying a condition that should be \code{TRUE} in the processed (output) data}

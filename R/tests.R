@@ -45,7 +45,8 @@ tests_unrename <- function(x){
 #' Add a new definition of a test item
 #'
 #' @param test_def A list of existing test definitions to add this to
-#' @param symbol A short name for the flowsheet item. This should be a character vector that is suitable to use as an R object name
+#' @param symbol A short name for the flowsheet item. This should be a
+#'   character vector that is suitable to use as an R object name
 #' @param title The full name for the test item, suitable for using in
 #'   figure titles etc
 #' @param names_cuh The names of the test (`TestName` in raw format) for tests
@@ -61,6 +62,8 @@ tests_unrename <- function(x){
 #' @param search_exclude_group A character vector of test group names
 #'   (`TestGroupName` in raw format) that are known NOT to be relevant to
 #'   this test.
+#' @param type Whether flowsheet item is a number or a string. Either
+#'   `"numeric"` or `"character"`
 #' @param silently_exclude_na_when An expression that returns a logical value,
 #'   specifying the circumstances when `NA` values should be automatically
 #'   excluded.
@@ -68,21 +71,23 @@ tests_unrename <- function(x){
 #'  specifying the circumstances when values should be automatically
 #'  excluded
 #' @param censoring_fn A function specifying the value of the `censoring` column
-#' @param value_fn A function specifying how to generate the
-#'   `value` column
+#' @param value_as_number_fn A function specifying how to generate the
+#'   `value_as_number` column
+#' @param value_as_character_fn A function specifying how to generate the
+#'   `value_as_character` column
 #' @param unit_rescale_fn A function specifying how to rescale the result
 #'   values. By default, does not rescale.
 #' @param unit_relabel_fn A function specifying how to relabel the units of the
 #'   the result values. By default, does not rescale.
 #' @param expect_before An expression that returns a logical value,
 #'  specifying a condition that should be `TRUE` in the raw data
-#' @param expect_after_all_numeric Should all output be numeric?
 #' @param expect_after An expression that returns a logical value,
 #'  specifying a condition that should be `TRUE` in the processed (output) data
 #' @param range_mainly_low,range_mainly_high An indicative lower and upper range
 #'   for most values. Values outside this range are NOT excluded: this is purely
 #'   for setting default scales of plots etc
-#' @param range_discard_below,range_discard_above This pair set the lower and #'   upper range for the flowsheet item. Values outside this range are
+#' @param range_discard_below,range_discard_above This pair set the lower and
+#'   upper range for the flowsheet item. Values outside this range are
 #'   EXCLUDED.
 #' @author R.J.B. Goudie
 tests_add <- function(test_def,
@@ -93,21 +98,29 @@ tests_add <- function(test_def,
                       search_pattern,
                       search_exclude = NA,
                       search_exclude_group = NA,
+                      type = "numeric",
                       silently_exclude_na_when = FALSE,
                       silently_exclude_when = FALSE,
                       censoring_fn = case_when(TRUE ~ NA_character_),
-                      value_fn = case_when(TRUE ~ value_numeric),
-                      unit_rescale_fn = case_when(TRUE ~ value),
+                      value_as_number_fn =
+                        if_else(type == "numeric",
+                                case_when(TRUE ~ value_as_number),
+                                case_when(TRUE ~ NA_real_)),
+                      value_as_character_fn =
+                        if_else(type == "numeric",
+                                case_when(TRUE ~ NA_character_),
+                                case_when(TRUE ~ value_as_character)),
+                      unit_rescale_fn = case_when(TRUE ~ value_as_number),
                       unit_relabel_fn = case_when(TRUE ~ unit),
                       expect_before = TRUE,
-                      expect_after_all_numeric = TRUE,
                       expect_after = TRUE,
                       range_mainly_low = NA,
                       range_mainly_high = NA,
                       range_discard_below = NA,
                       range_discard_above = NA){
   censoring_fn <- enquo(censoring_fn)
-  value_fn <- enquo(value_fn)
+  value_as_number_fn <- enquo(value_as_number_fn)
+  value_as_character_fn <- enquo(value_as_character_fn)
   silently_exclude_na_when <- enquo(silently_exclude_na_when)
   silently_exclude_when <- enquo(silently_exclude_when)
   unit_rescale_fn <- enquo(unit_rescale_fn)
@@ -122,14 +135,15 @@ tests_add <- function(test_def,
               search_pattern = search_pattern,
               search_exclude = search_exclude,
               search_exclude_group = search_exclude_group,
+              type = type,
               silently_exclude_na_when = silently_exclude_na_when,
               silently_exclude_when = silently_exclude_when,
               censoring_fn = censoring_fn,
-              value_fn = value_fn,
+              value_as_number_fn = value_as_number_fn,
+              value_as_character_fn = value_as_character_fn,
               unit_rescale_fn = unit_rescale_fn,
               unit_relabel_fn = unit_relabel_fn,
               expect_before = expect_before,
-              expect_after_all_numeric = expect_after_all_numeric,
               expect_after = expect_after,
               range_mainly_low = range_mainly_low,
               range_mainly_high = range_mainly_high,
@@ -174,14 +188,15 @@ tests_extract_single <- function(x, test_def, errors = stop){
   out <- out %>%
     mutate(symbol = test_def$symbol, .after = person_id) %>%
     mutate(title = test_def$title, .after = unit) %>%
-    relocate(name, .after = unit)
+    relocate(name, .after = unit) %>%
+    rename(value_original = value)
 
   # Check expect_before condition
   unexpected <- out %>%
     filter(!(!!test_def$expect_before))
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
-      select(group, name, value, range_low, range_high, unit)
+      select(group, name, value_original, range_low, range_high, unit)
     errors("unexpected cases\n", print(unexpected))
   }
 
@@ -196,7 +211,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
   # Exclude NAs when requested
   out <- out %>%
-    mutate(will_silently_exclude_na = (is.na(value) & !!test_def$silently_exclude_na_when))
+    mutate(will_silently_exclude_na = (is.na(value_original) & !!test_def$silently_exclude_na_when))
 
   n_silently_exclude_na <- nrow(out) - sum(!out$will_silently_exclude_na)
   if (n_silently_exclude_na > 0){
@@ -220,38 +235,43 @@ tests_extract_single <- function(x, test_def, errors = stop){
   out <- out %>%
     group_by(name) %>%
     mutate(
-      value_original = value,
-      value_numeric = suppressWarnings({
-        as.numeric(value)
+      value_as_character = suppressWarnings({
+        as.character(value_original)
       }),
+      value_as_number = suppressWarnings({
+        as.numeric(value_original)
+      }),
+      value_as_character = !!test_def$value_as_character_fn,
+      value_as_number = !!test_def$value_as_number_fn,
       censoring = !!test_def$censoring_fn,
-      value = !!test_def$value_fn) %>%
-    relocate(censoring, .after = value) %>%
+      .after = value_original) %>%
+    relocate(censoring, .after = value_as_number) %>%
     ungroup
 
   # Check for nonnumeric values
-  if (isTRUE(test_def$expect_after_all_numeric)){
+  if (test_def$type == "numeric"){
     nonnumeric <- tests_nonnumeric(out)
     if (nrow(nonnumeric) > 0){
       errors("*** Non-numeric value found ***\n",
-           print(nonnumeric %>%
-                   group_by(value_original) %>%
-                   select(value_original, value_numeric, value) %>%
-                   distinct),
-           "\n")
+             print(nonnumeric %>%
+                     group_by(value_original) %>%
+                     select(value_original, value_as_number,
+                            value_as_character) %>%
+                     distinct),
+             "\n")
     }
   }
 
   # Rescale units
   out <- out %>%
-    mutate(value = !!test_def$unit_rescale_fn,
+    mutate(value_as_number = !!test_def$unit_rescale_fn,
            unit = !!test_def$unit_relabel_fn)
 
   # Discard too high values
   if (!is.na(test_def$range_discard_above)){
     nrow_data_prior_too_high <- nrow(out)
     out <- out %>%
-      mutate(is_too_high = value > test_def$range_discard_above) %>%
+      mutate(is_too_high = value_as_number > test_def$range_discard_above) %>%
       filter(!is_too_high)
     n_discard_too_high <- nrow_data_prior_too_high - nrow(out)
     if (n_discard_too_high > 0){
@@ -269,7 +289,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
   if (!is.na(test_def$range_discard_below)){
     nrow_data_prior_too_low <- nrow(out)
     out <- out %>%
-      mutate(is_too_low = value < test_def$range_discard_below) %>%
+      mutate(is_too_low = value_as_number < test_def$range_discard_below) %>%
       filter(!is_too_low)
     n_discard_too_low <- nrow_data_prior_too_low - nrow(out)
     if (n_discard_too_low > 0){
@@ -288,15 +308,15 @@ tests_extract_single <- function(x, test_def, errors = stop){
     filter(!(!!test_def$expect_after))
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
-      select(group, name, value, range_low, range_high, unit)
-   errors("unexpected cases\n", print(unexpected))
+      select(group, name, value_original, range_low, range_high, unit)
+    errors("unexpected cases\n", print(unexpected))
   }
 
   # Return result
   cat(nrow(out), "extracted.")
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,
-           -value_numeric, -value_original, -is_too_high, -is_too_low)
+           -value_original, -is_too_high, -is_too_low)
 }
 
 
@@ -338,7 +358,7 @@ tests_pivot_order <- function(x, values_fn = NULL){
   multiple_results <- x %>%
     pivot_wider(id_cols = c("person_id", "order_id"),
                 names_from = symbol,
-                values_from = value,
+                values_from = value_as_number,
                 values_fn = length) %>%
     select(-person_id, -order_id) %>%
     filter(if_any(everything(), ~ .x > 1))
@@ -351,21 +371,21 @@ tests_pivot_order <- function(x, values_fn = NULL){
   x %>%
     pivot_wider(id_cols = c("person_id", "order_id"),
                 names_from = symbol,
-                values_from = value,
+                values_from = value_as_number,
                 values_fn = values_fn)
 }
 
 #' Helper function to extract nonnumeric test values
 #'
-#' @param x A test data frame, with `value` column
+#' @param x A test data frame, with `value_original` column
 #'
 #' @return The rows of the supplied data frame that are `NA` after conversion to
 #'   to numeric form
 #' @author R.J.B. Goudie
 tests_nonnumeric <- function(x){
-  value <- x$value
+  value_original <- x$value_original
   value_numeric <- suppressWarnings({
-    as.numeric(value)
+    as.numeric(value_original)
   })
   value_is_nonnumeric <- is.na(value_numeric)
   x[value_is_nonnumeric, ]

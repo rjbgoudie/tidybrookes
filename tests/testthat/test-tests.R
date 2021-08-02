@@ -1,4 +1,3 @@
-
 test_that("Ignores irrelevant row", {
   tests_raw_demo <-
     read_tidybrookes_csv(
@@ -20,10 +19,10 @@ test_that("Ignores irrelevant row", {
                        "RISTOCETIN 0.5MG/ML",
                        "RISTOCETIN 1.5MG/ML"),
     silently_exclude_na_when = FALSE,
-    censoring_fn = case_when(value == "<0.29" ~ "left", # very low
+    censoring_fn = case_when(value_original == "<0.29" ~ "left", # very low
                              TRUE ~ NA_character_),
-    value_fn = case_when(value == "<0.29" ~ 0.29,
-                         TRUE ~ value_numeric),
+    value_as_number_fn = case_when(value_as_number == "<0.29" ~ 0.29,
+                                   TRUE ~ value_as_number),
     expect_before = (unit == "mmol/L"),
     range_mainly_low = 0.4,
     range_mainly_high = 1.2,
@@ -33,5 +32,45 @@ test_that("Ignores irrelevant row", {
   tests_data_demo <- tests_extract(tests_raw_demo, tests_def)
 
   expect_identical(tests_data_demo$unit, "mmol/L")
-  expect_equal(tests_data_demo$value, 1.0)
+  expect_equal(tests_data_demo$value_as_number, 1.0)
+})
+
+test_that("Tests handle character values", {
+  tests_raw_demo <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("tests.csv"),
+      col_types = "tests") %>%
+    tests_rename %>%
+    filter(person_id == "BB")
+
+  tests_def <- list() %>%
+  tests_add(
+    symbol = "blood_specimen_type_bg",
+    title = "Blood specimen type",
+    names_cuh = "POC BLOOD SPECIMEN TYPE",
+    names_external = NA,
+    search_pattern = c("Specimen type"),
+    search_exclude = c(),
+    type = "character",
+    silently_exclude_na_when = FALSE,
+    value_as_character_fn = case_when(
+      value_original == "Arterial blood" ~ "Arterial blood",
+      value_original == "Arterial Blood" ~ "Arterial blood",
+      value_original == "Blood" ~ "Blood",
+      value_original == "Capillary blood" ~ "Capillary blood",
+      value_original == "Capillary Blood" ~ "Capillary blood",
+      value_original == "Mixed blood" ~ "Mixed blood",
+      value_original == "Venous blood" ~ "Venous blood",
+      value_original == "Venous Blood" ~ "Venous blood"),
+    expect_before =
+      (value_original %in% c("Arterial blood", "Venous blood", "Arterial Blood",
+                             "Blood", "Mixed blood", "Capillary blood",
+                             "Venous Blood", "Capillary Blood")),
+    expect_after =
+      (value_as_character %in% c("Arterial blood", "Venous blood", "Blood",
+                                 "Mixed blood", "Capillary blood")))
+
+  tests_data_demo <- tests_extract(tests_raw_demo, tests_def)
+
+  expect_identical(tests_data_demo$value_as_character, "Arterial blood")
 })
