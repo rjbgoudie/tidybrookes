@@ -189,7 +189,8 @@ tests_extract_single <- function(x, test_def, errors = stop){
     mutate(symbol = test_def$symbol, .after = person_id) %>%
     mutate(title = test_def$title, .after = unit) %>%
     relocate(name, .after = unit) %>%
-    rename(value_original = value)
+    rename(value_original = value) %>%
+    mutate(type = test_def$type)
 
   # Check expect_before condition
   unexpected <- out %>%
