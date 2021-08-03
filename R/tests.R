@@ -280,9 +280,9 @@ tests_extract_single <- function(x, test_def, errors = stop){
         select(value_original, value_as_number,
                value_as_character) %>%
         distinct
-      errors("Unhandled non-numeric value remain in data frame:\n\n",
-             print(nonnumeric),
-             "\n\n")
+      warning(format_error_bullets(c(
+        x = "{nrow(nonnumeric)} unhandled unique non-numeric values")),
+        immediate. = TRUE)
     }
   }
 
