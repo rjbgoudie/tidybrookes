@@ -176,7 +176,7 @@ tests_extract <- function(x, tests_def, errors = stop){
   } else {
     bind_rows(lapply(tests_def, function(y){
       inform(format_error_bullets(c(
-        glue("Extracting {y$title} ({y$symbol})"))))
+        glue("\nExtracting {y$title} ({y$symbol})"))))
       tests_extract_single(x, y, errors = errors)
     }))
   }
@@ -186,8 +186,10 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
   possible_new <- tests_check_for_new(x, test_def)
   if (nrow(possible_new) > 0){
+    possible_new_names <- str_flatten(possible_new$name, "; ")
     warning(format_error_bullets(c(
-      i = glue("{nrow(possible_new)} possible new test names"))),
+      i = glue("{nrow(possible_new)} possible new test names: ",
+               "{possible_new_names}"))),
       immediate. = TRUE)
   }
 
@@ -209,10 +211,11 @@ tests_extract_single <- function(x, test_def, errors = stop){
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
         select(group, name, value_original, range_low, range_high, unit)
-      expect_before_str <- as_label(test_def$expect_before)
+    expect_before_str <- expr_print(test_def$expect_before)
     unexpected_nrow <- nrow(unexpected)
     warning(format_error_bullets(c(x = glue("{unexpected_nrow} rows not satisfying ",
-                                            "expect_before condition"))),
+                                            "expect_before condition: ",
+                                            "{expect_before_str}"))),
             immediate. = TRUE)
   }
 
@@ -328,9 +331,11 @@ tests_extract_single <- function(x, test_def, errors = stop){
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
       select(group, name, value_original, range_low, range_high, unit)
+    expect_after_str <- expr_print(test_def$expect_after)
     warning(format_error_bullets(c(
       x = glue("{nrow(unexpected)} rows not satisfying ",
-               "expect_after condition"))),
+               "expect_after condition: ",
+               "{expect_after_str}"))),
       immediate. = TRUE)
   }
 
