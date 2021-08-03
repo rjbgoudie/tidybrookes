@@ -1,20 +1,20 @@
 #' @importFrom readr read_csv cols col_character col_integer col_double locale col_datetime
 read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
   if (col_types == "adm"){
-      col_types <- cols(
-        STUDY_SUBJECT_DIGEST = col_character(),
-        PAT_ENC_CSN = col_integer(),
-        IN_DTTM = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
-        HOSP_DISCH_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
-        GENDER_DESC = col_character(),
-        ETHNIC_GROUP_GROUPED = col_character(),
-        DATE_OF_DEATH = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
-        AGE_AT_ADM = col_integer(),
-        ADM_SERVICE = col_character(),
-        ADT_DEPARTMENT_NAME = col_character(),
-        DISCH_DEST = col_character(),
-        DISCH_DECEASED = col_character(),
-        READMIT_WITHIN_30 = col_character())
+    col_types <- cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      PAT_ENC_CSN = col_integer(),
+      IN_DTTM = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      HOSP_DISCH_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      GENDER_DESC = col_character(),
+      ETHNIC_GROUP_GROUPED = col_character(),
+      DATE_OF_DEATH = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      AGE_AT_ADM = col_integer(),
+      ADM_SERVICE = col_character(),
+      ADT_DEPARTMENT_NAME = col_character(),
+      DISCH_DEST = col_character(),
+      DISCH_DECEASED = col_character(),
+      READMIT_WITHIN_30 = col_character())
   } else if (col_types == "fsheet"){
     col_types <- cols(
       STUDY_SUBJECT_DIGEST = col_character(),

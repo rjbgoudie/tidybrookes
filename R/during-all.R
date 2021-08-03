@@ -21,8 +21,8 @@ all_during <- function(x,
                        y,
                        during,
                        names_from = "symbol"){
- if (during == "during_visit"){
-   out <- x %>%
+  if (during == "during_visit"){
+    out <- x %>%
       left_join_filter(
         y,
         join_by = "person_id",
@@ -33,36 +33,36 @@ all_during <- function(x,
                        datetime <= visit_end_datetime,
                     is.na(visit_end_datetime) ~
                       datetime >= visit_start_datetime))
- } else if (during == "during_visit_initial_24h"){
-   out <- x %>%
-     left_join_filter(
-       y,
-       join_by = "person_id",
-       filter_by = c("person_id", "visit_id", names_from),
-       filter_condition =
-         case_when(!is.na(visit_end_datetime) ~
-                     datetime >= visit_start_datetime &
-                      datetime <= visit_start_datetime + dhours(24) &
-                      datetime <= visit_end_datetime,
-                   is.na(visit_end_datetime) ~
-                     datetime >= visit_start_datetime &
-                     datetime <= visit_start_datetime + dhours(24)))
- } else if (during == "during_icu"){
-   out <- x %>%
-     left_join_filter(
-       y,
-       join_by = "person_id",
-       filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
-       filter_condition =
-         case_when(!is.na(icu_end_datetime) ~
-                     datetime >= icu_start_datetime &
-                      datetime <= icu_end_datetime,
-                   is.na(icu_end_datetime) ~
-                     datetime >= icu_start_datetime))
- } else {
-   stop("all_during does not know how to hangle this `during` value:",
-        during)
- }
+  } else if (during == "during_visit_initial_24h"){
+    out <- x %>%
+      left_join_filter(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", names_from),
+        filter_condition =
+          case_when(!is.na(visit_end_datetime) ~
+                      datetime >= visit_start_datetime &
+                       datetime <= visit_start_datetime + dhours(24) &
+                       datetime <= visit_end_datetime,
+                    is.na(visit_end_datetime) ~
+                      datetime >= visit_start_datetime &
+                      datetime <= visit_start_datetime + dhours(24)))
+  } else if (during == "during_icu"){
+    out <- x %>%
+      left_join_filter(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
+        filter_condition =
+          case_when(!is.na(icu_end_datetime) ~
+                      datetime >= icu_start_datetime &
+                       datetime <= icu_end_datetime,
+                    is.na(icu_end_datetime) ~
+                      datetime >= icu_start_datetime))
+  } else {
+    stop("all_during does not know how to hangle this `during` value:",
+         during)
+  }
   out
 }
 

@@ -90,12 +90,12 @@ fsheet_add <- function(fsheet_def,
                        censoring_fn = case_when(TRUE ~ NA_character_),
                        value_as_number_fn =
                          if_else(type == "numeric",
-                           case_when(TRUE ~ value_as_number),
-                           case_when(TRUE ~ NA_real_)),
+                                 case_when(TRUE ~ value_as_number),
+                                 case_when(TRUE ~ NA_real_)),
                        value_as_character_fn =
                          if_else(type == "numeric",
-                           case_when(TRUE ~ NA_character_),
-                           case_when(TRUE ~ value_as_character)),
+                                 case_when(TRUE ~ NA_character_),
+                                 case_when(TRUE ~ value_as_character)),
                        unit_rescale_fn = case_when(TRUE ~ value_as_number),
                        unit_relabel_fn = case_when(TRUE ~ NA_character_),
                        expect_before = TRUE,
@@ -236,12 +236,12 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     nonnumeric <- fsheet_nonnumeric(out)
     if (nrow(nonnumeric) > 0){
       errors("*** Non-numeric value found ***\n",
-           print(nonnumeric %>%
-                   group_by(value_original) %>%
-                   select(value_original, value_as_number,
-                          value_as_character, value) %>%
-                   distinct),
-           "\n")
+             print(nonnumeric %>%
+                     group_by(value_original) %>%
+                     select(value_original, value_as_number,
+                            value_as_character, value) %>%
+                     distinct),
+             "\n")
     }
   }
 
@@ -292,7 +292,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
       select(name, value, comment, template, form)
-   errors("unexpected cases\n", print(unexpected))
+    errors("unexpected cases\n", print(unexpected))
   }
 
   # Return result

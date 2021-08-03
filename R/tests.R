@@ -210,7 +210,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
     filter(!(!!test_def$expect_before))
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
-        select(group, name, value_original, range_low, range_high, unit)
+      select(group, name, value_original, range_low, range_high, unit)
     expect_before_str <- expr_print(test_def$expect_before)
     unexpected_nrow <- nrow(unexpected)
     warning(format_error_bullets(c(x = glue("{unexpected_nrow} rows not satisfying ",
@@ -220,8 +220,8 @@ tests_extract_single <- function(x, test_def, errors = stop){
   }
 
   # Remove duplicate rows
-    nrow_data_original <- nrow(out)
-    out <- out %>%
+  nrow_data_original <- nrow(out)
+  out <- out %>%
     distinct
   nrow_data_distinct <- nrow(out)
   if (nrow_data_original != nrow_data_distinct){
@@ -340,7 +340,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
   }
 
   # Return result
-    inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
+  inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,
            -value_original, -is_too_high, -is_too_low) %>%

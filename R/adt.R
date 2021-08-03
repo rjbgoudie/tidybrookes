@@ -17,4 +17,3 @@ adt_rename <- function(x){
            service_name = "HOSP_SERV_NAME",
            encounter_id = "PAT_ENC_CSN")
 }
-
