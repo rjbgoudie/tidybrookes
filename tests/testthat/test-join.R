@@ -3,7 +3,7 @@ test_that("chooses within visit", {
     read_tidybrookes_csv(
       file = tidybrookes_example("fsheet.csv"),
       col_types = "fsheet"
-      ) %>%
+    ) %>%
     fsheet_rename %>%
     filter(person_id == "AA")
 
@@ -23,14 +23,14 @@ test_that("chooses within visit", {
     read_tidybrookes_csv(
       file = tidybrookes_example("adm.csv"),
       col_types = "adm"
-      ) %>%
+    ) %>%
     adm_rename %>%
     filter(person_id == "AA")
 
   joined <- demo_adm_raw %>%
     first_during(fsheet_data_test,
-      datetime = measurement_datetime,
-      during = "during_visit")
+                 datetime = measurement_datetime,
+                 during = "during_visit")
 
   expect_equal(
     joined$weight_first_during_visit,
@@ -45,27 +45,27 @@ test_that("chooses first within visit", {
     read_tidybrookes_csv(
       file = tidybrookes_example("fsheet.csv"),
       col_types = "fsheet"
-      ) %>%
+    ) %>%
     fsheet_rename %>%
     filter(person_id == "CC")
 
   fsheet_def <- list() %>%
-  fsheet_add(
-    symbol = "news2",
-    title = "NEWS2",
-    names = c("NEWS2 score"),
-    search_pattern = c("news2", "news"),
-    search_exclude = c(),
-    silently_exclude_na_when = TRUE,
-    silently_exclude_when =
-      (value_original == " " |
-         value_original == "E" # some kind of typo
-      ),
-    value_as_number_fn =
-      case_when(value_original == "3mm" ~ 3,
-                TRUE ~ value_as_number),
-    expect_after =
-      (value_as_number %in% 0:17))
+    fsheet_add(
+      symbol = "news2",
+      title = "NEWS2",
+      names = c("NEWS2 score"),
+      search_pattern = c("news2", "news"),
+      search_exclude = c(),
+      silently_exclude_na_when = TRUE,
+      silently_exclude_when =
+        (value_original == " " |
+           value_original == "E" # some kind of typo
+        ),
+      value_as_number_fn =
+        case_when(value_original == "3mm" ~ 3,
+                  TRUE ~ value_as_number),
+      expect_after =
+        (value_as_number %in% 0:17))
 
   fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
 
@@ -73,14 +73,14 @@ test_that("chooses first within visit", {
     read_tidybrookes_csv(
       file = tidybrookes_example("adm.csv"),
       col_types = "adm"
-      ) %>%
+    ) %>%
     adm_rename %>%
     filter(person_id == "CC")
 
   joined <- demo_adm_raw %>%
     first_during(fsheet_data_test,
-      datetime = measurement_datetime,
-      during = "during_visit")
+                 datetime = measurement_datetime,
+                 during = "during_visit")
 
   expect_equal(
     joined$news2_first_during_visit,
@@ -123,14 +123,14 @@ test_that("two person ", {
     read_tidybrookes_csv(
       file = tidybrookes_example("adm.csv"),
       col_types = "adm"
-      ) %>%
+    ) %>%
     adm_rename %>%
     filter(person_id %in% c("AA", "BB"))
 
   joined <- demo_adm_raw %>%
     first_during(fsheet_data_test,
-      datetime = measurement_datetime,
-      during = "during_visit")
+                 datetime = measurement_datetime,
+                 during = "during_visit")
 
   expect_equal(
     joined$weight_first_during_visit,
@@ -155,7 +155,7 @@ test_that("median within visit", {
     read_tidybrookes_csv(
       file = tidybrookes_example("fsheet.csv"),
       col_types = "fsheet"
-      ) %>%
+    ) %>%
     fsheet_rename %>%
     filter(person_id == "AA")
 
@@ -175,7 +175,7 @@ test_that("median within visit", {
     read_tidybrookes_csv(
       file = tidybrookes_example("adm.csv"),
       col_types = "adm"
-      ) %>%
+    ) %>%
     adm_rename %>%
     filter(person_id == "AA")
 
@@ -230,7 +230,7 @@ test_that("median and max within visit, with multiple results", {
     read_tidybrookes_csv(
       file = tidybrookes_example("adm.csv"),
       col_types = "adm"
-      ) %>%
+    ) %>%
     adm_rename %>%
     filter(person_id == "CC")
 
@@ -286,55 +286,55 @@ test_that("fsheet_all_during retains patients without fsheet data", {
     read_tidybrookes_csv(
       file = tidybrookes_example("fsheet.csv"),
       col_types = "fsheet"
-      ) %>%
+    ) %>%
     fsheet_rename %>%
     filter(person_id %in% c("CC", "DD"))
 
-  fsheet_def <- list() %>%
-    fsheet_add(
-      symbol = "news2",
-      title = "NEWS2",
-      names = c("NEWS2 score"),
-      search_pattern = c("news2", "news"),
-      search_exclude = c(),
-      silently_exclude_na_when = TRUE,
-      silently_exclude_when =
-        (value_original == " " |
-           value_original == "E" # some kind of typo
-        ),
-      value_as_number_fn =
-        case_when(value_original == "3mm" ~ 3,
-                  TRUE ~ value_as_number),
-      expect_after =
-        (value_as_number %in% 0:17))
+    fsheet_def <- list() %>%
+      fsheet_add(
+        symbol = "news2",
+        title = "NEWS2",
+        names = c("NEWS2 score"),
+        search_pattern = c("news2", "news"),
+        search_exclude = c(),
+        silently_exclude_na_when = TRUE,
+        silently_exclude_when =
+          (value_original == " " |
+             value_original == "E" # some kind of typo
+          ),
+        value_as_number_fn =
+          case_when(value_original == "3mm" ~ 3,
+                    TRUE ~ value_as_number),
+        expect_after =
+          (value_as_number %in% 0:17))
 
-  fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
 
-  demo_adm_raw <-
-    read_tidybrookes_csv(
-      file = tidybrookes_example("adm.csv"),
-      col_types = "adm"
+    demo_adm_raw <-
+      read_tidybrookes_csv(
+        file = tidybrookes_example("adm.csv"),
+        col_types = "adm"
       ) %>%
-    adm_rename %>%
-    filter(person_id %in% c("CC", "DD"))
+      adm_rename %>%
+      filter(person_id %in% c("CC", "DD"))
 
-  joined <- demo_adm_raw %>%
-    all_during(
-      fsheet_data_test,
-      datetime = measurement_datetime,
-      during = "during_visit")
+      joined <- demo_adm_raw %>%
+        all_during(
+          fsheet_data_test,
+          datetime = measurement_datetime,
+          during = "during_visit")
 
 
-  expect_equal(joined$symbol, c(rep("news2", 3), NA))
-  expect_equal(
-    joined$value_as_number,
-    c(c(5, 10, 12), NA))
-  expect_equal(
-    joined$datetime,
-    c(ymd_hms("2021-01-01 08:59:00", tz = "Europe/London"),
-      ymd_hms("2021-01-03 17:00:00", tz = "Europe/London"),
-      ymd_hms("2021-01-04 09:00:00", tz = "Europe/London"),
-      ymd_hms(NA, tz = "Europe/London")))
+      expect_equal(joined$symbol, c(rep("news2", 3), NA))
+      expect_equal(
+        joined$value_as_number,
+        c(c(5, 10, 12), NA))
+      expect_equal(
+        joined$datetime,
+        c(ymd_hms("2021-01-01 08:59:00", tz = "Europe/London"),
+          ymd_hms("2021-01-03 17:00:00", tz = "Europe/London"),
+          ymd_hms("2021-01-04 09:00:00", tz = "Europe/London"),
+          ymd_hms(NA, tz = "Europe/London")))
 })
 
 test_that("character fsheet data handled", {
@@ -357,21 +357,21 @@ test_that("character fsheet data handled", {
       expect_after =
         (value_as_character %in% c("A", "C", "V", "P", "U")))
 
-    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+  fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
 
-    demo_adm_raw <-
-      read_tidybrookes_csv(
-        file = tidybrookes_example("adm.csv"),
-        col_types = "adm"
-      ) %>%
-      adm_rename %>%
-      filter(person_id %in% c("EE"))
+  demo_adm_raw <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("adm.csv"),
+      col_types = "adm"
+    ) %>%
+    adm_rename %>%
+    filter(person_id %in% c("EE"))
 
   joined <- demo_adm_raw %>%
-        all_during(
-          fsheet_data_test,
-          datetime = measurement_datetime,
-          during = "during_visit")
+    all_during(
+      fsheet_data_test,
+      datetime = measurement_datetime,
+      during = "during_visit")
 
   expect_equal(joined$symbol, c("acvpu"))
   expect_equal(joined$value_as_number, c(NA_real_))

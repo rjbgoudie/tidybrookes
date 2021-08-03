@@ -5,12 +5,12 @@ first_during <- function(...){
                    names_suffix = "first")
 }
 
-  last_during <- function(...){
-    summarise_during(...,
-                     type = "slice",
-                     formula = which.max(datetime),
-                     names_suffix = "last")
-  }
+last_during <- function(...){
+  summarise_during(...,
+                   type = "slice",
+                   formula = which.max(datetime),
+                   names_suffix = "last")
+}
 
 max_during <- function(...){
   summarise_during(...,
