@@ -155,7 +155,8 @@ fsheet_extract <- function(x, fsheet_def, errors = stop){
     fsheet_extract_single(x, fsheet_def)
   } else {
     out <- bind_rows(lapply(fsheet_def, function(y){
-      cat(paste0("\nExtracting ", y$title, " (", y$symbol, "): "))
+      inform(format_error_bullets(c(
+        glue("\nExtracting {y$title} ({y$symbol})"))))
       fsheet_extract_single(x, y, errors = errors)
     }))
     out %>% arrange(symbol, measurement_datetime)
@@ -181,7 +182,12 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
       select(name, value_original, comment, template, form)
-    errors("unexpected cases\n", print(unexpected))
+    expect_before_str <- expr_print(fsheet_def$expect_before)
+    unexpected_nrow <- nrow(unexpected)
+    warning(format_error_bullets(c(x = glue("{unexpected_nrow} rows not satisfying ",
+                                            "expect_before condition: ",
+                                            "{expect_before_str}"))),
+            immediate. = TRUE)
   }
 
   # Remove duplicate rows
@@ -190,7 +196,9 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     distinct
   nrow_data_distinct <- nrow(out)
   if (nrow_data_original != nrow_data_distinct){
-    cat(nrow_data_original - nrow_data_distinct, "duplicate rows discarded. ")
+    inform(format_error_bullets(c(
+      i = glue("{nrow_data_original - nrow_data_distinct}",
+               "duplicate rows discarded"))))
   }
 
   # Exclude NAs when requested
@@ -199,7 +207,8 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
 
   n_silently_exclude_na <- nrow(out) - sum(!out$will_silently_exclude_na)
   if (n_silently_exclude_na > 0){
-    cat(n_silently_exclude_na, "NAs excluded. ")
+    inform(format_error_bullets(c(
+      i = glue("{n_silently_exclude_na} NAs excluded"))))
   }
 
   # Exclude other rows when requested
@@ -209,7 +218,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
 
   n_silently_exclude <- nrow(out) - sum(!out$will_silently_exclude)
   if (n_silently_exclude > 0){
-    cat(n_silently_exclude, "excluded. ")
+    inform(format_error_bullets(c(i = glue("{n_silently_exclude} rows excluded"))))
   }
 
   out <- out %>%
@@ -235,13 +244,14 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   if (fsheet_def$type == "numeric"){
     nonnumeric <- nonnumeric(out)
     if (nrow(nonnumeric) > 0){
-      errors("*** Non-numeric value found ***\n",
-             print(nonnumeric %>%
-                     group_by(value_original) %>%
-                     select(value_original, value_as_number,
-                            value_as_character) %>%
-                     distinct),
-             "\n")
+      nonnumeric <- nonnumeric %>%
+        group_by(value_original) %>%
+        select(value_original, value_as_number,
+               value_as_character) %>%
+        distinct
+      warning(format_error_bullets(c(
+        x = "{nrow(nonnumeric)} unhandled unique non-numeric values")),
+        immediate. = TRUE)
     }
   }
 
@@ -258,10 +268,9 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
       filter(!is_too_high)
     n_discard_too_high <- nrow_data_prior_too_high - nrow(out)
     if (n_discard_too_high > 0){
-      cat(paste0(n_discard_too_high,
-                 " excluded since >",
-                 fsheet_def$range_discard_above,
-                 ". "))
+      inform(format_error_bullets(c(
+        i = glue("{n_discard_too_high} excluded since >",
+                 "{fsheet_def$range_discard_above}"))))
     }
   } else {
     out <- out %>%
@@ -276,10 +285,9 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
       filter(!is_too_low)
     n_discard_too_low <- nrow_data_prior_too_low - nrow(out)
     if (n_discard_too_low > 0){
-      cat(paste0(n_discard_too_low,
-                 " excluded since <",
-                 fsheet_def$range_discard_below,
-                 ". "))
+      inform(format_error_bullets(c(
+        i = glue("{n_discard_too_low} excluded since <",
+                 "{fsheet_def$range_discard_below}"))))
     }
   } else {
     out <- out %>%
@@ -292,11 +300,16 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
       select(name, value_original, comment, template, form)
-    errors("unexpected cases\n", print(unexpected))
+    expect_after_str <- expr_print(fsheet_def$expect_after)
+    warning(format_error_bullets(c(
+      x = glue("{nrow(unexpected)} rows not satisfying ",
+               "expect_after condition: ",
+               "{expect_after_str}"))),
+      immediate. = TRUE)
   }
 
   # Return result
-  cat(nrow(out), "extracted.")
+  inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,
            -value_original, -is_too_high, -is_too_low) %>%
