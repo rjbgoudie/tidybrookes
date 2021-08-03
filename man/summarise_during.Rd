@@ -7,6 +7,7 @@
 summarise_during(
   x,
   y,
+  datetime,
   during,
   type = "none",
   formula,
@@ -18,7 +19,9 @@ summarise_during(
 \arguments{
 \item{x}{An \code{adm} data frame}
 
-\item{y}{A (tidy) data frame, with a \code{datetime} column}
+\item{y}{A (tidy) data frame}
+
+\item{datetime}{The column of \code{y} to use as the main datetime for matching}
 
 \item{during}{The time period to extract data for, one of: \code{"during_visit"},
 \code{"during_icu"}}

@@ -6,7 +6,8 @@
 #' time period.
 #'
 #' @param x An `adm` data frame
-#' @param y A (tidy) data frame, with a `datetime` column
+#' @param y A (tidy) data frame
+#' @param datetime The column of `y` to use as the main datetime for matching
 #' @param during The time period to extract data for, one of: `"during_visit"`,
 #'   `"during_icu"`
 #' @param names_from,values_from A pair of arguments describing which column
@@ -21,6 +22,7 @@
 #' @author R.J.B. Goudie
 summarise_during <- function(x,
                              y,
+                             datetime,
                              during,
                              type = "none",
                              formula,
@@ -30,8 +32,10 @@ summarise_during <- function(x,
                                              "datetime"),
                              names_suffix){
   formula <- enquo(formula)
+  datetime <- enquo(datetime)
   out <- x %>%
     all_during(y,
+               datetime = !! datetime,
                during = during,
                names_from = names_from)
 
@@ -41,7 +45,7 @@ summarise_during <- function(x,
                           id_cols = c("person_id", "visit_id"),
                           names_from = names_from,
                           values_from = values_from,
-                          names_suffix = names_suffix)
+                          names_suffix = glue("{names_suffix}_{during}"))
   out
 }
 

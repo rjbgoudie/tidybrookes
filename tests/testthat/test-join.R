@@ -28,7 +28,8 @@ test_that("chooses within visit", {
     filter(person_id == "AA")
 
   joined <- demo_adm_raw %>%
-    fsheet_first_during(fsheet_data_test,
+    first_during(fsheet_data_test,
+      datetime = measurement_datetime,
       during = "during_visit")
 
   expect_equal(
@@ -77,7 +78,8 @@ test_that("chooses first within visit", {
     filter(person_id == "CC")
 
   joined <- demo_adm_raw %>%
-    fsheet_first_during(fsheet_data_test,
+    first_during(fsheet_data_test,
+      datetime = measurement_datetime,
       during = "during_visit")
 
   expect_equal(
@@ -126,7 +128,8 @@ test_that("two person ", {
     filter(person_id %in% c("AA", "BB"))
 
   joined <- demo_adm_raw %>%
-    fsheet_first_during(fsheet_data_test,
+    first_during(fsheet_data_test,
+      datetime = measurement_datetime,
       during = "during_visit")
 
   expect_equal(
@@ -177,8 +180,9 @@ test_that("median within visit", {
     filter(person_id == "AA")
 
   joined <- demo_adm_raw %>%
-    fsheet_summarise_during(
+    summarise_during(
       fsheet_data_test,
+      datetime = measurement_datetime,
       during = "during_visit",
       type = "summarise",
       formula = tibble(value_as_number = median(value_as_number),
@@ -231,8 +235,9 @@ test_that("median and max within visit, with multiple results", {
     filter(person_id == "CC")
 
   joined <- demo_adm_raw %>%
-    fsheet_summarise_during(
+    summarise_during(
       fsheet_data_test,
+      datetime = measurement_datetime,
       during = "during_visit",
       type = "summarise",
       formula = tibble(value_as_number = median(value_as_number),
@@ -250,8 +255,9 @@ test_that("median and max within visit, with multiple results", {
 
   # test max during visit
   joined2 <- demo_adm_raw %>%
-    fsheet_max_during(fsheet_data_test,
-                      during = "during_visit")
+    max_during(fsheet_data_test,
+               datetime = measurement_datetime,
+               during = "during_visit")
 
   expect_equal(
     joined2$news2_max_during_visit,
@@ -262,8 +268,9 @@ test_that("median and max within visit, with multiple results", {
 
   # test max during initial 24h of visit
   joined3 <- demo_adm_raw %>%
-    fsheet_max_during(fsheet_data_test,
-                      during = "during_visit_initial_24h")
+    max_during(fsheet_data_test,
+               datetime = measurement_datetime,
+               during = "during_visit_initial_24h")
 
   expect_equal(
     joined3$news2_max_during_visit_initial_24h,
@@ -312,8 +319,9 @@ test_that("fsheet_all_during retains patients without fsheet data", {
     filter(person_id %in% c("CC", "DD"))
 
   joined <- demo_adm_raw %>%
-    fsheet_all_during(
+    all_during(
       fsheet_data_test,
+      datetime = measurement_datetime,
       during = "during_visit")
 
 
@@ -360,8 +368,9 @@ test_that("character fsheet data handled", {
       filter(person_id %in% c("EE"))
 
   joined <- demo_adm_raw %>%
-        fsheet_all_during(
+        all_during(
           fsheet_data_test,
+          datetime = measurement_datetime,
           during = "during_visit")
 
   expect_equal(joined$symbol, c("acvpu"))
@@ -416,8 +425,9 @@ test_that("mixed numeric and character fsheet data handled", {
     filter(person_id %in% c("FF"))
 
   joined <- demo_adm_raw %>%
-    fsheet_all_during(
+    all_during(
       fsheet_data_test,
+      datetime = measurement_datetime,
       during = "during_visit")
 
   expect_equal(joined$symbol, c("news2", "acvpu"))

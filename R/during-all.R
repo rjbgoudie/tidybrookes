@@ -7,6 +7,7 @@
 #'
 #' @param x An `adm` data frame
 #' @param y A (tidy) data frame, with a `datetime` column
+#' @param datetime The column of `y` to use as the main datetime for matching
 #' @param during The time period to extract data for, one of: `"during_visit"`,
 #'   `"during_icu"`
 #' @param names_from A character vector containing the names of columns that
@@ -19,8 +20,12 @@
 #' @author R.J.B. Goudie
 all_during <- function(x,
                        y,
+                       datetime,
                        during,
                        names_from = "symbol"){
+  y <- y %>%
+    rename(datetime = {{datetime}}) %>%
+    arrange(datetime)
   if (during == "during_visit"){
     out <- x %>%
       left_join_filter(

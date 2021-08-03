@@ -4,12 +4,14 @@
 \alias{all_during}
 \title{Left join adm data with other (standardised) data}
 \usage{
-all_during(x, y, during, names_from = "symbol")
+all_during(x, y, datetime, during, names_from = "symbol")
 }
 \arguments{
 \item{x}{An \code{adm} data frame}
 
 \item{y}{A (tidy) data frame, with a \code{datetime} column}
+
+\item{datetime}{The column of \code{y} to use as the main datetime for matching}
 
 \item{during}{The time period to extract data for, one of: \code{"during_visit"},
 \code{"during_icu"}}
