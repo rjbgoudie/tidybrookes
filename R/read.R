@@ -43,6 +43,44 @@ read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
       ORDERED_DATETIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       RECEIVED_DATETIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       OrderProcId = col_character())
+  } else if (col_types == "med_admin"){
+    col_types <- cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      TimeAdministered = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      DrugName = col_character(),
+      DoseAsLabelled = col_character(),
+      InfusionRate = col_character(),
+      DoseUnitAbbreviated = col_character(),
+      RouteOfMedicationAbbreviated = col_character(),
+      DepartmentName = col_character(),
+      MAR_ENC_CSN = col_integer(),
+      MARAction = col_character())
+  } else if (col_types == "diagnosis_pl"){
+    col_types <- cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      DX_DESCRIPTION = col_character(),
+      DX_DESC_DISPLAYED = col_character(),
+      PROBLEM_CMT = col_character(),
+      DIAGNOSIS_ENTERED_DATE = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      DIAGNOSIS_DATE = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      RESOLVED_DATE = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      DIAGNOSIS_STATUS = col_character(),
+      ICD10_1 = col_character(),
+      ICD10_2 = col_character(),
+      ICD10_3 = col_character(),
+      ICD10_4 = col_character(),
+      ICD10_LIST = col_character(),
+      SNOMED_CONCEPTS = col_character())
+  } else if (col_types == "radiology"){
+    col_types <- cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      Proc_Name = col_character(),
+      Proc_Date = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      Proc_Code = col_character(),
+      Proc_Narrative = col_character(),
+      Proc_Impression = col_character(),
+      Proc_Addenda = col_character(),
+      Proc_Assessment = col_character())
   }
   read_csv(file = file,
            col_types = col_types,
