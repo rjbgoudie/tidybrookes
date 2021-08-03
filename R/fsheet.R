@@ -74,7 +74,8 @@ fsheet_unrename <- function(x){
 #' @param range_mainly_low,range_mainly_high An indicative lower and upper range
 #'   for most values. Values outside this range are NOT excluded: this is purely
 #'   for setting default scales of plots etc
-#' @param range_discard_below,range_discard_above This pair set the lower and #'   upper range for the flowsheet item. Values outside this range are
+#' @param range_discard_below,range_discard_above This pair set the lower and
+#'   upper range for the flowsheet item. Values outside this range are
 #'   EXCLUDED.
 #' @author R.J.B. Goudie
 fsheet_add <- function(fsheet_def,
@@ -166,12 +167,14 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   out <- x %>%
     filter(name %in% fsheet_def$names)
 
+  # Add symbol and title
   out <- out %>%
     mutate(symbol = fsheet_def$symbol, .after = person_id) %>%
     mutate(title = fsheet_def$title, .after = measurement_datetime) %>%
     relocate(name, .after = measurement_datetime) %>%
     mutate(type = fsheet_def$type)
 
+  # Check expect_before condition
   unexpected <- out %>%
     filter(!(!!fsheet_def$expect_before))
   if (nrow(unexpected)){
@@ -180,6 +183,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     errors("unexpected cases\n", print(unexpected))
   }
 
+  # Remove duplicate rows
   nrow_data_original <- nrow(out)
   out <- out %>%
     distinct
@@ -188,6 +192,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     cat(nrow_data_original - nrow_data_distinct, "duplicate rows discarded. ")
   }
 
+  # Exclude NAs when requested
   out <- out %>%
     mutate(will_silently_exclude_na = (is.na(value) & !!fsheet_def$silently_exclude_na_when))
 
@@ -196,6 +201,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     cat(n_silently_exclude_na, "NAs excluded. ")
   }
 
+  # Exclude other rows when requested
   out <- out %>%
     filter(!will_silently_exclude_na) %>%
     mutate(will_silently_exclude = (!!fsheet_def$silently_exclude_when))
@@ -208,6 +214,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   out <- out %>%
     filter(!will_silently_exclude)
 
+  # Convert values to numeric, and handle censoring
   out <- out %>%
     group_by(name) %>%
     mutate(
@@ -238,10 +245,12 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     }
   }
 
+  # Rescale units
   out <- out %>%
     mutate(value_as_number = !!fsheet_def$unit_rescale_fn,
            unit = !!fsheet_def$unit_relabel_fn)
 
+  # Discard too high values
   if (!is.na(fsheet_def$range_discard_above)){
     nrow_data_prior_too_high <- nrow(out)
     out <- out %>%
@@ -259,6 +268,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
       mutate(is_too_high = FALSE)
   }
 
+  # Discard too low values
   if (!is.na(fsheet_def$range_discard_below)){
     nrow_data_prior_too_low <- nrow(out)
     out <- out %>%
@@ -276,6 +286,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
       mutate(is_too_low = FALSE)
   }
 
+  # Check expect_after condition
   unexpected <- out %>%
     filter(!(!!fsheet_def$expect_after))
   if (nrow(unexpected)){
@@ -284,6 +295,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
    errors("unexpected cases\n", print(unexpected))
   }
 
+  # Return result
   cat(nrow(out), "extracted.")
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,

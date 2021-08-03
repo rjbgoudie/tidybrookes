@@ -83,7 +83,8 @@ specifying a condition that should be \code{TRUE} in the processed (output) data
 for most values. Values outside this range are NOT excluded: this is purely
 for setting default scales of plots etc}
 
-\item{range_discard_below, range_discard_above}{This pair set the lower and #'   upper range for the flowsheet item. Values outside this range are
+\item{range_discard_below, range_discard_above}{This pair set the lower and
+upper range for the flowsheet item. Values outside this range are
 EXCLUDED.}
 }
 \description{
