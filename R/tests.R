@@ -186,8 +186,9 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
   possible_new <- tests_check_for_new(x, test_def)
   if (nrow(possible_new) > 0){
-    warn(format_error_bullets(c(
-      i = glue("{nrow(possible_new)} possible new test names"))))
+    warning(format_error_bullets(c(
+      i = glue("{nrow(possible_new)} possible new test names"))),
+      immediate. = TRUE)
   }
 
   # Filter to only CUH tests
@@ -210,8 +211,9 @@ tests_extract_single <- function(x, test_def, errors = stop){
         select(group, name, value_original, range_low, range_high, unit)
       expect_before_str <- as_label(test_def$expect_before)
     unexpected_nrow <- nrow(unexpected)
-    warn(format_error_bullets(c(x = glue("{unexpected_nrow} rows not satisfying ",
-                                         "expect_before condition"))))
+    warning(format_error_bullets(c(x = glue("{unexpected_nrow} rows not satisfying ",
+                                            "expect_before condition"))),
+            immediate. = TRUE)
   }
 
   # Remove duplicate rows
@@ -326,9 +328,10 @@ tests_extract_single <- function(x, test_def, errors = stop){
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
       select(group, name, value_original, range_low, range_high, unit)
-    warn(format_error_bullets(c(
+    warning(format_error_bullets(c(
       x = glue("{nrow(unexpected)} rows not satisfying ",
-               "expect_after condition"))))
+               "expect_after condition"))),
+      immediate. = TRUE)
   }
 
   # Return result
