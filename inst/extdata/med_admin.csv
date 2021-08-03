@@ -1,0 +1,2 @@
+STUDY_SUBJECT_DIGEST,TimeAdministered,DrugName,DoseAsLabelled,InfusionRate,DoseUnitAbbreviated,RouteOfMedicationAbbreviated,DepartmentName,MAR_ENC_CSN,MARAction
+AA,01/01/2020 20:20,PARACETAMOL  500MG TABLETS,1,,g,Oral,ADD EMERGENCY DEPT,1234,Given
