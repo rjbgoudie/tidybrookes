@@ -1,4 +1,4 @@
-STUDY_SUBJECT_DIGEST,fsd_id,line,flo.meas_id,MEASURE_TIME,disp_name,measured_value,meas_comment,template,form
+STUDY_SUBJECT_DIGEST,fsd_id,line,flo-meas_id,MEASURE_TIME,disp_name,measured_value,meas_comment,template,form
 AA,5,61,1234,2021-01-03 17:00:00,Weight,4125,,IP Vitals,Vital signs
 AA,5,61,1234,2021-01-02 09:00:00,Other,dummy,,IP Vitals,Vital signs
 AA,5,61,1234,2021-01-04 09:00:00,Weight,4035,,IP Vitals,Vital signs
