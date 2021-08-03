@@ -273,7 +273,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
   # Check for nonnumeric values in the post-exclusion and
   # post-handling-censoring data frame
   if (test_def$type == "numeric"){
-    nonnumeric <- tests_nonnumeric(out)
+    nonnumeric <- nonnumeric(out)
     if (nrow(nonnumeric) > 0){
       nonnumeric <- nonnumeric %>%
         group_by(value_original) %>%
@@ -400,24 +400,4 @@ tests_pivot_order <- function(x, values_fn = NULL){
                 names_from = symbol,
                 values_from = value_as_number,
                 values_fn = values_fn)
-}
-
-#' Helper function to extract nonnumeric test values
-#'
-#' This tests whether everything that remains (after exclusions and conversion)
-#' is numeric, which should be the case for `type = "numeric"` tests.
-#'
-#' @param x A test data frame, with `value_as_number` column, after fixing
-#'   up various odd values etc
-#'
-#' @return The rows of the supplied data frame that are `NA` after conversion to
-#'   to numeric form
-#' @author R.J.B. Goudie
-tests_nonnumeric <- function(x){
-  value_as_number <- x$value_as_number
-  value_as_number_numeric <- suppressWarnings({
-    as.numeric(value_as_number)
-  })
-  value_is_nonnumeric <- is.na(value_as_number_numeric)
-  x[value_is_nonnumeric, ]
 }

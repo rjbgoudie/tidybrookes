@@ -172,6 +172,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     mutate(symbol = fsheet_def$symbol, .after = person_id) %>%
     mutate(title = fsheet_def$title, .after = measurement_datetime) %>%
     relocate(name, .after = measurement_datetime) %>%
+    rename(value_original = value) %>%
     mutate(type = fsheet_def$type)
 
   # Check expect_before condition
@@ -179,7 +180,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     filter(!(!!fsheet_def$expect_before))
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
-      select(name, value, comment, template, form)
+      select(name, value_original, comment, template, form)
     errors("unexpected cases\n", print(unexpected))
   }
 
@@ -194,7 +195,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
 
   # Exclude NAs when requested
   out <- out %>%
-    mutate(will_silently_exclude_na = (is.na(value) & !!fsheet_def$silently_exclude_na_when))
+    mutate(will_silently_exclude_na = (is.na(value_original) & !!fsheet_def$silently_exclude_na_when))
 
   n_silently_exclude_na <- nrow(out) - sum(!out$will_silently_exclude_na)
   if (n_silently_exclude_na > 0){
@@ -218,28 +219,27 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   out <- out %>%
     group_by(name) %>%
     mutate(
-      value_original = value,
       value_as_character = suppressWarnings({
-        as.character(value)
+        as.character(value_original)
       }),
       value_as_number = suppressWarnings({
-        as.numeric(value)
+        as.numeric(value_original)
       }),
       value_as_character = !!fsheet_def$value_as_character_fn,
       value_as_number = !!fsheet_def$value_as_number_fn,
       censoring = !!fsheet_def$censoring_fn,
-      .after = value) %>%
+      .after = value_original) %>%
     relocate(censoring, .after = value_as_number) %>%
     ungroup
 
   if (fsheet_def$type == "numeric"){
-    nonnumeric <- fsheet_nonnumeric(out)
+    nonnumeric <- nonnumeric(out)
     if (nrow(nonnumeric) > 0){
       errors("*** Non-numeric value found ***\n",
              print(nonnumeric %>%
                      group_by(value_original) %>%
                      select(value_original, value_as_number,
-                            value_as_character, value) %>%
+                            value_as_character) %>%
                      distinct),
              "\n")
     }
@@ -291,7 +291,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     filter(!(!!fsheet_def$expect_after))
   if (nrow(unexpected)){
     unexpected <- unexpected %>%
-      select(name, value, comment, template, form)
+      select(name, value_original, comment, template, form)
     errors("unexpected cases\n", print(unexpected))
   }
 
@@ -299,23 +299,6 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   cat(nrow(out), "extracted.")
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,
-           -value, -value_original, -is_too_high, -is_too_low) %>%
+           -value_original, -is_too_high, -is_too_low) %>%
     arrange(measurement_datetime)
-}
-
-
-#' Helper function to extract nonnumeric fsheet values
-#'
-#' @param x A flowsheet data frame, with `value_as_number` column
-#'
-#' @return The rows of the supplied data frame that are `NA` after conversion to
-#'   to numeric form
-#' @author R.J.B. Goudie
-fsheet_nonnumeric <- function(x){
-  value <- x$value_as_number
-  value_numeric <- suppressWarnings({
-    as.numeric(value)
-  })
-  value_is_nonnumeric <- is.na(value_numeric)
-  x[value_is_nonnumeric, ]
 }

@@ -57,11 +57,11 @@ test_that("chooses first within visit", {
     search_exclude = c(),
     silently_exclude_na_when = TRUE,
     silently_exclude_when =
-      (value == " " |
-         value == "E" # some kind of typo
+      (value_original == " " |
+         value_original == "E" # some kind of typo
       ),
     value_as_number_fn =
-      case_when(value == "3mm" ~ 3,
+      case_when(value_original == "3mm" ~ 3,
                 TRUE ~ value_as_number),
     expect_after =
       (value_as_number %in% 0:17))
@@ -211,11 +211,11 @@ test_that("median and max within visit, with multiple results", {
       search_exclude = c(),
       silently_exclude_na_when = TRUE,
       silently_exclude_when =
-        (value == " " |
-           value == "E" # some kind of typo
+        (value_original == " " |
+           value_original == "E" # some kind of typo
         ),
       value_as_number_fn =
-        case_when(value == "3mm" ~ 3,
+        case_when(value_original == "3mm" ~ 3,
                   TRUE ~ value_as_number),
       expect_after =
         (value_as_number %in% 0:17))
@@ -292,11 +292,11 @@ test_that("fsheet_all_during retains patients without fsheet data", {
       search_exclude = c(),
       silently_exclude_na_when = TRUE,
       silently_exclude_when =
-        (value == " " |
-           value == "E" # some kind of typo
+        (value_original == " " |
+           value_original == "E" # some kind of typo
         ),
       value_as_number_fn =
-        case_when(value == "3mm" ~ 3,
+        case_when(value_original == "3mm" ~ 3,
                   TRUE ~ value_as_number),
       expect_after =
         (value_as_number %in% 0:17))
@@ -396,11 +396,11 @@ test_that("mixed numeric and character fsheet data handled", {
       search_exclude = c(),
       silently_exclude_na_when = TRUE,
       silently_exclude_when =
-        (value == " " |
-           value == "E" # some kind of typo
+        (value_original == " " |
+           value_original == "E" # some kind of typo
         ),
       value_as_number_fn =
-        case_when(value == "3mm" ~ 3,
+        case_when(value_original == "3mm" ~ 3,
                   TRUE ~ value_as_number),
       expect_after =
         (value_as_number %in% 0:17))
