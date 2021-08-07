@@ -117,12 +117,12 @@ diagnosis_pl_extract_single <- function(x, diagnosis_pl_def, errors = stop){
 
   # Filter to only ICD-10s
   out <- x %>%
-    filter(str_detect(icd10, ICD10_LIST))
+    filter(str_detect(icd10_list, diagnosis_pl_def$icd10))
 
   # Add symbol and title
   out <- out %>%
     mutate(symbol = diagnosis_pl_def$symbol, .after = person_id) %>%
-    mutate(title = diagnosis_pl_def$title, .after = unit)
+    mutate(title = diagnosis_pl_def$title, .after = snomed)
 
   # Remove duplicate rows
   nrow_data_original <- nrow(out)
