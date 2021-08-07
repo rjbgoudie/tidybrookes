@@ -58,18 +58,22 @@ diagnosis_pl_unrename <- function(x){
 #'   mark them as "Resolved".
 #' @author R.J.B. Goudie
 diagnosis_pl_add <- function(diagnosis_pl_def,
-                      symbol,
-                      title,
-                      icd10 = NA,
-                      # Need to allow filtering by description
-                      # description_search,
-                      # description_exclude = NA,
-                      silently_exclude_deleted = TRUE){
+                             symbol,
+                             title,
+                             icd10 = NA,
+                             # Need to allow filtering by description
+                             # description_search,
+                             # description_exclude = NA,
+                             silently_exclude_deleted_when = TRUE,
+                             silently_exclude_resolved_when = FALSE){
+  silently_exclude_deleted_when <- enquo(silently_exclude_deleted_when)
+  silently_exclude_resolved_when <- enquo(silently_exclude_resolved_when)
 
   new <- list(symbol = symbol,
               title = title,
               icd10 = icd10,
-              silently_exclude_deleted = silently_exclude_deleted)
+              silently_exclude_deleted_when = silently_exclude_deleted_when,
+              silently_exclude_resolved_when = silently_exclude_resolved_when)
   diagnosis_pl_def <- append(diagnosis_pl_def, list(new))
   names(diagnosis_pl_def)[length(diagnosis_pl_def)] <- symbol
   diagnosis_pl_def
@@ -106,7 +110,7 @@ diagnosis_pl_extract <- function(x, diagnosis_pl_def, errors = stop){
 
 diagnosis_pl_extract_single <- function(x, diagnosis_pl_def, errors = stop){
 
-#  possible_new <- diagnosis_pl_check_for_new(x, diagnosis_pl_def)
+  #  possible_new <- diagnosis_pl_check_for_new(x, diagnosis_pl_def)
   # if (nrow(possible_new) > 0){
   #   possible_new_names <- str_flatten(possible_new$name, "; ")
   #   warning(format_error_bullets(c(
@@ -136,19 +140,36 @@ diagnosis_pl_extract_single <- function(x, diagnosis_pl_def, errors = stop){
   }
 
   # Exclude Deleted when requested
-  if (silently_exclude_deleted){
-    out <- out %>%
-      mutate(will_silently_exclude_deleted = status == "Resolved")
+  out <- out %>%
+    mutate(will_silently_exclude_deleted =
+             (!! diagnosis_pl_def$silently_exclude_deleted_when) &
+             (status == "Deleted"))
 
-      n_silently_exclude_na <- nrow(out) - sum(!out$will_silently_exclude_na)
-      if (n_silently_exclude_na > 0){
-        inform(format_error_bullets(c(
-          i = glue("{n_silently_exclude_na} NAs excluded"))))
-      }
-
-    out <- out %>%
-      filter(!will_silently_exclude_deleted)
+  n_silently_exclude_deleted <-
+    nrow(out) - sum(!out$will_silently_exclude_deleted)
+  if (n_silently_exclude_deleted > 0){
+    inform(format_error_bullets(c(
+      i = glue("{n_silently_exclude_deleted} \"Deleted\" diagnoses excluded"))))
   }
+
+  out <- out %>%
+    filter(!will_silently_exclude_deleted)
+
+  # Exclude Resolved when requested
+  out <- out %>%
+    mutate(will_silently_exclude_resolved =
+             (!! diagnosis_pl_def$silently_exclude_resolved_when) &
+             status == "Resolved")
+
+  n_silently_exclude_resolved <-
+    nrow(out) - sum(!out$will_silently_exclude_resolved)
+  if (n_silently_exclude_resolved > 0){
+    inform(format_error_bullets(c(
+      i = glue("{n_silently_exclude_resolved} \"Resolved\" diagnoses excluded"))))
+  }
+
+  out <- out %>%
+    filter(!will_silently_exclude_resolved)
 
   # Return result
   inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
