@@ -50,3 +50,16 @@ nonnumeric <- function(x){
   value_is_nonnumeric <- is.na(value_as_number_numeric)
   x[value_is_nonnumeric, ]
 }
+
+#' Convert a vector into a character vector, suitably formatted for use
+#' in a R argument list - ie each element on a new line.
+#' @param x A vector
+#' @return A character string of `x`
+format_as_argument <- function(x){
+  x %>%
+    dput() %>%
+    capture.output() %>%
+    str_flatten() %>%
+    str_replace_all("\", \"", "\",\n    \"") %>%
+    str_replace(fixed("c(\""), "\n    c(\"")
+}

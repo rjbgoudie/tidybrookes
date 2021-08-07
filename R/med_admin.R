@@ -276,20 +276,20 @@ med_admin_stub_def <- function(x, symbol, title, search = NULL, names = NULL){
     count(unit, sort = TRUE) %>%
     pull(unit)
 
-  possible <- dput_flatten(setdiff(possible_includes_names, possible_excludes_names))
-  excludes <- dput_flatten(possible_excludes_names)
-  search <- dput_flatten(search)
-  possible_excludes_names <- dput_flatten(possible_excludes_names)
-  possible_includes_routes <- dput_flatten(possible_includes_routes)
-  possible_includes_action <- dput_flatten(possible_includes_action)
+  possible <- format_as_argument(setdiff(possible_includes_names, possible_excludes_names))
+  excludes <- format_as_argument(possible_excludes_names)
+  search <- format_as_argument(search)
+  possible_excludes_names <- format_as_argument(possible_excludes_names)
+  possible_includes_routes <- format_as_argument(possible_includes_routes)
+  possible_includes_action <- format_as_argument(possible_includes_action)
 
   possible_includes_expect_before <- ""
   if (length(possible_includes_unit) == 1 && !is.na(possible_includes_unit)){
     possible_includes_expect_before <-
-      glue(",\n    expect_before = (unit == {dput_flatten(possible_includes_unit)})")
+      glue(",\n    expect_before = (unit == {format_as_argument(possible_includes_unit)})")
   } else if (length(possible_includes_unit) > 1 & all(!is.na(possible_includes_unit))){
     possible_includes_expect_before <-
-      glue(",\n    expect_before = (unit %in% {dput_flatten(possible_includes_unit)})")
+      glue(",\n    expect_before = (unit %in% {format_as_argument(possible_includes_unit)})")
   }
 
   glue("med_admin_def <- med_admin_def %>%
