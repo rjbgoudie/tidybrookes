@@ -113,6 +113,7 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   # Exclude Deleted when requested
   out <- out %>%
     mutate(will_silently_exclude_deleted =
+             (type == "problem_list") &
              (!! condition_def$silently_exclude_deleted_when) &
              (status == "Deleted"))
 
@@ -129,8 +130,9 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   # Exclude Resolved when requested
   out <- out %>%
     mutate(will_silently_exclude_resolved =
+             (type == "problem_list") &
              (!! condition_def$silently_exclude_resolved_when) &
-             status == "Resolved")
+             (status == "Resolved"))
 
   n_silently_exclude_resolved <-
     nrow(out) - sum(!out$will_silently_exclude_resolved)
