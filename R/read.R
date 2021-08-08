@@ -71,6 +71,16 @@ read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
       ICD10_4 = col_character(),
       ICD10_LIST = col_character(),
       SNOMED_CONCEPTS = col_character())
+  }  else if (col_types == "med_hist"){
+    col_types <- cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      CONTACT_DATE = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      DX_NAME = col_character(),
+      MEDICAL_HX_DATE = col_character(),
+      COMMENTS = col_character(),
+      MED_HX_ANNOTATION = col_character(),
+      HX_LNK_ENC_CSN = col_integer(),
+      CURRENT_ICD10_LIST = col_character())
   } else if (col_types == "radiology"){
     col_types <- cols(
       STUDY_SUBJECT_DIGEST = col_character(),
