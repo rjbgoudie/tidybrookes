@@ -21,20 +21,20 @@ condition_add <- function(condition_def,
                        symbol,
                        title,
                        icd10 = NA,
-                       condition_start_date_fn =
-                         case_when(!is.na(diagnosis_date) ~ diagnosis_date,
+                       condition_start_datetime_fn =
+                         case_when(!is.na(diagnosis_datetime) ~ diagnosis_datetime,
                                    !is.na(entered_datetime) ~ entered_datetime,
                                    TRUE ~ ymd_hms(NA)),
-                       condition_end_date_fn =
-                         case_whe(!is.na(resolved_date) ~ resolved_date,
-                                  !is.na(deleted_date) ~ deleted_date),
+                       condition_end_datetime_fn =
+                         case_when(!is.na(resolved_datetime) ~ resolved_datetime,
+                                   TRUE ~ ymd_hms(NA)),
                        # Need to allow filtering by description
                        # description_search,
                        # description_exclude = NA,
                        silently_exclude_deleted_when = TRUE,
                        silently_exclude_resolved_when = FALSE){
-  condition_start_date_fn <- enquo(condition_start_date_fn)
-  condition_end_date_fn <- enquo(condition_end_date_fn)
+  condition_start_datetime_fn <- enquo(condition_start_datetime_fn)
+  condition_end_datetime_fn <- enquo(condition_end_datetime_fn)
   silently_exclude_deleted_when <- enquo(silently_exclude_deleted_when)
   silently_exclude_resolved_when <- enquo(silently_exclude_resolved_when)
 
@@ -43,8 +43,8 @@ condition_add <- function(condition_def,
               icd10 = icd10,
               silently_exclude_deleted_when = silently_exclude_deleted_when,
               silently_exclude_resolved_when = silently_exclude_resolved_when,
-              condition_start_date_fn = condition_start_date_fn,
-              condition_end_date_fn = condition_end_date_fn)
+              condition_start_datetime_fn = condition_start_datetime_fn,
+              condition_end_datetime_fn = condition_end_datetime_fn)
   condition_def <- append(condition_def, list(new))
   names(condition_def)[length(condition_def)] <- symbol
   condition_def
@@ -64,7 +64,7 @@ condition_add <- function(condition_def,
 #' `result_datetime`, `ordering_department_name`, `range_low`, `range_high`,
 #' `unit`, `name`, `title`, `method`, `group`, `type`
 #'
-#' The result will be sorted by diagnosis_date
+#' The result will be sorted by diagnosis_datetime
 #' @author R.J.B. Goudie
 condition_extract <- function(x, condition_def, errors = stop){
   if (length(condition_def) == 1 & "symbol" %in% names(condition_def)){
@@ -75,7 +75,7 @@ condition_extract <- function(x, condition_def, errors = stop){
         glue("\nExtracting {y$title} ({y$symbol})"))))
       condition_extract_single(x, y, errors = errors)
     }))
-    out %>% arrange(symbol, diagnosis_date)
+    out %>% arrange(symbol, diagnosis_datetime)
   }
 }
 
@@ -148,13 +148,13 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   # Impute start and end dates
   out <- out %>%
   mutate(
-    condition_start_date = !! condition_start_date_fn,
-    condition_end_date !! condition_end_date_fn,
+    condition_start_datetime = !! condition_def$condition_start_datetime_fn,
+    condition_end_datetime = !! condition_def$condition_end_datetime_fn,
     .after = status)
 
   # Return result
   inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
   out %>%
     select(-will_silently_exclude_deleted) %>%
-    arrange(diagnosis_date)
+    arrange(diagnosis_datetime)
 }

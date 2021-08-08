@@ -9,9 +9,9 @@ diagnosis_pl_rename <- function(x){
            description = "DX_DESCRIPTION",
            description_displayed = "DX_DESC_DISPLAYED",
            status = "DIAGNOSIS_STATUS",
-           entered_date = "DIAGNOSIS_ENTERED_DATE",
-           diagnosis_date = "DIAGNOSIS_DATE",
-           resolved_date = "RESOLVED_DATE",
+           entered_datetime = "DIAGNOSIS_ENTERED_DATE",
+           diagnosis_datetime = "DIAGNOSIS_DATE",
+           resolved_datetime = "RESOLVED_DATE",
            icd10_1 = "ICD10_1",
            icd10_2 = "ICD10_2",
            icd10_3 = "ICD10_3",
@@ -19,9 +19,9 @@ diagnosis_pl_rename <- function(x){
            snomed = "SNOMED_CONCEPTS",
            comment = "PROBLEM_CMT") %>%
     relocate(person_id, icd10_list, description, description_displayed,
-             status, entered_date, diagnosis_date, resolved_date,
+             status, entered_datetime, diagnosis_datetime, resolved_datetime,
              icd10_1, icd10_2, icd10_3, icd10_4, snomed, comment) %>%
-    mutate(type = "problem_list", .after = resolved_date)
+    mutate(type = "problem_list", .after = resolved_datetime)
 }
 
 #' Untidy raw diagnosis_pl colnames
@@ -34,9 +34,9 @@ diagnosis_pl_unrename <- function(x){
            DX_DESCRIPTION = "description",
            DX_DESC_DISPLAYED = "description_displayed",
            PROBLEM_CMT = "comment",
-           DIAGNOSIS_ENTERED_DATE = "entered_date",
-           DIAGNOSIS_DATE = "diagnosis_date",
-           RESOLVED_DATE = "resolved_date",
+           DIAGNOSIS_ENTERED_DATE = "entered_datetime",
+           DIAGNOSIS_DATE = "diagnosis_datetime",
+           RESOLVED_DATE = "resolved_datetime",
            DIAGNOSIS_STATUS = "status",
            ICD10_1 = "icd10_1",
            ICD10_2 = "icd10_2",
