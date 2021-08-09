@@ -2,9 +2,9 @@
 % Please edit documentation in R/during-all.R
 \name{all_during}
 \alias{all_during}
-\title{Left join adm data with other (standardised) data}
+\title{Join adm data with other (standardised) data}
 \usage{
-all_during(x, y, datetime, during, names_from = "symbol")
+all_during(x, y, datetime, during, names_from = "symbol", join = "left")
 }
 \arguments{
 \item{x}{An \code{adm} data frame}
@@ -18,6 +18,11 @@ all_during(x, y, datetime, during, names_from = "symbol")
 
 \item{names_from}{A character vector containing the names of columns that
 should be used to filter by (in addition to those implied by \code{during}).}
+
+\item{join}{Either \code{"left"}, in which a left join is performed (so all \code{x}
+rows will be returned, even if they have no correspoding \code{y}) or
+\code{"inner"}, in which an inner join is performed (so only \code{x} rows with at
+least one \code{y} row will be returned)}
 }
 \value{
 A data frame, with a row for each \code{y} measurement during the relevant
@@ -25,7 +30,7 @@ time period for each patient. Note that rows of the \code{adm} data will be
 repeated multiple times (one for each \code{y} measurement data point).
 }
 \description{
-Left joins an \code{adm} data frame with another data frame (with a
+Joins an \code{adm} data frame with another data frame (with a
 \code{person_id} for linking and with the relevant datetime called \code{datetime}),
 and filter to only those rows of \code{y} with \code{datetime} within the specified
 time period.

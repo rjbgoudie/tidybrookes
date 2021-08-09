@@ -37,7 +37,8 @@ summarise_during <- function(x,
     all_during(y,
                datetime = !! datetime,
                during = during,
-               names_from = names_from)
+               names_from = names_from,
+               join = "inner")
 
   out <- out %>%
     summarise_pivot_wider(type = type,
@@ -46,7 +47,10 @@ summarise_during <- function(x,
                           names_from = names_from,
                           values_from = values_from,
                           names_suffix = glue("{names_suffix}_{during}"))
-  out
+
+  # join again to x on common columns, so that anyone WITHOUT a y is included
+  by <- intersect(colnames(x), colnames(out))
+  left_join(x, out, by = by)
 }
 
 #' Summarise (or slice) data then pivot data wider

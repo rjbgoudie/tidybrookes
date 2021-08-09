@@ -1,6 +1,6 @@
-#' Left join adm data with other (standardised) data
+#' Join adm data with other (standardised) data
 #'
-#' Left joins an `adm` data frame with another data frame (with a
+#' Joins an `adm` data frame with another data frame (with a
 #' `person_id` for linking and with the relevant datetime called `datetime`),
 #' and filter to only those rows of `y` with `datetime` within the specified
 #' time period.
@@ -12,6 +12,10 @@
 #'   `"during_icu"`
 #' @param names_from A character vector containing the names of columns that
 #' should be used to filter by (in addition to those implied by `during`).
+#' @param join Either `"left"`, in which a left join is performed (so all `x`
+#'   rows will be returned, even if they have no correspoding `y`) or
+#'   `"inner"`, in which an inner join is performed (so only `x` rows with at
+#'   least one `y` row will be returned)
 #'
 #' @return
 #' A data frame, with a row for each `y` measurement during the relevant
@@ -22,13 +26,19 @@ all_during <- function(x,
                        y,
                        datetime,
                        during,
-                       names_from = "symbol"){
+                       names_from = "symbol",
+                       join = "left"){
   y <- y %>%
     rename(datetime = {{datetime}}) %>%
     arrange(datetime)
+  if (join == "left"){
+    join_fn <- left_join_filter
+  } else if (join == "inner"){
+    join_fn <- inner_join_filter
+  }
   if (during == "during_visit"){
     out <- x %>%
-      left_join_filter(
+      join_fn(
         y,
         join_by = "person_id",
         filter_by = c("person_id", "visit_id", names_from),
@@ -40,7 +50,7 @@ all_during <- function(x,
                       datetime >= visit_start_datetime))
   } else if (during == "during_visit_initial_24h"){
     out <- x %>%
-      left_join_filter(
+      join_fn(
         y,
         join_by = "person_id",
         filter_by = c("person_id", "visit_id", names_from),
@@ -54,7 +64,7 @@ all_during <- function(x,
                       datetime <= visit_start_datetime + dhours(24)))
   } else if (during == "during_icu"){
     out <- x %>%
-      left_join_filter(
+      join_fn(
         y,
         join_by = "person_id",
         filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
