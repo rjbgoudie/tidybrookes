@@ -18,3 +18,18 @@ max_during <- function(...){
                    formula = which.max(value_as_number),
                    names_suffix = "max")
 }
+
+min_during <- function(...){
+  summarise_during(...,
+                   type = "slice",
+                   formula = which.min(value_as_number),
+                   names_suffix = "min")
+}
+
+ever_during <- function(..., formula){
+  formula <- enquo(formula)
+  summarise_during(...,
+                   type = "summarise",
+                   formula = !! formula,
+                   names_suffix = "ever")
+}
