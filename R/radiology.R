@@ -100,7 +100,7 @@ radiology_extract <- function(x, radiology_def, errors = stop){
         glue("\nExtracting {y$title} ({y$symbol})"))))
       radiology_extract_single(x, y, errors = errors)
     }))
-    out %>% arrange(symbol, administered_datetime)
+    out %>% arrange(symbol, procedure_datetime)
   }
 }
 
