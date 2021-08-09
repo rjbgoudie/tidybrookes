@@ -12,6 +12,18 @@ last_during <- function(...){
                    names_suffix = "last")
 }
 
+nearest_visit_start_during <- function(...){
+  summarise_during(
+    ...,
+    type = "slice",
+    formula =
+      interval(visit_start_datetime, datetime) %>%
+      int_length() %>%
+      abs() %>%
+      which.min(),
+    names_suffix = "last")
+}
+
 max_during <- function(...){
   summarise_during(...,
                    type = "slice",
