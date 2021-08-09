@@ -2,7 +2,7 @@
 #' @importFrom rlang enquo as_label inform warn format_error_bullets expr_print
 #' @importFrom glue glue
 #' @importFrom lubridate ymd_hms dhours dseconds dminutes ddays dweeks dyears dmonths interval int_length
-#' @importFrom tidyr pivot_wider
+#' @importFrom tidyr pivot_wider separate enframe
 #' @importFrom stringr str_ends str_starts str_replace str_remove str_detect regex str_flatten coll fixed str_replace_all
 #' @importFrom tibble tibble as_tibble
 NULL
