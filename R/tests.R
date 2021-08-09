@@ -382,15 +382,14 @@ tests_check_for_new <- function(x,
 #'   test from a particular order.
 #' @return A data frame with the tests in columns
 #' @author R.J.B. Goudie
-tests_pivot_order <- function(x, values_fn = NULL){
+tests_pivot_wider_order <- function(x, values_fn = NULL){
   # check for non-unique results for a single order_id
   multiple_results <- x %>%
-    pivot_wider(id_cols = c("person_id", "order_id"),
+    pivot_wider(id_cols = c("person_id", "order_id", "result_datetime"),
                 names_from = symbol,
                 values_from = value_as_number,
                 values_fn = length) %>%
-    select(-person_id, -order_id) %>%
-    filter(if_any(everything(), ~ .x > 1))
+    filter(dplyr:::if_any(!c(person_id, order_id, result_datetime), ~ .x > 1))
 
   if (nrow(multiple_results)){
     message("Note ",
@@ -398,8 +397,59 @@ tests_pivot_order <- function(x, values_fn = NULL){
             " non-unique results by order found")
   }
   x %>%
-    pivot_wider(id_cols = c("person_id", "order_id"),
+    pivot_wider(id_cols = c("person_id", "order_id", "result_datetime"),
                 names_from = symbol,
                 values_from = value_as_number,
                 values_fn = values_fn)
+}
+
+tests_pivot_longer_order <- function(x){
+  x %>%
+    tidyr:::pivot_longer(cols = !c(person_id, order_id, result_datetime),
+                         values_to = "value_as_number")
+}
+
+tests_abg <- function(bg_data, bg_specimen_type){
+  bg_specimen_type <- bg_specimen_type %>%
+    select(person_id,
+           order_id,
+           result_datetime,
+           specimen_type = value_as_character) %>%
+    mutate(specimen_type_simplified =
+             if_else(specimen_type == "Arterial blood",
+                     true = "Arterial blood",
+                     false = "Non-arterial blood",
+                     missing = "Non-arterial blood"))
+
+  # There are missing values in blood specimen type
+  # Note there is no POC BLOOD SPECIMEN TYPE row for this OrderProcId
+  # we will label these as "Non-arterial blood"
+  bg_data <- bg_data %>%
+    pivot_wider(id_cols = c("person_id", "order_id", "result_datetime"),
+                names_from = symbol,
+                values_from = c("value_as_number", "censoring"),
+                names_glue = "{symbol}_{.value}",
+                names_sort = TRUE) %>%
+    # full join means that results that orders with no result (but a specimen
+    # type remain in the data frame
+    full_join(bg_specimen_type,
+              by = c("person_id", "order_id", "result_datetime")) %>%
+    relocate(specimen_type,
+             specimen_type_simplified,
+             .after = "order_id") %>%
+    rename_with(.fn = ~ if_else(str_ends(.x, "_value_as_number"),
+                                true = str_replace(.x, "_value_as_number", "_value"),
+                                false = .x))
+
+  abg_data <- bg_data %>%
+    filter(specimen_type_simplified == "Arterial blood") %>%
+    select(-specimen_type, -specimen_type_simplified) %>%
+    rename_with(.fn = ~ str_replace(.x, "_bg", "_abg"),
+                .cols = !c(person_id, order_id, result_datetime)) %>%
+    tidyr:::pivot_longer(cols = !c(person_id, order_id, result_datetime),
+                         names_to = c("symbol", ".value"),
+                         names_pattern = c("([A-Za-z0-9_]+)_([^_]+)$")) %>%
+    rename(value_as_number = value)
+
+  abg_data
 }
