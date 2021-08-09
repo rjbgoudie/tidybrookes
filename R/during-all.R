@@ -74,6 +74,32 @@ all_during <- function(x,
                        datetime <= icu_end_datetime,
                     is.na(icu_end_datetime) ~
                       datetime >= icu_start_datetime))
+  } else if (during == "before_visit_initial_24h"){
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", names_from),
+        filter_condition =
+          case_when(!is.na(visit_end_datetime) ~
+                      datetime <= visit_start_datetime + dhours(24) &
+                       datetime <= visit_end_datetime,
+                    is.na(visit_end_datetime) ~
+                      datetime <= visit_start_datetime + dhours(24)))
+  } else if (during == "year_before_initial_24h"){
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", names_from),
+        filter_condition =
+          case_when(!is.na(visit_end_datetime) ~
+                      datetime >= visit_start_datetime - dyears(1) &
+                       datetime <= visit_start_datetime + dhours(24) &
+                       datetime <= visit_end_datetime,
+                    is.na(visit_end_datetime) ~
+                      datetime >= visit_start_datetime - dyears(1) &
+                      datetime <= visit_start_datetime + dhours(24)))
   } else {
     stop("all_during does not know how to hangle this `during` value:",
          during)
