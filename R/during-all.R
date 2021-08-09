@@ -31,6 +31,15 @@ all_during <- function(x,
   y <- y %>%
     rename(datetime = {{datetime}}) %>%
     arrange(datetime)
+
+  common_cols <- intersect(colnames(x), colnames(y))
+  if (!"person_id" %in% common_cols){
+    stop("`person_id` not in both data frames")
+  } else if (length(common_cols) > 1) {
+    stop(paste0("More common columns than just `person_id` in data frames: ",
+                format_as_argument(setdiff(common_cols, "person_id"))))
+  }
+
   if (join == "left"){
     join_fn <- left_join_filter
   } else if (join == "inner"){
