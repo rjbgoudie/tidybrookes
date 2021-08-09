@@ -97,6 +97,13 @@ summarise_pivot_wider <- function(x,
     names_suffix <- paste0("_", names_suffix)
   }
 
+  # only include datetime if it is in the data frame
+  values_from <- if ("datetime" %in% colnames(out)){
+    values_from
+  } else {
+    setdiff(values_from, "datetime")
+  }
+
   names_glue <- paste0(magic_prefix,  "{",
                        names_from, "}",
                        names_suffix,
