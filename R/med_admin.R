@@ -85,6 +85,7 @@ med_admin_add <- function(med_admin_def,
                           names = NA,
                           search_pattern,
                           search_exclude = NA,
+                          silently_exclude_na_routes = FALSE,
                           route,
                           route_exclude = NA,
                           action,
@@ -97,6 +98,7 @@ med_admin_add <- function(med_admin_def,
               names = names,
               search_pattern = search_pattern,
               search_exclude = search_exclude,
+              silently_exclude_na_routes = silently_exclude_na_routes,
               route = route,
               route_exclude = route_exclude,
               action = action,
@@ -137,7 +139,6 @@ med_admin_extract <- function(x, med_admin_def, errors = stop){
 }
 
 med_admin_extract_single <- function(x, med_admin_def, errors = stop){
-  stop("This is not properly implemented yet")
   ## possible_new <- med_admin_check_for_new(x, med_admin_def)
   ## if (nrow(possible_new) > 0){
   ##   possible_new_names <- str_flatten(possible_new$name, "; ")
@@ -149,7 +150,9 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
 
   # Filter to only CUH med_admin
   out <- x %>%
-    filter(name %in% med_admin_def$names)
+    filter(name %in% med_admin_def$names &
+             route %in% med_admin_def$route &
+             action %in% med_admin_def$action)
 
   # Add symbol and title
   out <- out %>%
@@ -170,12 +173,12 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
 
   # Exclude NAs when requested
   out <- out %>%
-    mutate(will_silently_exclude_na = (is.na(value_original) & !!med_admin_def$silently_exclude_na_when))
+    mutate(will_silently_exclude_na_routes = (is.na(route) & med_admin_def$silently_exclude_na_routes))
 
-  n_silently_exclude_na <- nrow(out) - sum(!out$will_silently_exclude_na)
-  if (n_silently_exclude_na > 0){
+  n_silently_exclude_na_routes <- nrow(out) - sum(!out$will_silently_exclude_na_routes)
+  if (n_silently_exclude_na_routes > 0){
     inform(format_error_bullets(c(
-      i = glue("{n_silently_exclude_na} NAs excluded"))))
+      i = glue("{n_silently_exclude_na} NA routes excluded"))))
   }
 
   ## # Exclude other rows when requested
@@ -208,8 +211,7 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
   # Return result
   inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
   out %>%
-    select(-will_silently_exclude, -will_silently_exclude_na,
-           -value_original, -is_too_high, -is_too_low) %>%
+    select(-will_silently_exclude_na_routes) %>%
     arrange(administered_datetime)
 }
 
