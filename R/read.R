@@ -15,6 +15,19 @@ read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
       DISCH_DEST = col_character(),
       DISCH_DECEASED = col_character(),
       READMIT_WITHIN_30 = col_character())
+  } else if (col_types == "adt"){
+    col_types <- cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      EVENT_TYPE_C = col_integer(),
+      EVENT_TYPE = col_character(),
+      IN_DTTM = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      HOSP_DISCH_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      ADT_DEPARTMENT_NAME = col_character(),
+      ROOM_NAME = col_character(),
+      BED_LABEL = col_character(),
+      ADT_SERV_AREA_NAME = col_character(),
+      HOSP_SERV_NAME = col_character(),
+      PAT_ENC_CSN = col_integer())
   } else if (col_types == "fsheet"){
     col_types <- cols(
       STUDY_SUBJECT_DIGEST = col_character(),
