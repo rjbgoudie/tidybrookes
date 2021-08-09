@@ -174,11 +174,12 @@ tests_extract <- function(x, tests_def, errors = stop){
   if (length(tests_def) == 1 & "symbol" %in% names(tests_def)){
     tests_extract_single(x, tests_def)
   } else {
-    out <- bind_rows(lapply(tests_def, function(y){
+    out <- lapply(tests_def, function(y){
       inform(format_error_bullets(c(
         glue("\nExtracting {y$title} ({y$symbol})"))))
       tests_extract_single(x, y, errors = errors)
-    }))
+    })
+    out <- bind_rows(out)
     out %>% arrange(symbol, collected_datetime)
   }
 }
