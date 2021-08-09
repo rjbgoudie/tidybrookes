@@ -11,6 +11,7 @@ med_admin_add(
   names = NA,
   search_pattern,
   search_exclude = NA,
+  silently_exclude_na_routes = FALSE,
   route,
   route_exclude = NA,
   action,
