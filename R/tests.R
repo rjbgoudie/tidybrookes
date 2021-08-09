@@ -188,7 +188,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
   possible_new <- tests_check_for_new(x, test_def)
   if (nrow(possible_new) > 0){
-    possible_new_names <- str_flatten(possible_new$name, "; ")
+    possible_new_names <- format_as_argument(possible_new$name)
     warning(format_error_bullets(c(
       i = glue("{nrow(possible_new)} possible new test names: ",
                "{possible_new_names}"))),
