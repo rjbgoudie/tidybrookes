@@ -161,52 +161,17 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
     relocate(name, .after = unit)
 
   # Remove duplicate rows
-  nrow_data_original <- nrow(out)
   out <- out %>%
-    distinct
-  nrow_data_distinct <- nrow(out)
-  if (nrow_data_original != nrow_data_distinct){
-    inform(format_error_bullets(c(
-      i = glue("{nrow_data_original - nrow_data_distinct}",
-               "duplicate rows discarded"))))
-  }
+    distinct_inform
 
   # Exclude NAs when requested
   out <- out %>%
-    mutate(will_silently_exclude_na_routes = (is.na(route) & med_admin_def$silently_exclude_na_routes))
-
-  n_silently_exclude_na_routes <- nrow(out) - sum(!out$will_silently_exclude_na_routes)
-  if (n_silently_exclude_na_routes > 0){
-    inform(format_error_bullets(c(
-      i = glue("{n_silently_exclude_na} NA routes excluded"))))
-  }
-
-  ## # Exclude other rows when requested
-  ## out <- out %>%
-  ##   filter(!will_silently_exclude_na) %>%
-  ##   mutate(will_silently_exclude = (!!med_admin_def$silently_exclude_when))
-
-  ## n_silently_exclude <- nrow(out) - sum(!out$will_silently_exclude)
-  ## if (n_silently_exclude > 0){
-  ##   inform(format_error_bullets(c(i = glue("{n_silently_exclude} rows excluded"))))
-  ## }
-
-  ## out <- out %>%
-  ##   filter(!will_silently_exclude)
+    mutate(will_silently_exclude_na_routes = (is.na(route) & med_admin_def$silently_exclude_na_routes)) %>%
+    filter_inform(!will_silently_exclude_na_routes,
+                  since = "since route was NA")
 
   # Check expect_after condition
-  unexpected <- out %>%
-    filter(!(!!med_admin_def$expect_after))
-  if (nrow(unexpected)){
-    unexpected <- unexpected %>%
-      select(group, name, value_original, range_low, range_high, unit)
-    expect_after_str <- expr_print(med_admin_def$expect_after)
-    warning(format_error_bullets(c(
-      x = glue("{nrow(unexpected)} rows not satisfying ",
-               "expect_after condition: ",
-               "{expect_after_str}"))),
-      immediate. = TRUE)
-  }
+  check_that_all(out, !!med_admin_def$expect_after, "expect_after")
 
   # Return result
   inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))

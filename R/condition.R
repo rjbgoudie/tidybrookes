@@ -100,29 +100,17 @@ condition_extract_single <- function(x, condition_def, errors = stop){
     mutate(title = condition_def$title, .after = snomed)
 
   # Remove duplicate rows
-  nrow_data_original <- nrow(out)
   out <- out %>%
-    distinct
-  nrow_data_distinct <- nrow(out)
-  if (nrow_data_original != nrow_data_distinct){
-    inform(format_error_bullets(c(
-      i = glue("{nrow_data_original - nrow_data_distinct}",
-               "duplicate rows discarded"))))
-  }
+    distinct_inform
 
   # Exclude Deleted when requested
   out <- out %>%
     mutate(will_silently_exclude_deleted =
              (type == "problem_list") &
              (!! condition_def$silently_exclude_deleted_when) &
-             (status == "Deleted"))
-
-  n_silently_exclude_deleted <-
-    nrow(out) - sum(!out$will_silently_exclude_deleted)
-  if (n_silently_exclude_deleted > 0){
-    inform(format_error_bullets(c(
-      i = glue("{n_silently_exclude_deleted} \"Deleted\" diagnoses excluded"))))
-  }
+             (status == "Deleted")) %>%
+    filter_inform(!will_silently_exclude_deleted,
+                  since = "since diagnoses were \"Deleted\"")
 
   out <- out %>%
     filter(!will_silently_exclude_deleted)
@@ -132,18 +120,9 @@ condition_extract_single <- function(x, condition_def, errors = stop){
     mutate(will_silently_exclude_resolved =
              (type == "problem_list") &
              (!! condition_def$silently_exclude_resolved_when) &
-             (status == "Resolved"))
-
-  n_silently_exclude_resolved <-
-    nrow(out) - sum(!out$will_silently_exclude_resolved)
-  if (n_silently_exclude_resolved > 0){
-    inform(format_error_bullets(c(
-      i = glue("{n_silently_exclude_resolved} \"Resolved\" diagnoses excluded"))))
-  }
-
-  out <- out %>%
-    filter(!will_silently_exclude_resolved)
-
+             (status == "Resolved")) %>%
+    filter_inform(!will_silently_exclude_resolved,
+                  since = "since diagnoses were \"Resolved\"")
 
   # Impute start and end dates
   out <- out %>%

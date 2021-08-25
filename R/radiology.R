@@ -125,15 +125,8 @@ radiology_extract_single <- function(x, radiology_def, errors = stop){
     mutate(title = radiology_def$title, .after = code)
 
   # Remove duplicate rows
-  nrow_data_original <- nrow(out)
   out <- out %>%
-    distinct
-  nrow_data_distinct <- nrow(out)
-  if (nrow_data_original != nrow_data_distinct){
-    inform(format_error_bullets(c(
-      i = glue("{nrow_data_original - nrow_data_distinct}",
-               "duplicate rows discarded"))))
-  }
+    distinct_inform
 
   out <- out %>%
     group_by(name) %>%

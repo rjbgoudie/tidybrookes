@@ -208,52 +208,23 @@ tests_extract_single <- function(x, test_def, errors = stop){
     mutate(type = test_def$type)
 
   # Check expect_before condition
-  unexpected <- out %>%
-    filter(!(!!test_def$expect_before))
-  if (nrow(unexpected)){
-    unexpected <- unexpected %>%
-      select(group, name, value_original, range_low, range_high, unit)
-    expect_before_str <- expr_print(test_def$expect_before)
-    unexpected_nrow <- nrow(unexpected)
-    warning(format_error_bullets(c(x = glue("{unexpected_nrow} rows not satisfying ",
-                                            "expect_before condition: ",
-                                            "{expect_before_str}"))),
-            immediate. = TRUE)
-  }
+  check_that_all(out, !!test_def$expect_before, "expect_before")
 
   # Remove duplicate rows
-  nrow_data_original <- nrow(out)
   out <- out %>%
-    distinct
-  nrow_data_distinct <- nrow(out)
-  if (nrow_data_original != nrow_data_distinct){
-    inform(format_error_bullets(c(
-      i = glue("{nrow_data_original - nrow_data_distinct}",
-               "duplicate rows discarded"))))
-  }
+    distinct_inform
 
   # Exclude NAs when requested
   out <- out %>%
-    mutate(will_silently_exclude_na = (is.na(value_original) & !!test_def$silently_exclude_na_when))
-
-  n_silently_exclude_na <- nrow(out) - sum(!out$will_silently_exclude_na)
-  if (n_silently_exclude_na > 0){
-    inform(format_error_bullets(c(
-      i = glue("{n_silently_exclude_na} NAs excluded"))))
-  }
+    mutate(will_silently_exclude_na = (is.na(value_original) & !!test_def$silently_exclude_na_when)) %>%
+    filter_inform(!will_silently_exclude_na,
+                  since = "since value was NA")
 
   # Exclude other rows when requested
   out <- out %>%
-    filter(!will_silently_exclude_na) %>%
-    mutate(will_silently_exclude = (!!test_def$silently_exclude_when))
-
-  n_silently_exclude <- nrow(out) - sum(!out$will_silently_exclude)
-  if (n_silently_exclude > 0){
-    inform(format_error_bullets(c(i = glue("{n_silently_exclude} rows excluded"))))
-  }
-
-  out <- out %>%
-    filter(!will_silently_exclude)
+    mutate(will_silently_exclude = (!!test_def$silently_exclude_when)) %>%
+    filter_inform(!will_silently_exclude,
+                  since = "due to exclude_when condition")
 
   # Convert values to numeric, and handle censoring
   out <- out %>%
@@ -275,17 +246,9 @@ tests_extract_single <- function(x, test_def, errors = stop){
   # Check for nonnumeric values in the post-exclusion and
   # post-handling-censoring data frame
   if (test_def$type == "numeric"){
-    nonnumeric <- nonnumeric(out)
-    if (nrow(nonnumeric) > 0){
-      nonnumeric <- nonnumeric %>%
-        group_by(value_original) %>%
-        select(value_original, value_as_number,
-               value_as_character) %>%
-        distinct
-      warning(format_error_bullets(c(
-        x = "{nrow(nonnumeric)} unhandled unique non-numeric values")),
-        immediate. = TRUE)
-    }
+    check_that_all(out,
+                   suppressWarnings({!is.na(as.numeric(value_as_number))}),
+                   name = "all values being numeric")
   }
 
   # Rescale units
@@ -295,16 +258,10 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
   # Discard too high values
   if (!is.na(test_def$range_discard_above)){
-    nrow_data_prior_too_high <- nrow(out)
     out <- out %>%
       mutate(is_too_high = value_as_number > test_def$range_discard_above) %>%
-      filter(!is_too_high)
-    n_discard_too_high <- nrow_data_prior_too_high - nrow(out)
-    if (n_discard_too_high > 0){
-      inform(format_error_bullets(c(
-        i = glue("{n_discard_too_high} excluded since >",
-                 "{test_def$range_discard_above}"))))
-    }
+      filter_inform(!is_too_high,
+                    since = glue("since >{test_def$range_discard_above}"))
   } else {
     out <- out %>%
       mutate(is_too_high = FALSE)
@@ -312,34 +269,17 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
   # Discard too low values
   if (!is.na(test_def$range_discard_below)){
-    nrow_data_prior_too_low <- nrow(out)
     out <- out %>%
       mutate(is_too_low = value_as_number < test_def$range_discard_below) %>%
-      filter(!is_too_low)
-    n_discard_too_low <- nrow_data_prior_too_low - nrow(out)
-    if (n_discard_too_low > 0){
-      inform(format_error_bullets(c(
-        i = glue("{n_discard_too_low} excluded since <",
-                 "{test_def$range_discard_below}"))))
-    }
+      filter_inform(!is_too_low,
+                    since = glue("since <{test_def$range_discard_below}"))
   } else {
     out <- out %>%
       mutate(is_too_low = FALSE)
   }
 
   # Check expect_after condition
-  unexpected <- out %>%
-    filter(!(!!test_def$expect_after))
-  if (nrow(unexpected)){
-    unexpected <- unexpected %>%
-      select(group, name, value_original, range_low, range_high, unit)
-    expect_after_str <- expr_print(test_def$expect_after)
-    warning(format_error_bullets(c(
-      x = glue("{nrow(unexpected)} rows not satisfying ",
-               "expect_after condition: ",
-               "{expect_after_str}"))),
-      immediate. = TRUE)
-  }
+  check_that_all(out, !!test_def$expect_after, "expect_after")
 
   # Return result
   inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
