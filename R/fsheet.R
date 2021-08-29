@@ -67,6 +67,8 @@ fsheet_unrename <- function(x){
 #'   values. By default, does not rescale
 #' @param unit_relabel_fn A function specifying how to relabel the units of the
 #'   the flowsheet values. By default, does not rescale
+#' @param coalesce_fn A function specifying how to combine measurements from
+#'   exactly the same time
 #' @param expect_before An expression that returns a logical value,
 #'  specifying a condition that should be `TRUE` in the raw data
 #' @param expect_after An expression that returns a logical value,
@@ -98,6 +100,7 @@ fsheet_add <- function(fsheet_def,
                                  case_when(TRUE ~ value_as_character)),
                        unit_rescale_fn = case_when(TRUE ~ value_as_number),
                        unit_relabel_fn = case_when(TRUE ~ NA_character_),
+                       coalesce_fn = identity,
                        expect_before = TRUE,
                        expect_after = TRUE,
                        range_mainly_low = NA,
@@ -127,6 +130,7 @@ fsheet_add <- function(fsheet_def,
               value_as_character_fn = value_as_character_fn,
               unit_rescale_fn = unit_rescale_fn,
               unit_relabel_fn = unit_relabel_fn,
+              coalesce_fn = coalesce_fn,
               expect_before = expect_before,
               expect_after = expect_after,
               range_mainly_low = range_mainly_low,
@@ -244,6 +248,15 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     out <- out %>%
       mutate(is_too_low = FALSE)
   }
+
+  coalesce_out <- function(x){
+    x %>%
+      group_by(person_id, measurement_datetime) %>%
+      (fsheet_def$coalesce_fn)() %>%
+      ungroup()
+  }
+  # Handle coalesce
+  out <- fn_inform(out, coalesce_out, since = "due to coalescing")
 
   # Check expect_after condition
   check_that_all(out, !!fsheet_def$expect_after, "expect_after")

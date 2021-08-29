@@ -102,6 +102,20 @@ distinct_inform <- function(x){
   out
 }
 
+fn_inform <- function(x, fn, ..., since = "for unknown reason"){
+  previous <- nrow(x)
+  out <- fn(x, ...)
+  current <- nrow(out)
+  if (current != previous){
+    sign <- if_else(current < previous, "removed", "added")
+    change_abs <- abs(current - previous)
+    row <- if_else(change_abs == 1, "row", "rows")
+    inform(format_error_bullets(c(
+      i = glue("{change_abs} {row} {sign} {since}"))))
+  }
+  out
+}
+
 #' Check all rows of a data frame satisfy a condition
 #'
 #' @param x A data frame
