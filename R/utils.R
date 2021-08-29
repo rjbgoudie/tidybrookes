@@ -139,6 +139,15 @@ check_that_all <- function(x, condition, name){
   }
 }
 
+filter_person <- function(x, ...){
+  x %>%
+    filter(str_detect(.data$person_id, ...))
+}
+
+filter_tests <- function(x, pattern){
+  filter(x, str_detect(name, coll(pattern, ignore_case = TRUE)))
+}
+
 filter_med_admin <- function(x, pattern){
   x %>%
     filter(str_detect(name, coll(pattern, ignore_case = TRUE)))
