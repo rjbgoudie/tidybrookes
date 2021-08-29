@@ -201,16 +201,32 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
 #'   names to include.
 #' @param names The names of the Medications (`DrugName` in raw format). Only
 #'   used if `search = NULL`.
-med_admin_stub_def <- function(x, symbol, title, search = NULL, names = NULL){
-  if (!is.null(search)){
-    possible_includes <- x %>%
-      filter(str_detect(name, coll(search, ignore_case = TRUE)))
-  } else {
-    possible_includes <- x %>%
-      filter(name %in% names)
-  }
+med_admin_stub_def <-
+  function(x,
+           symbol,
+           title,
+           search = NULL,
+           names = NULL,
+           action_exclude = c("Missed",
+                              "Cancelled Entry",
+                              "MAR Hold",
+                              "MAR Unhold",
+                              "Doctor Medication Unhold",
+                              "See Alternative",
+                              "Doctor Medication Hold",
+                              "Held",
+                              "Automatically Held",
+                              "Pending",
+                              "Due",
+                              "Stopped")){
+    if (!is.null(search)){
+      possible_includes <- filter_med_admin(x, search)
+    } else {
+      possible_includes <- x %>%
+        filter(name %in% names)
+    }
 
-  possible_excludes <- possible_includes %>%
+    possible_excludes <- possible_includes %>%
     filter(str_detect(name, coll("MOUTHWASH", ignore_case = TRUE)) |
              str_detect(name, coll("EYE DROPS", ignore_case = TRUE)) |
              str_detect(name, coll("OINTMENT", ignore_case = TRUE)) |
@@ -239,6 +255,10 @@ med_admin_stub_def <- function(x, symbol, title, search = NULL, names = NULL){
     count(action, sort = TRUE) %>%
     pull(action)
 
+  excludes_action <- intersect(possible_includes_action, action_exclude)
+  possible_includes_action <- setdiff(possible_includes_action,
+                                      excludes_action)
+
   possible_includes_unit <- possible_includes %>%
     count(unit, sort = TRUE) %>%
     pull(unit)
@@ -249,6 +269,7 @@ med_admin_stub_def <- function(x, symbol, title, search = NULL, names = NULL){
   possible_excludes_names <- format_as_argument(possible_excludes_names)
   possible_includes_routes <- format_as_argument(possible_includes_routes)
   possible_includes_action <- format_as_argument(possible_includes_action)
+  excludes_action <- format_as_argument(excludes_action)
 
   possible_includes_expect_before <- ""
   if (length(possible_includes_unit) == 1 && !is.na(possible_includes_unit)){
@@ -269,5 +290,5 @@ med_admin_stub_def <- function(x, symbol, title, search = NULL, names = NULL){
     {possible_exclude_na_routes}route = {possible_includes_routes},
     route_exclude = c(),
     action = {possible_includes_action},
-    action_exclude = c(){possible_includes_expect_before})")
+    action_exclude = {excludes_action}{possible_includes_expect_before})")
 }

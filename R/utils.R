@@ -138,3 +138,8 @@ check_that_all <- function(x, condition, name){
       immediate. = TRUE)
   }
 }
+
+filter_med_admin <- function(x, pattern){
+  x %>%
+    filter(str_detect(name, coll(pattern, ignore_case = TRUE)))
+}
