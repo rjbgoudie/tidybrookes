@@ -40,3 +40,12 @@ adm_unrename <- function(x){
            DISCH_DECEASED = "discharged_deceased",
            READMIT_WITHIN_30 = "readmitted_within_30_days")
 }
+
+adm_annotate <- function(x){
+  check_that_all(x, gender %in% c("Female", "Male", "Unknown"))
+
+  x <- x %>%
+    mutate(visit_length_days =
+             as.numeric(visit_end_datetime - visit_start_datetime,
+                        units = "days"))
+}
