@@ -159,8 +159,6 @@ fsheet_extract <- function(x, fsheet_def, errors = stop){
     fsheet_extract_single(x, fsheet_def)
   } else {
     out <- bind_rows(lapply(fsheet_def, function(y){
-      inform(format_error_bullets(c(
-        glue("\nExtracting {y$title} ({y$symbol})"))))
       fsheet_extract_single(x, y, errors = errors)
     }))
     out %>% arrange(symbol, measurement_datetime)
@@ -171,6 +169,10 @@ fsheet_extract <- function(x, fsheet_def, errors = stop){
 fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   out <- x %>%
     filter(name %in% fsheet_def$names)
+
+  inform(format_error_bullets(c(
+    glue("\nExtracting {fsheet$title} ({fsheet$symbol}),",
+         "{nrow(out)} rows in raw data"))))
 
   # Add symbol and title
   out <- out %>%
