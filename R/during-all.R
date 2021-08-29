@@ -45,7 +45,15 @@ all_during <- function(x,
   } else if (join == "inner"){
     join_fn <- inner_join_filter
   }
-  if (during == "during_visit"){
+  if (during == "anytime"){
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", names_from),
+        filter_condition =
+          TRUE)
+  } else if (during == "during_visit"){
     out <- x %>%
       join_fn(
         y,
@@ -95,6 +103,18 @@ all_during <- function(x,
                        datetime <= visit_end_datetime,
                     is.na(visit_end_datetime) ~
                       datetime <= visit_start_datetime + dhours(24)))
+  } else if (during == "14_days_before_visit_until_visit_end"){
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id",  names_from),
+        filter_condition =
+          case_when(!is.na(visit_end_datetime) ~
+                      datetime >= visit_start_datetime - ddays(14) &
+                      datetime <= visit_end_datetime,
+                    is.na(visit_end_datetime) ~
+                      datetime >= visit_start_datetime - ddays(14)))
   } else if (during == "year_before_initial_24h"){
     out <- x %>%
       join_fn(

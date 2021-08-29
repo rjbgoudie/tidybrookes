@@ -21,7 +21,20 @@ nearest_visit_start_during <- function(...){
       int_length() %>%
       abs() %>%
       which.min(),
-    names_suffix = "last")
+    names_suffix = "nearest_visit_start")
+}
+
+nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
+  event_datetime <- enquo(event_datetime)
+  summarise_during(
+    ...,
+    type = "slice",
+    formula =
+      interval(!! event_datetime, datetime) %>%
+      int_length() %>%
+      abs() %>%
+      which.min(),
+    names_suffix = glue("nearest_to_{names_suffix}"))
 }
 
 max_during <- function(...){
