@@ -270,3 +270,153 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
            -value_original, -is_too_high, -is_too_low) %>%
     arrange(measurement_datetime)
 }
+
+fsheet_infer_fio2 <- function(x){
+  Cannula <- c("Nasal cannula")
+  Mask <- c("Humidified mask (heated)", "Humidified mask(cold)", "Simple mask")
+  MaskRes <- c("Non-rebreather mask")
+
+  fio2_app_cannula <- approxfun(x = 0:6,
+                                y = c(0.21, 0.24, 0.28, 0.32, 0.36, 0.40, 0.44),
+                                method = "linear",
+                                rule = 2)
+  fio2_app_mask <- approxfun(x = c(0, 5, 6.5, 7.5),
+                             y = c(0.21, 0.4, 0.5, 0.6),
+                             method = "linear",
+                             rule = 2)
+  fio2_app_maskres <- approxfun(x = c(0, 6, 7, 8, 9, 10),
+                                y = c(0.21, 0.6, 0.7, 0.8, 0.9, 0.95),
+                                method = "linear",
+                                rule = 2)
+
+  fio2_app_venturi <- function(o2_flow_rate){
+    case_when(o2_flow_rate == 0 ~ 0.21,
+              o2_flow_rate == 2 ~ 0.24,
+              o2_flow_rate == 4 ~ 0.28,
+              o2_flow_rate == 6 ~ 0.31,
+              o2_flow_rate == 8 ~ 0.35,
+              o2_flow_rate == 10 ~ 0.4,
+              o2_flow_rate == 15 ~ 0.6,
+              TRUE ~ NA_real_)
+  }
+
+  feasible_venturi_fio2 <- c(0.21, 0.24, 0.28, 0.31, 0.35, 0.4, 0.6)
+
+  infer_fio2 <- function(fio2, o2_device, o2_flow_rate){
+    case_when(
+      # Venturi mask
+      # (a) if recorded fio2 is feasible, then use it
+      o2_device == "Venturi Mask" &
+        !is.na(fio2) &
+        fio2 %in% feasible_venturi_fio2 ~ fio2,
+
+      # (b) if recorded fio2 not feasible, and then convert flow rate
+      o2_device == "Venturi Mask"  ~ fio2_app_venturi(o2_flow_rate),
+
+      # Except for Venturi (since only 7 feasible values), use recorded fio2
+      # wherever available
+      o2_device != "Venturi Mask" & !is.na(fio2) ~ fio2,
+
+      # Convert various masks using
+      # https://www.intensive.org/epic2/Documents/Estimation%20of%20PO2%20and%20FiO2.pdf
+      is.na(fio2) & o2_device %in% Cannula ~ fio2_app_cannula(o2_flow_rate),
+      is.na(fio2) & o2_device %in% Mask ~ fio2_app_mask(o2_flow_rate),
+      is.na(fio2) & o2_device %in% MaskRes ~ fio2_app_maskres(o2_flow_rate),
+      is.na(fio2) & o2_device == "None (Room air)" ~ 0.21,
+
+      # If not o2_device data, then assume cannula if plausible o2_flow_rate
+      # (this will not overestimate fio2)
+      is.na(fio2) & is.na(o2_device) &
+        o2_flow_rate <= 6 ~ fio2_app_cannula(o2_flow_rate),
+
+      # Otherwise discard, since unclear what it means
+      is.na(fio2) & is.na(o2_device) &
+        o2_flow_rate > 6 ~ NA_real_
+    )
+  }
+
+  x %>%
+    mutate(fio2_inferred = infer_fio2(fio2, o2_device, o2_flow_rate))
+}
+
+
+# Largely copied from summarise_pivot_wider(), need to unify all this
+fsheet_pivot_wider <- function(x,
+                               id_cols = c("person_id", "measurement_datetime"),
+                               names_from = "symbol",
+                               values_from = c("value_as_number",
+                                               "value_as_character"),
+                               names_suffix = NULL){
+  # Prefix for new column names to allow identification of new columns
+  magic_prefix <- "__new__"
+
+  if (!is.null(names_suffix)){
+    names_suffix <- paste0("_", names_suffix)
+  }
+
+  # only include datetime if it is in the data frame
+  values_from <- if ("datetime" %in% colnames(x)){
+    values_from
+  } else {
+    setdiff(values_from, "datetime")
+  }
+
+  names_glue <- paste0(magic_prefix,  "{",
+                       names_from, "}",
+                       names_suffix,
+                       "_{.value}")
+
+  out_split <- split_by_type(x)
+
+  if (out_split$any_numeric){
+    out_numeric <- out_split$numeric %>%
+      pivot_wider(
+        id_cols = all_of(id_cols),
+        names_from = all_of(names_from),
+        values_from = all_of(setdiff(values_from, "value_as_character")),
+        names_glue = names_glue)
+  }
+
+  if (out_split$any_character){
+    out_character <- out_split$character %>%
+      pivot_wider(
+        id_cols = all_of(id_cols),
+        names_from = all_of(names_from),
+        values_from = all_of(setdiff(values_from, "value_as_number")),
+        names_glue = names_glue)
+  }
+
+  if (out_split$any_numeric & out_split$any_character){
+    out <- full_join(out_numeric, out_character)
+  } else if (out_split$any_numeric){
+    out <- out_numeric
+  } else if (out_split$any_character){
+    out <- out_character
+  } else {
+    stop("Neither numeric or character output from slice/summary found")
+  }
+
+  relocate_and_clean_new_cols(out, magic_prefix = magic_prefix)
+}
+
+fsheet_pivot_longer <- function(x){
+  x %>%
+    tidyr:::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
+                         names_to = "symbol",
+                         values_to = "value_as_number")
+}
+
+fsheet_sf_ratio <- function(x){
+  relevant_wider <- x %>%
+    filter(symbol %in% c("fio2", "o2_device", "o2_flow_rate", "spo2")) %>%
+    fsheet_pivot_wider() %>%
+    fsheet_infer_fio2() %>%
+    mutate(fio2_inferred =
+             case_when(!is.na(fio2_inferred) ~ fio2_inferred,
+                       is.na(fio2_inferred) & spo2 >= 88 ~ 0.21),
+           spo2_fio2_ratio = spo2/fio2_inferred) %>%
+    select(person_id, measurement_datetime, spo2_fio2_ratio) %>%
+    tidyr:::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
+                         names_to = "symbol",
+                         values_to = "value_as_number")
+}
