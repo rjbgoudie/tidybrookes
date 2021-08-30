@@ -171,7 +171,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     filter(name %in% fsheet_def$names)
 
   inform(format_error_bullets(c(
-    glue("\nExtracting {fsheet$title} ({fsheet$symbol}),",
+    glue("\nExtracting {fsheet_def$title} ({fsheet_def$symbol}),",
          "{nrow(out)} rows in raw data"))))
 
   # Add symbol and title
