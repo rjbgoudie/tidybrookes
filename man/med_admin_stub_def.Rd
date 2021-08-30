@@ -4,7 +4,16 @@
 \alias{med_admin_stub_def}
 \title{Generate a stub definition of medication administration}
 \usage{
-med_admin_stub_def(x, symbol, title, search = NULL, names = NULL)
+med_admin_stub_def(
+  x,
+  symbol,
+  title,
+  search = NULL,
+  names = NULL,
+  action_exclude = c("Missed", "Cancelled Entry", "MAR Hold", "MAR Unhold",
+    "Doctor Medication Unhold", "See Alternative", "Doctor Medication Hold", "Held",
+    "Automatically Held", "Pending", "Due", "Stopped")
+)
 }
 \arguments{
 \item{x}{Medication data in tidy-column-name format (after applying

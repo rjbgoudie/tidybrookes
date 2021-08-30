@@ -21,6 +21,7 @@ fsheet_add(
     case_when(TRUE ~ value_as_character)),
   unit_rescale_fn = case_when(TRUE ~ value_as_number),
   unit_relabel_fn = case_when(TRUE ~ NA_character_),
+  coalesce_fn = identity,
   expect_before = TRUE,
   expect_after = TRUE,
   range_mainly_low = NA,
@@ -72,6 +73,9 @@ values. By default, does not rescale}
 
 \item{unit_relabel_fn}{A function specifying how to relabel the units of the
 the flowsheet values. By default, does not rescale}
+
+\item{coalesce_fn}{A function specifying how to combine measurements from
+exactly the same time}
 
 \item{expect_before}{An expression that returns a logical value,
 specifying a condition that should be \code{TRUE} in the raw data}
