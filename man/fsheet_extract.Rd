@@ -15,9 +15,10 @@ fsheet_extract(x, fsheet_def, errors = stop)
 }
 \value{
 A data frame with the following columns:
-\code{person_id}, \code{symbol}, \code{value_as_character}, \code{value_as_number}, \code{censoring},
-\code{comment}, \code{measurement_datetime}, \code{name}, \code{title}, \code{data_id},
-\code{measurement_id}, \code{line_id}, \code{template}, \code{form}, \code{type}, \code{unit}
+\code{person_id}, \code{symbol}, \code{value_as_character}, \code{value_as_number},
+\code{value_as_logical}, \code{censoring}, \code{comment}, \code{measurement_datetime}, \code{name},
+\code{title}, \code{data_id}, \code{measurement_id}, \code{line_id}, \code{template}, \code{form}, \code{type},
+\code{unit}
 }
 \description{
 Extract fsheet data into tidy format

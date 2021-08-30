@@ -97,7 +97,8 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   # Add symbol and title
   out <- out %>%
     mutate(symbol = condition_def$symbol, .after = person_id) %>%
-    mutate(title = condition_def$title, .after = snomed)
+    mutate(title = condition_def$title, .after = snomed) %>%
+    mutate(value_as_logical = TRUE)
 
   # Remove duplicate rows
   out <- out %>%

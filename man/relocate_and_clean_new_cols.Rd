@@ -17,6 +17,6 @@ The data frame \code{x}, which renamed and reorder columns
 }
 \description{
 Moves new columns to the end, and sorts them (so that values and datetimes
-are adjacent). The suffixes \verb{_value_as_number} and \verb{_value_as_character} are
-also stripped to provide nicer column names
+are adjacent). The suffixes \verb{_value_as_number}, \verb{_value_as_character} and
+\verb{_value_as_logical} are also stripped to provide nicer column names
 }

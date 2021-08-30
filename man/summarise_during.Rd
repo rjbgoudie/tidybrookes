@@ -12,7 +12,8 @@ summarise_during(
   type = "none",
   formula,
   names_from = "symbol",
-  values_from = c("value_as_number", "value_as_character", "datetime"),
+  values_from = c("value_as_number", "value_as_character", "value_as_logical",
+    "datetime"),
   names_suffix
 )
 }

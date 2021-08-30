@@ -75,6 +75,8 @@ tests_unrename <- function(x){
 #'   `value_as_number` column
 #' @param value_as_character_fn A function specifying how to generate the
 #'   `value_as_character` column
+#' @param value_as_logical_fn A function specifying how to generate the
+#'   `value_as_logical` column
 #' @param unit_rescale_fn A function specifying how to rescale the result
 #'   values. By default, does not rescale.
 #' @param unit_relabel_fn A function specifying how to relabel the units of the
@@ -107,9 +109,13 @@ tests_add <- function(test_def,
                                 case_when(TRUE ~ value_as_number),
                                 case_when(TRUE ~ NA_real_)),
                       value_as_character_fn =
-                        if_else(type == "numeric",
-                                case_when(TRUE ~ NA_character_),
-                                case_when(TRUE ~ value_as_character)),
+                        if_else(type == "character",
+                                case_when(TRUE ~ value_as_character),
+                                case_when(TRUE ~ NA_character_)),
+                      value_as_logical_fn =
+                        if_else(type == "logical",
+                                case_when(TRUE ~ value_as_logical),
+                                case_when(TRUE ~ as.logical(NA))),
                       unit_rescale_fn = case_when(TRUE ~ value_as_number),
                       unit_relabel_fn = case_when(TRUE ~ unit),
                       expect_before = TRUE,
@@ -121,6 +127,7 @@ tests_add <- function(test_def,
   censoring_fn <- enquo(censoring_fn)
   value_as_number_fn <- enquo(value_as_number_fn)
   value_as_character_fn <- enquo(value_as_character_fn)
+  value_as_logical_fn <- enquo(value_as_logical_fn)
   silently_exclude_na_when <- enquo(silently_exclude_na_when)
   silently_exclude_when <- enquo(silently_exclude_when)
   unit_rescale_fn <- enquo(unit_rescale_fn)
@@ -141,6 +148,7 @@ tests_add <- function(test_def,
               censoring_fn = censoring_fn,
               value_as_number_fn = value_as_number_fn,
               value_as_character_fn = value_as_character_fn,
+              value_as_logical_fn = value_as_logical_fn,
               unit_rescale_fn = unit_rescale_fn,
               unit_relabel_fn = unit_relabel_fn,
               expect_before = expect_before,
@@ -164,9 +172,10 @@ tests_add <- function(test_def,
 #' @return
 #' A data frame with the following columns:
 #' `person_id`, `symbol`, `value_as_number`, `value_as_character`,
-#' `censoring`, `ordered_datetime`, `collected_datetime`, `received_datetime`,
-#' `result_datetime`, `ordering_department_name`, `range_low`, `range_high`,
-#' `unit`, `name`, `title`, `method`, `group`, `type`
+#' `value_as_logical`, `censoring`, `ordered_datetime`, `collected_datetime`,
+#' `received_datetime`, `result_datetime`, `ordering_department_name`,
+#' `range_low`, `range_high`, `unit`, `name`, `title`, `method`, `group`,
+#' `type`
 #'
 #' The result will be sorted by collected_datetime
 #' @author R.J.B. Goudie
@@ -236,8 +245,12 @@ tests_extract_single <- function(x, test_def, errors = stop){
       value_as_number = suppressWarnings({
         as.numeric(value_original)
       }),
+      value_as_logical = suppressWarnings({
+        as.logical(value_original)
+      }),
       value_as_character = !!test_def$value_as_character_fn,
       value_as_number = !!test_def$value_as_number_fn,
+      value_as_logical = !!test_def$value_as_logical_fn,
       censoring = !!test_def$censoring_fn,
       .after = value_original) %>%
     relocate(censoring, .after = value_as_number) %>%

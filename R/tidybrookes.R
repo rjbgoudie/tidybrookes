@@ -5,4 +5,5 @@
 #' @importFrom tidyr pivot_wider separate
 #' @importFrom stringr str_ends str_starts str_replace str_remove str_detect regex str_flatten coll fixed str_replace_all
 #' @importFrom tibble tibble as_tibble tribble enframe
+#' @importFrom purrr reduce compact
 NULL

@@ -17,9 +17,10 @@ tests_extract(x, tests_def, errors = stop)
 \value{
 A data frame with the following columns:
 \code{person_id}, \code{symbol}, \code{value_as_number}, \code{value_as_character},
-\code{censoring}, \code{ordered_datetime}, \code{collected_datetime}, \code{received_datetime},
-\code{result_datetime}, \code{ordering_department_name}, \code{range_low}, \code{range_high},
-\code{unit}, \code{name}, \code{title}, \code{method}, \code{group}, \code{type}
+\code{value_as_logical}, \code{censoring}, \code{ordered_datetime}, \code{collected_datetime},
+\code{received_datetime}, \code{result_datetime}, \code{ordering_department_name},
+\code{range_low}, \code{range_high}, \code{unit}, \code{name}, \code{title}, \code{method}, \code{group},
+\code{type}
 
 The result will be sorted by collected_datetime
 }

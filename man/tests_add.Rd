@@ -19,8 +19,10 @@ tests_add(
   censoring_fn = case_when(TRUE ~ NA_character_),
   value_as_number_fn = if_else(type == "numeric", case_when(TRUE ~ value_as_number),
     case_when(TRUE ~ NA_real_)),
-  value_as_character_fn = if_else(type == "numeric", case_when(TRUE ~ NA_character_),
-    case_when(TRUE ~ value_as_character)),
+  value_as_character_fn = if_else(type == "character", case_when(TRUE ~
+    value_as_character), case_when(TRUE ~ NA_character_)),
+  value_as_logical_fn = if_else(type == "logical", case_when(TRUE ~ value_as_logical),
+    case_when(TRUE ~ as.logical(NA))),
   unit_rescale_fn = case_when(TRUE ~ value_as_number),
   unit_relabel_fn = case_when(TRUE ~ unit),
   expect_before = TRUE,
@@ -75,7 +77,10 @@ excluded}
 \code{value_as_number} column}
 
 \item{value_as_character_fn}{A function specifying how to generate the
-\code{value_as_character} column}
+\code{value_as_character} column#}
+
+\item{value_as_logical_fn}{A function specifying how to generate the
+\code{value_as_logical} column}
 
 \item{unit_rescale_fn}{A function specifying how to rescale the result
 values. By default, does not rescale.}

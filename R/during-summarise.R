@@ -29,6 +29,7 @@ summarise_during <- function(x,
                              names_from = "symbol",
                              values_from = c("value_as_number",
                                              "value_as_character",
+                                             "value_as_logical",
                                              "datetime"),
                              names_suffix){
   formula <- enquo(formula)
@@ -110,31 +111,52 @@ summarise_pivot_wider <- function(x,
                        "_{.value}")
 
   out_split <- split_by_type(out)
+  anything <-
+    out_split$any_numeric ||
+    out_split$any_character ||
+    out_split$any_logical
+
+  out_numeric <- NULL
+  out_character <- NULL
+  out_logical <- NULL
 
   if (out_split$any_numeric){
+    values_from_numeric <- setdiff(values_from,
+                                   c("value_as_character", "value_as_logical"))
     out_numeric <- out_split$numeric %>%
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
-        values_from = all_of(setdiff(values_from, "value_as_character")),
+        values_from = all_of(values_from_numeric),
         names_glue = names_glue)
   }
 
   if (out_split$any_character){
+    values_from_character <- setdiff(values_from,
+                                     c("value_as_number", "value_as_logical"))
     out_character <- out_split$character %>%
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
-        values_from = all_of(setdiff(values_from, "value_as_number")),
+        values_from = all_of(values_from_character),
         names_glue = names_glue)
   }
 
-  if (out_split$any_numeric & out_split$any_character){
-    out <- full_join(out_numeric, out_character)
-  } else if (out_split$any_numeric){
-    out <- out_numeric
-  } else if (out_split$any_character){
-    out <- out_character
+  if (out_split$any_logical){
+    values_from_logical <- setdiff(values_from,
+                                   c("value_as_number", "value_as_character"))
+    out_logical <- out_split$logical %>%
+      pivot_wider(
+        id_cols = all_of(id_cols),
+        names_from = all_of(names_from),
+        values_from = all_of(values_from_logical),
+        names_glue = names_glue)
+  }
+
+  if (anything){
+    out <- list(out_numeric, out_character, out_logical) %>%
+      compact %>%
+      reduce(full_join)
   } else {
     stop("Neither numeric or character output from slice/summary found")
   }
@@ -173,15 +195,16 @@ grouped_summarise_or_slice <- function(x,
   }
 }
 
-#' Split a data frame into number and character value rows
+#' Split a data frame into number, character and logical value rows
 #'
-#' Determine whether to use the `value_as_number` or `value_as_character`
-#' column for each row of a data frame.
+#' Determine whether to use the `value_as_number`, `value_as_character` or
+#' `value_as_logical` column for each row of a data frame.
 #'
 #' - Where a suitable `type` col is present, this is used to split the rows
 #' - Where only a `value_as_number` column is present (no `value_as_character`
-#'   is present), then all rows are assumed numeric
-#' - Similar when only a `value_as_character` column is present
+#'   or `value_as_logical` are present), then all rows are assumed numeric
+#' - Similar when only a `value_as_character` or `value_as_logical` column
+#'   are present
 #'
 #' @param x A data frame
 #'
@@ -189,56 +212,83 @@ grouped_summarise_or_slice <- function(x,
 #' A list with 4 components:
 #' - `any_numeric` a logical indicating whether any rows are numbers
 #' - `any_character` a logical indicating whether any rows are characters
+#' - `any_logical` a logical indicating whether any rows are logical
 #' - `numeric` A data frame containing numeric rows
 #' - `character` A data frame containing character rows
+#' - `logical` A data frame containing logical rows
 split_by_type <- function(x){
   has_value_as_number_col <- "value_as_number" %in% colnames(x)
   has_value_as_character_col <- "value_as_character" %in% colnames(x)
+  has_value_as_logical_col <- "value_as_logical" %in% colnames(x)
   has_type_col <- "type" %in% colnames(x)
 
   if (has_type_col){
-    possible_types <- c("numeric", "character")
-    type_col_is_numeric_or_character <- all(unique(x$type) %in% possible_types)
+    possible_types <- c("numeric", "character", "logical")
+    type_col_is_possible <- all(unique(x$type) %in% possible_types)
   }
 
   clearly_specifies_types <-
-    has_type_col && type_col_is_numeric_or_character
+    has_type_col && type_col_is_possible
   has_only_value_as_number_col <-
-    has_value_as_number_col & !has_value_as_character_col
+    has_value_as_number_col &
+    !has_value_as_character_col &
+    !has_value_as_logical_col
   has_only_value_as_character_col <-
-    !has_value_as_number_col & has_value_as_character_col
+    !has_value_as_number_col &
+    has_value_as_character_col &
+    !has_value_as_logical_col
+  has_only_value_as_logical_col <-
+    !has_value_as_number_col &
+    !has_value_as_character_col &
+    has_value_as_logical_col
 
   if (clearly_specifies_types){
     x_numeric <- x %>%
       filter(type == "numeric")
     x_character <- x %>%
       filter(type == "character")
+    x_logical <- x %>%
+      filter(type == "logical")
     any_numeric <- nrow(x_numeric) > 0
     any_character <- nrow(x_character) > 0
+    any_logical <- nrow(x_logical) > 0
   } else if (has_only_value_as_number_col){
     any_numeric <- TRUE
     any_character <- FALSE
+    any_logical <- FALSE
     x_numeric <- x
     x_character <- NULL
+    x_logical <- NULL
   } else if (has_only_value_as_character_col){
     any_numeric <- FALSE
     any_character <- TRUE
+    any_logical <- FALSE
     x_character <- x
+    x_numeric <- NULL
+    x_logical <- NULL
+  } else if (has_only_value_as_logical_col){
+    any_numeric <- FALSE
+    any_character <- FALSE
+    any_logical <- TRUE
+    x_character <- NULL
+    x_logical <- x
     x_numeric <- NULL
   } else {
     stop("Could not establish whether to use numeric or character values")
   }
   list(any_numeric = any_numeric,
        any_character = any_character,
+       any_logical = any_logical,
        numeric = x_numeric,
-       character = x_character)
+       character = x_character,
+       logical = x_logical)
 }
 
 #' Tidy pivot_wider dataframe column names and arrangement
 #'
 #' Moves new columns to the end, and sorts them (so that values and datetimes
-#' are adjacent). The suffixes `_value_as_number` and `_value_as_character` are
-#' also stripped to provide nicer column names
+#' are adjacent). The suffixes `_value_as_number`, `_value_as_character` and
+#' `_value_as_logical` are also stripped to provide nicer column names
 #'
 #' @param x A data frame
 #' @param magic_prefix A character string, providing the prefix that indicates
@@ -255,6 +305,7 @@ relocate_and_clean_new_cols <- function(x, magic_prefix){
   # remove these default names to produce cleaner column names
   suffix_to_remove_number <- "_value_as_number"
   suffix_to_remove_character <- "_value_as_character"
+  suffix_to_remove_logical <- "_value_as_logical"
 
   x %>%
     select(!starts_with(magic_prefix), sort(colnames(.))) %>%
@@ -263,6 +314,8 @@ relocate_and_clean_new_cols <- function(x, magic_prefix){
                   str_remove(colname, glue("{suffix_to_remove_character}$")),
                 str_ends(colname, suffix_to_remove_number) ~
                   str_remove(colname, glue("{suffix_to_remove_number}$")),
+                str_ends(colname, suffix_to_remove_logical) ~
+                  str_remove(colname, glue("{suffix_to_remove_logical}$")),
                 TRUE ~ colname)
     }) %>%
     rename_with(.fn = colnames_strip_new)

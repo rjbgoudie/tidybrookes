@@ -63,6 +63,8 @@ fsheet_unrename <- function(x){
 #'   `value_as_number` column
 #' @param value_as_character_fn A function specifying how to generate the
 #'   `value_as_character` column
+#' @param value_as_logical_fn A function specifying how to generate the
+#'   `value_as_logical` column
 #' @param unit_rescale_fn A function specifying how to rescale the flowsheet
 #'   values. By default, does not rescale
 #' @param unit_relabel_fn A function specifying how to relabel the units of the
@@ -95,9 +97,13 @@ fsheet_add <- function(fsheet_def,
                                  case_when(TRUE ~ value_as_number),
                                  case_when(TRUE ~ NA_real_)),
                        value_as_character_fn =
-                         if_else(type == "numeric",
-                                 case_when(TRUE ~ NA_character_),
-                                 case_when(TRUE ~ value_as_character)),
+                         if_else(type == "character",
+                                 case_when(TRUE ~ value_as_character),
+                                 case_when(TRUE ~ NA_character_)),
+                       value_as_logical_fn =
+                         if_else(type == "logical",
+                                 case_when(TRUE ~ value_as_logical),
+                                 case_when(TRUE ~ as.logical(NA))),
                        unit_rescale_fn = case_when(TRUE ~ value_as_number),
                        unit_relabel_fn = case_when(TRUE ~ NA_character_),
                        coalesce_fn = identity,
@@ -110,6 +116,7 @@ fsheet_add <- function(fsheet_def,
   censoring_fn <- enquo(censoring_fn)
   value_as_number_fn <- enquo(value_as_number_fn)
   value_as_character_fn <- enquo(value_as_character_fn)
+  value_as_logical_fn <- enquo(value_as_logical_fn)
   silently_exclude_na_when <- enquo(silently_exclude_na_when)
   silently_exclude_when <- enquo(silently_exclude_when)
   unit_rescale_fn <- enquo(unit_rescale_fn)
@@ -128,6 +135,7 @@ fsheet_add <- function(fsheet_def,
               censoring_fn = censoring_fn,
               value_as_number_fn = value_as_number_fn,
               value_as_character_fn = value_as_character_fn,
+              value_as_logical_fn = value_as_logical_fn,
               unit_rescale_fn = unit_rescale_fn,
               unit_relabel_fn = unit_relabel_fn,
               coalesce_fn = coalesce_fn,
@@ -150,9 +158,10 @@ fsheet_add <- function(fsheet_def,
 #'
 #' @return
 #' A data frame with the following columns:
-#' `person_id`, `symbol`, `value_as_character`, `value_as_number`, `censoring`,
-#' `comment`, `measurement_datetime`, `name`, `title`, `data_id`,
-#' `measurement_id`, `line_id`, `template`, `form`, `type`, `unit`
+#' `person_id`, `symbol`, `value_as_character`, `value_as_number`,
+#' `value_as_logical`, `censoring`, `comment`, `measurement_datetime`, `name`,
+#' `title`, `data_id`, `measurement_id`, `line_id`, `template`, `form`, `type`,
+#' `unit`
 #' @author R.J.B. Goudie
 fsheet_extract <- function(x, fsheet_def, errors = stop){
   if (length(fsheet_def) == 1 & "symbol" %in% names(fsheet_def)){
@@ -211,8 +220,12 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
       value_as_number = suppressWarnings({
         as.numeric(value_original)
       }),
+      value_as_logical = suppressWarnings({
+        as.logical(value_original)
+      }),
       value_as_character = !!fsheet_def$value_as_character_fn,
       value_as_number = !!fsheet_def$value_as_number_fn,
+      value_as_logical = !!fsheet_def$value_as_logical_fn,
       censoring = !!fsheet_def$censoring_fn,
       .after = value_original) %>%
     relocate(censoring, .after = value_as_number) %>%
@@ -255,7 +268,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     x %>%
       group_by(person_id, measurement_datetime) %>%
       (fsheet_def$coalesce_fn)() %>%
-      ungroup()
+                             ungroup()
   }
   # Handle coalesce
   out <- fn_inform(out, coalesce_out, since = "due to coalescing")
@@ -345,7 +358,8 @@ fsheet_pivot_wider <- function(x,
                                id_cols = c("person_id", "measurement_datetime"),
                                names_from = "symbol",
                                values_from = c("value_as_number",
-                                               "value_as_character"),
+                                               "value_as_character",
+                                               "value_as_logical"),
                                names_suffix = NULL){
   # Prefix for new column names to allow identification of new columns
   magic_prefix <- "__new__"
@@ -367,6 +381,10 @@ fsheet_pivot_wider <- function(x,
                        "_{.value}")
 
   out_split <- split_by_type(x)
+  anything <-
+    out_split$any_numeric ||
+    out_split$any_character ||
+    out_split$any_logical
 
   if (out_split$any_numeric){
     out_numeric <- out_split$numeric %>%
@@ -386,12 +404,20 @@ fsheet_pivot_wider <- function(x,
         names_glue = names_glue)
   }
 
-  if (out_split$any_numeric & out_split$any_character){
-    out <- full_join(out_numeric, out_character)
-  } else if (out_split$any_numeric){
-    out <- out_numeric
-  } else if (out_split$any_character){
-    out <- out_character
+  if (out_split$any_logical){
+    out_logical <- out_split$logical %>%
+      pivot_wider(
+        id_cols = all_of(id_cols),
+        names_from = all_of(names_from),
+        values_from = all_of(setdiff(values_from, "value_as_logical")),
+        names_glue = names_glue)
+  }
+
+  if (anything){
+    list(out_numeric, out_character, out_logical) %>%
+      out_all %>%
+      compact %>%
+      reduce(full_join)
   } else {
     stop("Neither numeric or character output from slice/summary found")
   }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/during-summarise.R
 \name{split_by_type}
 \alias{split_by_type}
-\title{Split a data frame into number and character value rows}
+\title{Split a data frame into number, character and logical value rows}
 \usage{
 split_by_type(x)
 }
@@ -14,19 +14,22 @@ A list with 4 components:
 \itemize{
 \item \code{any_numeric} a logical indicating whether any rows are numbers
 \item \code{any_character} a logical indicating whether any rows are characters
+\item \code{any_logical} a logical indicating whether any rows are logical
 \item \code{numeric} A data frame containing numeric rows
 \item \code{character} A data frame containing character rows
+\item \code{logical} A data frame containing logical rows
 }
 }
 \description{
-Determine whether to use the \code{value_as_number} or \code{value_as_character}
-column for each row of a data frame.
+Determine whether to use the \code{value_as_number}, \code{value_as_character} or
+\code{value_as_logical} column for each row of a data frame.
 }
 \details{
 \itemize{
 \item Where a suitable \code{type} col is present, this is used to split the rows
 \item Where only a \code{value_as_number} column is present (no \code{value_as_character}
-is present), then all rows are assumed numeric
-\item Similar when only a \code{value_as_character} column is present
+or \code{value_as_logical} are present), then all rows are assumed numeric
+\item Similar when only a \code{value_as_character} or \code{value_as_logical} column
+are present
 }
 }
