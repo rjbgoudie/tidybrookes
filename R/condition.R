@@ -107,7 +107,7 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   # Exclude Deleted when requested
   out <- out %>%
     mutate(will_silently_exclude_deleted =
-             (type == "problem_list") &
+             (source == "problem_list") &
              (!! condition_def$silently_exclude_deleted_when) &
              (status == "Deleted")) %>%
     filter_inform(!will_silently_exclude_deleted,
@@ -119,7 +119,7 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   # Exclude Resolved when requested
   out <- out %>%
     mutate(will_silently_exclude_resolved =
-             (type == "problem_list") &
+             (source == "problem_list") &
              (!! condition_def$silently_exclude_resolved_when) &
              (status == "Resolved")) %>%
     filter_inform(!will_silently_exclude_resolved,

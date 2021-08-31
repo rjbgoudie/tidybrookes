@@ -21,7 +21,7 @@ diagnosis_pl_rename <- function(x){
     relocate(person_id, icd10_list, description, description_displayed,
              status, entered_datetime, diagnosis_datetime, resolved_datetime,
              icd10_1, icd10_2, icd10_3, icd10_4, snomed, comment) %>%
-    mutate(type = "problem_list", .after = resolved_datetime)
+    mutate(source = "problem_list", .after = resolved_datetime)
 }
 
 #' Untidy raw diagnosis_pl colnames

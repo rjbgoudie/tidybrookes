@@ -15,5 +15,5 @@ med_hist_rename <- function(x){
     relocate(person_id, icd10_list, description, entered_datetime,
              medical_history_datetime_freetext, visit_id, comment,
              comment_annotation) %>%
-    mutate(type = "past_medical_history", .after = entered_datetime)
+    mutate(source = "past_medical_history", .after = entered_datetime)
 }
