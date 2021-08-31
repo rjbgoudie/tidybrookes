@@ -19,7 +19,17 @@ adt_rename <- function(x){
     relocate(visit_id, .after = person_id)
 }
 
+#' Check discharge dates identical within a visit
+#'
+#' All discharge_datetime should be the same within a visit
+adt_check_discharge_dates_identical <- function(x){
+  x %>%
+    group_by(person_id, visit_id) %>%
+    summarise(check_all_discharge_dates_identical =
+                all(discharge_datetime == first(discharge_datetime)))
+}
 
+#' Check disharge date consistent with final date
 adt_check_discharge_dates_consistent <- function(x){
   x %>%
     group_by(person_id, visit_id) %>%
@@ -36,12 +46,21 @@ adt_annotate <- function(x, fixed_labels, annotate_fn){
   # check numeric event type and text event type match
   stopifnot(x %>% count(event_type_c, event_type) %>% nrow == 3)
 
+  # Remove duplicate rows
+  out <- x %>%
+    distinct_inform
+
+  x %>%
+    adt_check_discharge_dates_identical %>%
+    check_that_all(check_all_discharge_dates_identical == TRUE,
+                   name = "discharge dates identical within visit")
+
   x %>%
     adt_check_discharge_dates_consistent %>%
     check_that_all(check_discharge_dates_consistent == TRUE,
                    name = "discharge dates consistency")
 
-  out <- x %>%
+  out <- out %>%
     group_by(person_id) %>%
     arrange(
       # Arrange by event_type_c to ensure admission events appear
