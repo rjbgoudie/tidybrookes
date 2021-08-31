@@ -51,10 +51,11 @@ min_during <- function(...){
                    names_suffix = "min")
 }
 
-ever_during <- function(..., formula){
-  formula <- enquo(formula)
+ever_during <- function(...){
   summarise_during(...,
                    type = "summarise",
-                   formula = !! formula,
+                   formula =
+                     tibble(value_as_logical = any(value_as_logical),
+                            type = "logical"),
                    names_suffix = "ever")
 }
