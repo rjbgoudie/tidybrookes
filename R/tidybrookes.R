@@ -1,4 +1,4 @@
-#' @importFrom dplyr select filter mutate relocate distinct group_by ungroup if_else case_when bind_rows arrange left_join full_join first last rename_with slice summarise count pull lag lead
+#' @importFrom dplyr select filter mutate relocate distinct group_by ungroup if_else case_when bind_rows arrange left_join full_join first last rename_with slice summarise count pull lag lead n
 #' @importFrom rlang enquo as_label inform warn format_error_bullets expr_print
 #' @importFrom glue glue
 #' @importFrom lubridate ymd ymd_hms dhours dseconds dminutes ddays dweeks dyears dmonths interval int_length

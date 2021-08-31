@@ -77,7 +77,7 @@ excluded}
 \code{value_as_number} column}
 
 \item{value_as_character_fn}{A function specifying how to generate the
-\code{value_as_character} column#}
+\code{value_as_character} column}
 
 \item{value_as_logical_fn}{A function specifying how to generate the
 \code{value_as_logical} column}
