@@ -158,7 +158,8 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
   out <- out %>%
     mutate(symbol = med_admin_def$symbol, .after = person_id) %>%
     mutate(title = med_admin_def$title, .after = unit) %>%
-    relocate(name, .after = unit)
+    relocate(name, .after = unit) %>%
+    mutate(value_as_logical = TRUE)
 
   # Remove duplicate rows
   out <- out %>%
