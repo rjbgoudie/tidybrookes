@@ -24,6 +24,19 @@ nearest_visit_start_during <- function(...){
     names_suffix = "nearest_visit_start")
 }
 
+first_during_after_event <- function(..., event_datetime, names_suffix = ""){
+  event_datetime <- enquo(event_datetime)
+  summarise_during(
+    ...,
+    type = "slice",
+    formula =
+      interval(!! event_datetime, datetime) %>%
+      int_length() %>%
+      purrr:::keep(~ .x > 0) %>%
+      which.min(),
+    names_suffix = glue("first_after_{names_suffix}"))
+}
+
 nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
   summarise_during(
