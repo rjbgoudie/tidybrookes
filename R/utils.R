@@ -152,3 +152,20 @@ filter_med_admin <- function(x, pattern){
   x %>%
     filter(str_detect(name, coll(pattern, ignore_case = TRUE)))
 }
+
+#' Alert user if all datetime are midnight
+#'
+#' Does nothing if a `Date` is supplied
+#'
+#' @param x A `POSIXct` datetime
+inform_if_all_times_are_midnight <- function(x){
+  if (inherits(x, "POSIXct")){
+    h <- lubridate:::hour(x)
+    m <- lubridate:::minute(x)
+    s <- lubridate:::second(x)
+    if (all(h == 0L & m == 0L & s == 0)){
+      inform(format_error_bullets(c(
+        i = glue("Supplied datetime column is all midnight - did you mean to use _date?"))))
+    }
+  }
+}
