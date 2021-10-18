@@ -79,6 +79,20 @@ all_during <- function(x,
                     is.na(visit_end_datetime) ~
                       datetime >= visit_start_datetime &
                       datetime <= visit_start_datetime + dhours(24)))
+  } else if (during == "during_visit_initial_72h"){
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", names_from),
+        filter_condition =
+          case_when(!is.na(visit_end_datetime) ~
+                      datetime >= visit_start_datetime &
+                      datetime <= visit_start_datetime + dhours(72) &
+                      datetime <= visit_end_datetime,
+                    is.na(visit_end_datetime) ~
+                      datetime >= visit_start_datetime &
+                      datetime <= visit_start_datetime + dhours(72)))
   } else if (during == "during_icu"){
     out <- x %>%
       join_fn(
