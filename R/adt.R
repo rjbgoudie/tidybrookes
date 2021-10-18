@@ -70,6 +70,7 @@ adt_annotate <- function(x, fixed_labels, annotate_fn){
     mutate(visit_index = cumsum(event_type == "Admission"),
            .after = event_type) %>%
     select(-event_type_c) %>%
+    mutate(end_datetime = lead(start_datetime), .after = start_datetime) %>%
     left_join(department_labels,
               by = "department") %>%
     annotate_fn()
