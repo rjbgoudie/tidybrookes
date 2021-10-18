@@ -130,7 +130,11 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   mutate(
     condition_start_datetime = !! condition_def$condition_start_datetime_fn,
     condition_end_datetime = !! condition_def$condition_end_datetime_fn,
+    condition_start_date = lubridate:::as_date(condition_start_datetime),
+    condition_end_date = lubridate:::as_date(condition_end_datetime),
     .after = status)
+
+  # TODO possibly make datetime NA if all midnight?
 
   # Return result
   inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
