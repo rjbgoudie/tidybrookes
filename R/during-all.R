@@ -94,17 +94,18 @@ all_during <- function(x,
                       datetime >= visit_start_datetime &
                       datetime <= visit_start_datetime + dhours(72)))
   } else if (during == "during_icu"){
+    warning("Note that this only handle single icu_visit at the moment, at hosital visit level")
     out <- x %>%
       join_fn(
         y,
         join_by = "person_id",
-        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
+        filter_by = c("person_id", "visit_id", names_from),
         filter_condition =
-          case_when(!is.na(icu_end_datetime) ~
-                      datetime >= icu_start_datetime &
-                       datetime <= icu_end_datetime,
-                    is.na(icu_end_datetime) ~
-                      datetime >= icu_start_datetime))
+          case_when(!is.na(first_icu_level2_or_level3_end_datetime) ~
+                      datetime >= first_icu_level2_or_level3_start_datetime &
+                       datetime <= first_icu_level2_or_level3_end_datetime,
+                    is.na(first_icu_level2_or_level3_end_datetime) ~
+                      datetime >= first_icu_level2_or_level3_start_datetime))
   } else if (during == "before_visit_initial_24h"){
     out <- x %>%
       join_fn(
