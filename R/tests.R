@@ -399,10 +399,15 @@ tests_abg <- function(bg_data, bg_specimen_type){
     select(-specimen_type, -specimen_type_simplified) %>%
     rename_with(.fn = ~ str_replace(.x, "_bg", "_abg"),
                 .cols = !c(person_id, order_id, result_datetime)) %>%
+    mutate(pao2_fio2_ratio_value = po2_temp_abg_value * 7.5/fio2_abg_value) %>%
     tidyr:::pivot_longer(cols = !c(person_id, order_id, result_datetime),
                          names_to = c("symbol", ".value"),
                          names_pattern = c("([A-Za-z0-9_]+)_([^_]+)$")) %>%
-    rename(value_as_number = value)
+    rename(value_as_number = value) %>%
+    mutate(type = "numeric",
+           # Since point of care test, all of these are the same
+           collected_datetime = result_datetime,
+           ordered_datetime = result_datetime)
 
   abg_data
 }

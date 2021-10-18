@@ -432,17 +432,30 @@ fsheet_pivot_longer <- function(x){
                          values_to = "value_as_number")
 }
 
-fsheet_sf_ratio <- function(x){
-  relevant_wider <- x %>%
+fsheet_sf_ratio <- function(x, shape = "long"){
+  out <- x %>%
     filter(symbol %in% c("fio2", "o2_device", "o2_flow_rate", "spo2")) %>%
-    fsheet_pivot_wider() %>%
-    fsheet_infer_fio2() %>%
+    fsheet_pivot_wider(values_from = c("value_as_number", "value_as_character")) %>%
+    fsheet_infer_fio2()
+
+  out <- out %>%
     mutate(fio2_inferred =
              case_when(!is.na(fio2_inferred) ~ fio2_inferred,
                        is.na(fio2_inferred) & spo2 >= 88 ~ 0.21),
-           spo2_fio2_ratio = spo2/fio2_inferred) %>%
-    select(person_id, measurement_datetime, spo2_fio2_ratio) %>%
-    tidyr:::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
-                         names_to = "symbol",
-                         values_to = "value_as_number")
+           spo2_fio2_inferred_ratio = spo2/fio2_inferred,
+           spo2_fio2_ratio = spo2/fio2)
+
+  if (shape == "long"){
+    out %>%
+     select(person_id,
+            measurement_datetime,
+            spo2_fio2_inferred_ratio,
+            spo2_fio2_ratio) %>%
+     tidyr:::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
+                          names_to = "symbol",
+                          values_to = "value_as_number") %>%
+      mutate(type = "numeric")
+  } else {
+    out
+  }
 }
