@@ -386,6 +386,10 @@ fsheet_pivot_wider <- function(x,
     out_split$any_character ||
     out_split$any_logical
 
+  out_numeric <- NULL
+  out_character <- NULL
+  out_logical <- NULL
+
   if (out_split$any_numeric){
     out_numeric <- out_split$numeric %>%
       pivot_wider(
@@ -414,8 +418,7 @@ fsheet_pivot_wider <- function(x,
   }
 
   if (anything){
-    list(out_numeric, out_character, out_logical) %>%
-      out_all %>%
+    out <- list(out_numeric, out_character, out_logical) %>%
       compact %>%
       reduce(full_join)
   } else {
