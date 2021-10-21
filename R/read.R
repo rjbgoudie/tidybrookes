@@ -40,6 +40,19 @@ read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
       meas_comment = col_character(),
       template = col_character(),
       form = col_character())
+  } else if (col_types == "fsheet_io"){
+    col_types <- cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      fsd_id = col_integer(),
+      line = col_integer(),
+      `flo-meas_id` = col_double(),
+      MEASURE_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      disp_name = col_character(),
+      measured_value = col_character(),
+      meas_comment = col_character(),
+      template = col_character(),
+      form = col_character(),
+      FLO_MEAS_NAME = col_character())
   } else if (col_types == "tests"){
     col_types <- cols(
       STUDY_SUBJECT_DIGEST = col_character(),
