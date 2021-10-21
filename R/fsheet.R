@@ -268,7 +268,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     x %>%
       group_by(person_id, measurement_datetime) %>%
       (fsheet_def$coalesce_fn)() %>%
-                             ungroup()
+      ungroup()
   }
   # Handle coalesce
   out <- fn_inform(out, coalesce_out, since = "due to coalescing")
@@ -450,13 +450,13 @@ fsheet_sf_ratio <- function(x, shape = "long"){
 
   if (shape == "long"){
     out %>%
-     select(person_id,
-            measurement_datetime,
-            spo2_fio2_inferred_ratio,
-            spo2_fio2_ratio) %>%
-     tidyr:::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
-                          names_to = "symbol",
-                          values_to = "value_as_number") %>%
+      select(person_id,
+             measurement_datetime,
+             spo2_fio2_inferred_ratio,
+             spo2_fio2_ratio) %>%
+      pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
+                   names_to = "symbol",
+                   values_to = "value_as_number") %>%
       mutate(type = "numeric")
   } else {
     out
