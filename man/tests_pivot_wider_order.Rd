@@ -4,13 +4,15 @@
 \alias{tests_pivot_wider_order}
 \title{Widen test data}
 \usage{
-tests_pivot_wider_order(x, values_fn = NULL)
+tests_pivot_wider_order(x, values_fn = NULL, include_censoring = FALSE)
 }
 \arguments{
 \item{x}{A tidy test data frame}
 
 \item{values_fn}{A function to summarise multiple results for a particular
 test from a particular order.}
+
+\item{include_censoring}{Logical, should censoring column be included?}
 }
 \value{
 A data frame with the tests in columns

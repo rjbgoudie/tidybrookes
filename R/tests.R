@@ -333,32 +333,67 @@ tests_check_for_new <- function(x,
 #' @param x A tidy test data frame
 #' @param values_fn A function to summarise multiple results for a particular
 #'   test from a particular order.
+#' @param include_censoring Logical, should censoring column be included?
 #' @return A data frame with the tests in columns
 #' @author R.J.B. Goudie
-tests_pivot_wider_order <- function(x, values_fn = NULL){
+tests_pivot_wider_order <- function(x,
+                                    values_fn = NULL,
+                                    include_censoring = FALSE){
   # check for non-unique results for a single order_id
   multiple_results <- x %>%
-    pivot_wider(id_cols = c("person_id", "order_id", "result_datetime"),
+    pivot_wider(id_cols = c("person_id",
+                            "order_id",
+                            "collected_datetime",
+                            "received_datetime",
+                            "result_datetime"),
                 names_from = symbol,
                 values_from = value_as_number,
                 values_fn = length) %>%
-    filter(dplyr:::if_any(!c(person_id, order_id, result_datetime), ~ .x > 1))
+    filter(dplyr:::if_any(!c(person_id,
+                             order_id,
+                             collected_datetime,
+                             received_datetime,
+                             result_datetime), ~ .x > 1))
 
   if (nrow(multiple_results)){
     message("Note ",
             nrow(multiple_results),
             " non-unique results by order found")
   }
-  x %>%
-    pivot_wider(id_cols = c("person_id", "order_id", "result_datetime"),
-                names_from = symbol,
-                values_from = value_as_number,
-                values_fn = values_fn)
+  if (include_censoring){
+    x %>%
+      pivot_wider(id_cols = c("person_id",
+                              "order_id",
+                              "collected_datetime",
+                              "received_datetime",
+                              "result_datetime"),
+                  names_from = symbol,
+                  values_from = c("value_as_number", "censoring"),
+                  names_glue = "{symbol}_{.value}",
+                  names_sort = TRUE) %>%
+      rename_with(.fn = ~ if_else(str_ends(.x, "_value_as_number"),
+                                  true = str_replace(.x, "_value_as_number", "_value"),
+                                  false = .x))
+  } else {
+    x %>%
+      pivot_wider(id_cols = c("person_id",
+                              "order_id",
+                              "collected_datetime",
+                              "received_datetime",
+                              "result_datetime"),
+                  names_from = symbol,
+                  values_from = "value_as_number",
+                  values_fn = values_fn)
+  }
 }
 
 tests_pivot_longer_order <- function(x){
   x %>%
-    tidyr:::pivot_longer(cols = !c(person_id, order_id, result_datetime),
+    tidyr:::pivot_longer(cols = !c(person_id,
+                                   order_id,
+                                   collected_datetime,
+                                   received_datetime,
+                                   result_datetime),
                          values_to = "value_as_number")
 }
 
