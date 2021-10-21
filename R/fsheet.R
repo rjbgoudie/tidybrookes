@@ -468,3 +468,29 @@ fsheet_sf_ratio <- function(x, shape = "long"){
     out
   }
 }
+
+#' Extract peripheral oxygen saturations (SpO2) on room air
+#'
+#' Excludes SpO2 measurements that are not from the same time as room air
+#' @param x A fsheet_raw dataframe
+#' @param shape Either "long" or "wide" format dataframe output
+fsheet_spo2_on_room_air <- function(x, shape = "long"){
+  out <- x %>%
+    filter(symbol %in% c("room_air", "spo2")) %>%
+    fsheet_pivot_wider() %>%
+    filter(room_air) %>%
+    mutate(spo2_room_air = spo2)
+
+  if (shape == "long"){
+    out %>%
+      select(person_id,
+             measurement_datetime,
+             spo2_room_air) %>%
+      pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
+                   names_to = "symbol",
+                   values_to = "value_as_number") %>%
+      mutate(type = "numeric")
+  } else {
+    out
+  }
+}
