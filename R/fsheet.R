@@ -391,29 +391,35 @@ fsheet_pivot_wider <- function(x,
   out_logical <- NULL
 
   if (out_split$any_numeric){
+    values_from_numeric <- setdiff(values_from,
+                                   c("value_as_character", "value_as_logical"))
     out_numeric <- out_split$numeric %>%
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
-        values_from = all_of(setdiff(values_from, "value_as_character")),
+        values_from = all_of(values_from_numeric),
         names_glue = names_glue)
   }
 
   if (out_split$any_character){
+    values_from_character <- setdiff(values_from,
+                                     c("value_as_number", "value_as_logical"))
     out_character <- out_split$character %>%
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
-        values_from = all_of(setdiff(values_from, "value_as_number")),
+        values_from = all_of(values_from_character),
         names_glue = names_glue)
   }
 
   if (out_split$any_logical){
+    values_from_logical <- setdiff(values_from,
+                                   c("value_as_number", "value_as_character"))
     out_logical <- out_split$logical %>%
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
-        values_from = all_of(setdiff(values_from, "value_as_logical")),
+        values_from = all_of(values_from_logical),
         names_glue = names_glue)
   }
 
