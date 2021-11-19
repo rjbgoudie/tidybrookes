@@ -405,7 +405,7 @@ fsheet_pivot_wider <- function(x,
     values_from_character <- setdiff(values_from,
                                      c("value_as_number", "value_as_logical"))
     out_character <- out_split$character %>%
-      pivot_wider(
+      tidyr::pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
         values_from = all_of(values_from_character),
@@ -436,7 +436,7 @@ fsheet_pivot_wider <- function(x,
 
 fsheet_pivot_longer <- function(x){
   x %>%
-    tidyr:::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
+    tidyr::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
                          names_to = "symbol",
                          values_to = "value_as_number")
 }
@@ -460,7 +460,7 @@ fsheet_sf_ratio <- function(x, shape = "long"){
              measurement_datetime,
              spo2_fio2_inferred_ratio,
              spo2_fio2_ratio) %>%
-      pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
+      tidyr::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
                    names_to = "symbol",
                    values_to = "value_as_number") %>%
       mutate(type = "numeric")
@@ -486,7 +486,7 @@ fsheet_spo2_on_room_air <- function(x, shape = "long"){
       select(person_id,
              measurement_datetime,
              spo2_room_air) %>%
-      pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
+      tidyr::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
                    names_to = "symbol",
                    values_to = "value_as_number") %>%
       mutate(type = "numeric")
