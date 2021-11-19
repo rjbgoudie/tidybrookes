@@ -162,6 +162,11 @@ tests_add <- function(test_def,
   test_def
 }
 
+tests_remove <- function(test_def, symbol){
+  index <- names(test_def) == symbol
+  test_def[!index]
+}
+
 #' Extract tests data into tidy format
 #'
 #' @param x Test data in tidy-column-name format (after applying
