@@ -394,7 +394,8 @@ tests_pivot_longer_order <- function(x){
                                    collected_datetime,
                                    received_datetime,
                                    result_datetime),
-                         values_to = "value_as_number")
+                         values_to = "value_as_number",
+                         names_to = "symbol")
 }
 
 tests_abg <- function(bg_data, bg_specimen_type){
