@@ -1,6 +1,8 @@
 #' @importFrom readr read_csv cols col_character col_integer col_double locale col_datetime
 read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
-  if (col_types == "adm"){
+  if (inherits(col_types, "col_spec")){
+    col_types <- col_types
+  } else if (col_types == "adm"){
     col_types <- cols(
       STUDY_SUBJECT_DIGEST = col_character(),
       PAT_ENC_CSN = col_integer(),
