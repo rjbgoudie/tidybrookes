@@ -474,7 +474,8 @@ fsheet_sf_ratio <- function(x, shape = "long"){
       tidyr::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
                    names_to = "symbol",
                    values_to = "value_as_number") %>%
-      mutate(type = "numeric")
+      mutate(type = "numeric") %>%
+      filter(!is.na(value_as_number))
   } else {
     out
   }
