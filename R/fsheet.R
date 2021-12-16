@@ -1,39 +1,50 @@
 #' Tidy raw fsheet colnames
+#'
+#' The standard data format from Clinical Informatics is handled by default. If
+#' variations from this format occur, custom renaming can be performed
+#' using the `names` argument
+#'
 #' @param x A data frame of raw fsheet data
+#' @param names A vector of new_name = old_name pairs
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
-fsheet_rename <- function(x){
-  x %>%
-    relocate(
-      person_id = STUDY_SUBJECT_DIGEST,
-      name = disp_name,
-      value = measured_value,
-      comment = meas_comment,
-      measurement_datetime = MEASURE_TIME,
-      data_id = fsd_id,
-      measurement_id = "flo-meas_id",
-      line_id = line,
-      template = template,
-      form = form)
+fsheet_rename <- function(x,
+                          names = c(person_id = "STUDY_SUBJECT_DIGEST",
+                                     name = "disp_name",
+                                     value = "measured_value",
+                                     comment = "meas_comment",
+                                     measurement_datetime = "MEASURE_TIME",
+                                     data_id = "fsd_id",
+                                     measurement_id = "flo-meas_id",
+                                     line_id = "line",
+                                     template = "template",
+                                     form = "form")){
+  relocate_ignoring_missing(x, names)
 }
 
 #' Untidy raw fsheet colnames
+#'
+#' The standard data format from Clinical Informatics is handled by default. If
+#' variations from this format occur, custom renaming can be performed
+#' using the `names` argument
+#'
 #' @param x A data frame of raw fsheet data with tidy names
+#' @param names A vector of new_name = old_name pairs
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
-fsheet_unrename <- function(x){
-  x %>%
-    relocate(
-      STUDY_SUBJECT_DIGEST = person_id,
-      disp_name = name,
-      measured_value = value,
-      meas_comment = comment,
-      MEASURE_TIME = measurement_datetime,
-      fsd_id = data_id,
-      `flo-meas_id` = measurement_id,
-      line = line_id,
-      template = template,
-      form = form)
+fsheet_unrename <- function(x,
+                            names =
+                              c(STUDY_SUBJECT_DIGEST = person_id,
+                                disp_name = name,
+                                measured_value = value,
+                                meas_comment = comment,
+                                MEASURE_TIME = measurement_datetime,
+                                fsd_id = data_id,
+                                `flo-meas_id` = measurement_id,
+                                line = line_id,
+                                template = template,
+                                form = form)){
+  relocate_ignoring_missing(x, names)
 }
 
 #' Add a new definition of a flowsheet item

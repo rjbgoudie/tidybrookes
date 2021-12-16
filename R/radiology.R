@@ -1,41 +1,47 @@
 #' Tidy raw radiology colnames
+#'
+#' The standard data format from Clinical Informatics is handled by default. If
+#' variations from this format occur, custom renaming can be performed
+#' using the `names` argument
+#'
 #' @param x A data frame of raw radiology data
+#' @param names A vector of new_name = old_name pairs
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
-radiology_rename <- function(x){
-  x %>%
-    rename(person_id = "STUDY_SUBJECT_DIGEST",
-           name = "Proc_Name",
-           procedure_datetime = "Proc_Date",
-           code = "Proc_Code",
-           narrative = "Proc_Narrative",
-           impression = "Proc_Impression",
-           addenda = "Proc_Addenda",
-           assessment = "Proc_Assessment") %>%
-    relocate(person_id,
-             name,
-             procedure_datetime,
-             narrative,
-             impression,
-             addenda,
-             assessment,
-             code)
+radiology_rename <- function(x,
+                             names =
+                               c(person_id = "STUDY_SUBJECT_DIGEST",
+                                 name = "Proc_Name",
+                                 procedure_datetime = "Proc_Date",
+                                 narrative = "Proc_Narrative",
+                                 impression = "Proc_Impression",
+                                 addenda = "Proc_Addenda",
+                                 assessment = "Proc_Assessment",
+                                 code = "Proc_Code")){
+  relocate_ignoring_missing(x, names)
 }
 
 #' Untidy raw radiology colnames
+#'
+#' The standard data format from Clinical Informatics is handled by default. If
+#' variations from this format occur, custom renaming can be performed
+#' using the `names` argument
+#'
 #' @param x A data frame of raw radiology data with tidy names
+#' @param names A vector of new_name = old_name pairs
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
-radiology_unrename <- function(x){
-  x %>%
-    rename(STUDY_SUBJECT_DIGEST = "person_id",
-           Proc_Name = "name",
-           Proc_Date = "procedure_datetime",
-           Proc_Code = "code",
-           Proc_Narrative = "narrative",
-           Proc_Impression = "impression",
-           Proc_Addenda = "addenda",
-           Proc_Assessment = "assessment")
+radiology_unrename <- function(x,
+                               names =
+                                 c(STUDY_SUBJECT_DIGEST = "person_id",
+                                   Proc_Name = "name",
+                                   Proc_Date = "procedure_datetime",
+                                   Proc_Code = "code",
+                                   Proc_Narrative = "narrative",
+                                   Proc_Impression = "impression",
+                                   Proc_Addenda = "addenda",
+                                   Proc_Assessment = "assessment")){
+  relocate_ignoring_missing(x, names)
 }
 
 
