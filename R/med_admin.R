@@ -134,7 +134,7 @@ med_admin_add <- function(med_admin_def,
 #' A data frame with the following columns:
 #' `person_id`, `symbol`, `value_as_number`, `value_as_character`,
 #' `censoring`, `administered_datetime`,
-#' 
+#'
 #' `unit`, `name`, `title`, `method`, `group`, `type`
 #'
 #' The result will be sorted by administered_datetime

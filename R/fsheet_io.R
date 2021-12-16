@@ -204,26 +204,26 @@ fsheet_io_extract_single <- function(x, fsheet_io_def, errors = stop){
     relocate(name, .after = measurement_datetime) %>%
     rename(value_original = value) %>%
     mutate(type = fsheet_io_def$type)
-  
+
   # Check expect_before condition
   check_that_all(out, !!fsheet_io_def$expect_before, "expect_before")
-  
+
   # Remove duplicate rows
   out <- out %>%
     distinct_inform
-  
+
   # Exclude NAs when requested
   out <- out %>%
     mutate(will_silently_exclude_na = (is.na(value_original) & !!fsheet_io_def$silently_exclude_na_when)) %>%
     filter_inform(!will_silently_exclude_na,
                   since = "since value was NA")
-  
+
   # Exclude other rows when requested
   out <- out %>%
     mutate(will_silently_exclude = (!!fsheet_io_def$silently_exclude_when)) %>%
     filter_inform(!will_silently_exclude,
                   since = "due to exclude_when condition")
-  
+
   # Convert values to numeric, and handle censoring
   out <- out %>%
     group_by(name) %>%
@@ -244,18 +244,18 @@ fsheet_io_extract_single <- function(x, fsheet_io_def, errors = stop){
       .after = value_original) %>%
     relocate(censoring, .after = value_as_number) %>%
     ungroup
-  
+
   if (fsheet_io_def$type == "numeric"){
     check_that_all(out,
                    suppressWarnings({!is.na(as.numeric(value_as_number))}),
                    name = "all values being numeric")
   }
-  
+
   # Rescale units
   out <- out %>%
     mutate(value_as_number = !!fsheet_io_def$unit_rescale_fn,
            unit = !!fsheet_io_def$unit_relabel_fn)
-  
+
   # Discard too high values
   if (!is.na(fsheet_io_def$range_discard_above)){
     out <- out %>%
@@ -266,7 +266,7 @@ fsheet_io_extract_single <- function(x, fsheet_io_def, errors = stop){
     out <- out %>%
       mutate(is_too_high = FALSE)
   }
-  
+
   # Discard too low values
   if (!is.na(fsheet_io_def$range_discard_below)){
     out <- out %>%
@@ -277,7 +277,7 @@ fsheet_io_extract_single <- function(x, fsheet_io_def, errors = stop){
     out <- out %>%
       mutate(is_too_low = FALSE)
   }
-  
+
   coalesce_out <- function(x){
     x %>%
       group_by(person_id, measurement_datetime) %>%
@@ -286,10 +286,10 @@ fsheet_io_extract_single <- function(x, fsheet_io_def, errors = stop){
   }
   # Handle coalesce
   out <- fn_inform(out, coalesce_out, since = "due to coalescing")
-  
+
   # Check expect_after condition
   check_that_all(out, !!fsheet_io_def$expect_after, "expect_after")
-  
+
   # Return result
   inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
   out %>%
