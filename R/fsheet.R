@@ -363,86 +363,21 @@ fsheet_infer_fio2 <- function(x){
     mutate(fio2_inferred = infer_fio2(fio2, o2_device, o2_flow_rate))
 }
 
-
-# Largely copied from summarise_pivot_wider(), need to unify all this
-fsheet_pivot_wider <- function(x,
-                               id_cols = c("person_id", "measurement_datetime"),
-                               names_from = "symbol",
-                               values_from = c("value_as_number",
-                                               "value_as_character",
-                                               "value_as_logical"),
-                               names_suffix = NULL){
-  # Prefix for new column names to allow identification of new columns
-  magic_prefix <- "__new__"
-
-  if (!is.null(names_suffix)){
-    names_suffix <- paste0("_", names_suffix)
-  }
-
-  # only include datetime if it is in the data frame
-  values_from <- if ("datetime" %in% colnames(x)){
-    values_from
-  } else {
-    setdiff(values_from, "datetime")
-  }
-
-  names_glue <- paste0(magic_prefix,  "{",
-                       names_from, "}",
-                       names_suffix,
-                       "_{.value}")
-
-  out_split <- split_by_type(x)
-  anything <-
-    out_split$any_numeric ||
-    out_split$any_character ||
-    out_split$any_logical
-
-  out_numeric <- NULL
-  out_character <- NULL
-  out_logical <- NULL
-
-  if (out_split$any_numeric){
-    values_from_numeric <- setdiff(values_from,
-                                   c("value_as_character", "value_as_logical"))
-    out_numeric <- out_split$numeric %>%
-      pivot_wider(
-        id_cols = all_of(id_cols),
-        names_from = all_of(names_from),
-        values_from = all_of(values_from_numeric),
-        names_glue = names_glue)
-  }
-
-  if (out_split$any_character){
-    values_from_character <- setdiff(values_from,
-                                     c("value_as_number", "value_as_logical"))
-    out_character <- out_split$character %>%
-      tidyr::pivot_wider(
-        id_cols = all_of(id_cols),
-        names_from = all_of(names_from),
-        values_from = all_of(values_from_character),
-        names_glue = names_glue)
-  }
-
-  if (out_split$any_logical){
-    values_from_logical <- setdiff(values_from,
-                                   c("value_as_number", "value_as_character"))
-    out_logical <- out_split$logical %>%
-      pivot_wider(
-        id_cols = all_of(id_cols),
-        names_from = all_of(names_from),
-        values_from = all_of(values_from_logical),
-        names_glue = names_glue)
-  }
-
-  if (anything){
-    out <- list(out_numeric, out_character, out_logical) %>%
-      compact %>%
-      reduce(full_join)
-  } else {
-    stop("Neither numeric or character output from slice/summary found")
-  }
-
-  relocate_and_clean_new_cols(out, magic_prefix = magic_prefix)
+#' Pivot data wider, with multiple value type
+#'
+#' Pivot into `symbol` in columns, with each row a unique measurement time
+#'
+#' @param x A data frame
+#' @param id_cols A set of columns that uniquely identifies each observation.
+#' @param ... Passed to `pivot_value_wider`
+#' @return A data frame
+#'
+#' @author R.J.B. Goudie
+fsheet_pivot_wider_datetime <-
+  function(x,
+           id_cols = c("person_id", "measurement_datetime"),
+           ...){
+  pivot_value_wider(x, id_cols, ...)
 }
 
 fsheet_pivot_longer <- function(x){
@@ -455,7 +390,7 @@ fsheet_pivot_longer <- function(x){
 fsheet_sf_ratio <- function(x, shape = "long"){
   out <- x %>%
     filter(symbol %in% c("fio2", "o2_device", "o2_flow_rate", "spo2")) %>%
-    fsheet_pivot_wider(values_from = c("value_as_number", "value_as_character")) %>%
+    fsheet_pivot_wider_datetime(values_from = c("value_as_number", "value_as_character")) %>%
     fsheet_infer_fio2()
 
   out <- out %>%

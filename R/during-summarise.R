@@ -42,33 +42,31 @@ summarise_during <- function(x,
                join = "inner")
 
   out <- out %>%
-    summarise_pivot_wider(type = type,
-                          formula = !! formula,
-                          id_cols = c("person_id", "visit_id"),
-                          names_from = names_from,
-                          values_from = values_from,
-                          names_suffix = glue("{names_suffix}_{during}"))
+    grouped_summarise_or_slice(
+      type = type,
+      formula = !! formula,
+      group_by = c(c("person_id", "visit_id"), names_from)) %>%
+    pivot_value_wider(id_cols = c("person_id", "visit_id"),
+                      names_from = names_from,
+                      values_from = values_from,
+                      names_suffix = glue("{names_suffix}_{during}"))
 
   # join again to x on common columns, so that anyone WITHOUT a y is included
   by <- intersect(colnames(x), colnames(out))
   left_join(x, out, by = by)
 }
 
-#' Summarise (or slice) data then pivot data wider
+#' Pivot data wider, with multiple value type
 #'
-#' Summarise (or slice if `type = "summarise"`) data grouped by
-#' `c(id_cols, names_from)`, using the supplied `formula`.
-#'
-#' The pivot the data wider, so that `names_from` appears in columns, with
-#' the values taken from `values_from`
+#' Pivot long into a wider format, so that `names_from` appears in columns.
+#' The function handles long format with a mix of `value_as_numeric`,
+#' `value_as_character` and `value_as_logical` value columns.
 #'
 #' New columns are added to the end, are sorted (so that values and datetimes
 #' are adjacent). The suffixes `_value_as_number` and `_value_as_character` are
 #' also stripped to provide nicer column names.
 #'
 #' @param x A data frame
-#' @param type Either `"summarise"` or `"slice"`
-#' @param formula A formula specifying the summarise or slice to perform
 #' @param id_cols A set of columns that uniquely identifies each observation.
 #' @param names_from,values_from A pair of arguments describing which column
 #' (or columns) to get the name of the output column (`group_by`), and which
@@ -78,19 +76,13 @@ summarise_during <- function(x,
 #' @return A data frame
 #'
 #' @author R.J.B. Goudie
-summarise_pivot_wider <- function(x,
-                                  type = "summarise",
-                                  formula,
-                                  id_cols,
-                                  names_from,
-                                  values_from,
-                                  names_suffix = NULL){
-  formula <- enquo(formula)
-  out <- grouped_summarise_or_slice(x,
-                                    type = type,
-                                    formula = !! formula,
-                                    group_by = c(id_cols, names_from))
-
+pivot_value_wider <- function(x,
+                              id_cols = c("person_id", "visit_id"),
+                              names_from = "symbol",
+                              values_from = c("value_as_number",
+                                              "value_as_character",
+                                              "value_as_logical"),
+                              names_suffix = NULL){
   # Prefix for new column names to allow identification of new columns
   magic_prefix <- "__new__"
 
@@ -98,32 +90,32 @@ summarise_pivot_wider <- function(x,
     names_suffix <- paste0("_", names_suffix)
   }
 
-  # only include datetime if it is in the data frame
-  values_from <- if ("datetime" %in% colnames(out)){
-    values_from
-  } else {
-    setdiff(values_from, "datetime")
-  }
+  # # only include datetime if it is in the data frame
+  # values_from <- if ("datetime" %in% colnames(x)){
+  #   values_from
+  # } else {
+  #   setdiff(values_from, "datetime")
+  # }
 
   names_glue <- paste0(magic_prefix,  "{",
                        names_from, "}",
                        names_suffix,
                        "_{.value}")
 
-  out_split <- split_by_type(out)
+  x_split <- split_by_type(x)
   anything <-
-    out_split$any_numeric ||
-    out_split$any_character ||
-    out_split$any_logical
+    x_split$any_numeric ||
+    x_split$any_character ||
+    x_split$any_logical
 
-  out_numeric <- NULL
-  out_character <- NULL
-  out_logical <- NULL
+  x_numeric <- NULL
+  x_character <- NULL
+  x_logical <- NULL
 
-  if (out_split$any_numeric){
+  if (x_split$any_numeric){
     values_from_numeric <- setdiff(values_from,
                                    c("value_as_character", "value_as_logical"))
-    out_numeric <- out_split$numeric %>%
+    x_numeric <- x_split$numeric %>%
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
@@ -131,10 +123,10 @@ summarise_pivot_wider <- function(x,
         names_glue = names_glue)
   }
 
-  if (out_split$any_character){
+  if (x_split$any_character){
     values_from_character <- setdiff(values_from,
                                      c("value_as_number", "value_as_logical"))
-    out_character <- out_split$character %>%
+    x_character <- x_split$character %>%
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
@@ -142,10 +134,10 @@ summarise_pivot_wider <- function(x,
         names_glue = names_glue)
   }
 
-  if (out_split$any_logical){
+  if (x_split$any_logical){
     values_from_logical <- setdiff(values_from,
                                    c("value_as_number", "value_as_character"))
-    out_logical <- out_split$logical %>%
+    x_logical <- x_split$logical %>%
       pivot_wider(
         id_cols = all_of(id_cols),
         names_from = all_of(names_from),
@@ -154,17 +146,20 @@ summarise_pivot_wider <- function(x,
   }
 
   if (anything){
-    out <- list(out_numeric, out_character, out_logical) %>%
+    x <- list(x_numeric, x_character, x_logical) %>%
       compact %>%
       reduce(full_join)
   } else {
     stop("Neither numeric or character output from slice/summary found")
   }
 
-  relocate_and_clean_new_cols(out, magic_prefix = magic_prefix)
+  relocate_and_clean_new_cols(x, magic_prefix = magic_prefix)
 }
 
 #' Summarise or slice grouped data
+#'
+#' Summarise (or slice if `type = "slice"`) data grouped by
+#' `group_by`, using the supplied `formula`.
 #'
 #' @param x A data frame
 #' @param type Either `"summarise"` or `"slice"`
