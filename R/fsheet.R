@@ -34,16 +34,16 @@ fsheet_rename <- function(x,
 #' @author R.J.B. Goudie
 fsheet_unrename <- function(x,
                             names =
-                              c(STUDY_SUBJECT_DIGEST = person_id,
-                                disp_name = name,
-                                measured_value = value,
-                                meas_comment = comment,
-                                MEASURE_TIME = measurement_datetime,
-                                fsd_id = data_id,
-                                `flo-meas_id` = measurement_id,
-                                line = line_id,
-                                template = template,
-                                form = form)){
+                              c(STUDY_SUBJECT_DIGEST = "person_id",
+                                disp_name = "name",
+                                measured_value = "value",
+                                meas_comment = "comment",
+                                MEASURE_TIME = "measurement_datetime",
+                                fsd_id = "data_id",
+                                `flo-meas_id` = "measurement_id",
+                                line = "line_id",
+                                template = "template",
+                                form = "form")){
   relocate_ignoring_missing(x, names)
 }
 

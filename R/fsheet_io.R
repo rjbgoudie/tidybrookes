@@ -10,17 +10,17 @@
 #' @author R.J.B. Goudie
 fsheet_io_rename <- function(x,
                              names =
-                               c(person_id = STUDY_SUBJECT_DIGEST,
-                                 name = FLO_MEAS_NAME,
-                                 description = disp_name,
-                                 value = measured_value,
-                                 comment = meas_comment,
-                                 measurement_datetime = MEASURE_TIME,
-                                 data_id = fsd_id,
+                               c(person_id = "STUDY_SUBJECT_DIGEST",
+                                 name = "FLO_MEAS_NAME",
+                                 description = "disp_name",
+                                 value = "measured_value",
+                                 comment = "meas_comment",
+                                 measurement_datetime = "MEASURE_TIME",
+                                 data_id = "fsd_id",
                                  measurement_id = "flo-meas_id",
-                                 line_id = line,
-                                 template = template,
-                                 form = form)){
+                                 line_id = "line",
+                                 template = "template",
+                                 form = "form")){
   relocate_ignoring_missing(x, names)
 }
 
@@ -36,17 +36,17 @@ fsheet_io_rename <- function(x,
 #' @author R.J.B. Goudie
 fsheet_io_unrename <- function(x,
                                names =
-                                 c(STUDY_SUBJECT_DIGEST = person_id,
-                                   disp_name = description,
-                                   FLO_MEAS_NAME = name,
-                                   measured_value = value,
-                                   meas_comment = comment,
-                                   MEASURE_TIME = measurement_datetime,
-                                   fsd_id = data_id,
-                                   `flo-meas_id` = measurement_id,
-                                   line = line_id,
-                                   template = template,
-                                   form = form)){
+                                 c(STUDY_SUBJECT_DIGEST = "person_id",
+                                   disp_name = "description",
+                                   FLO_MEAS_NAME = "name",
+                                   measured_value = "value",
+                                   meas_comment = "comment",
+                                   MEASURE_TIME = "measurement_datetime",
+                                   fsd_id = "data_id",
+                                   `flo-meas_id` = "measurement_id",
+                                   line = "line_id",
+                                   template = "template",
+                                   form = "form")){
   relocate_ignoring_missing(x, names)
 }
 

@@ -10,20 +10,20 @@
 #' @author R.J.B. Goudie
 tests_rename <- function(x,
                          names =
-                           c(person_id = STUDY_SUBJECT_DIGEST,
-                             name = TestName,
-                             value = ResultValue,
-                             ordered_datetime = ORDERED_DATETIME,
-                             collected_datetime = COLLECTED_DATETIME,
-                             received_datetime = RECEIVED_DATETIME,
-                             result_datetime = ResultDate,
-                             ordering_department = ORDERING_DEPARTMENT_NAME,
-                             range_low = ReferenceLow,
-                             range_high = ReferenceHigh,
-                             unit = ResultUnit,
-                             method = Method,
-                             group = TestGroupName,
-                             order_id = OrderProcId)){
+                           c(person_id = "STUDY_SUBJECT_DIGEST",
+                             name = "TestName",
+                             value = "ResultValue",
+                             ordered_datetime = "ORDERED_DATETIME",
+                             collected_datetime = "COLLECTED_DATETIME",
+                             received_datetime = "RECEIVED_DATETIME",
+                             result_datetime = "ResultDate",
+                             ordering_department = "ORDERING_DEPARTMENT_NAME",
+                             range_low = "ReferenceLow",
+                             range_high = "ReferenceHigh",
+                             unit = "ResultUnit",
+                             method = "Method",
+                             group = "TestGroupName",
+                             order_id = "OrderProcId")){
   relocate_ignoring_missing(x, names)
 }
 
@@ -39,20 +39,20 @@ tests_rename <- function(x,
 #' @author R.J.B. Goudie
 tests_unrename <- function(x,
                            names =
-                             c(STUDY_SUBJECT_DIGEST = person_id,
-                               TestName = name,
-                               ResultValue = value,
-                               ORDERED_DATETIME = ordered_datetime,
-                               COLLECTED_DATETIME = collected_datetime,
-                               RECEIVED_DATETIME = received_datetime,
-                               ResultDate = result_datetime,
-                               ORDERING_DEPARTMENT_NAME = ordering_department,
-                               ReferenceLow = range_low,
-                               ReferenceHigh = range_high,
-                               ResultUnit = unit,
-                               Method = method,
-                               TestGroupName = group,
-                               OrderProcId = order_id)){
+                             c(STUDY_SUBJECT_DIGEST = "person_id",
+                               TestName = "name",
+                               ResultValue = "value",
+                               ORDERED_DATETIME = "ordered_datetime",
+                               COLLECTED_DATETIME = "collected_datetime",
+                               RECEIVED_DATETIME = "received_datetime",
+                               ResultDate = "result_datetime",
+                               ORDERING_DEPARTMENT_NAME = "ordering_department",
+                               ReferenceLow = "range_low",
+                               ReferenceHigh = "range_high",
+                               ResultUnit = "unit",
+                               Method = "method",
+                               TestGroupName = "group",
+                               OrderProcId = "order_id")){
   relocate_ignoring_missing(x, names)
 }
 
