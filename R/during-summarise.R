@@ -188,6 +188,10 @@ grouped_summarise_or_slice <- function(x,
   } else if (type == "summarise"){
     out <- x %>%
       summarise(!! formula)
+  } else if (type == "mutate"){
+    # for debugging
+    out <- x %>%
+      mutate(output = !! formula)
   }
 }
 
