@@ -4,16 +4,26 @@
 \alias{fsheet_unrename}
 \title{Untidy raw fsheet colnames}
 \usage{
-fsheet_unrename(x)
+fsheet_unrename(
+  x,
+  names = c(STUDY_SUBJECT_DIGEST = "person_id", disp_name = "name", measured_value =
+    "value", meas_comment = "comment", MEASURE_TIME = "measurement_datetime", fsd_id =
+    "data_id", `flo-meas_id` = "measurement_id", line = "line_id", template = "template",
+    form = "form")
+)
 }
 \arguments{
 \item{x}{A data frame of raw fsheet data with tidy names}
+
+\item{names}{A vector of new_name = old_name pairs}
 }
 \value{
 The supplied data frame, with column names in tidy-column-name format
 }
 \description{
-Untidy raw fsheet colnames
+The standard data format from Clinical Informatics is handled by default. If
+variations from this format occur, custom renaming can be performed
+using the \code{names} argument
 }
 \author{
 R.J.B. Goudie

@@ -4,16 +4,26 @@
 \alias{med_admin_unrename}
 \title{Untidy raw med_admin colnames}
 \usage{
-med_admin_unrename(x)
+med_admin_unrename(
+  x,
+  names = c(STUDY_SUBJECT_DIGEST = "person_id", TimeAdministered =
+    "administered_datetime", DrugName = "name", DoseAsLabelled = "dose", InfusionRate =
+    "rate", DoseUnitAbbreviated = "unit", RouteOfMedicationAbbreviated = "route",
+    DepartmentName = "department", MAR_ENC_CSN = "visit_id", MARAction = "action")
+)
 }
 \arguments{
 \item{x}{A data frame of raw med_admin data with tidy names}
+
+\item{names}{A vector of new_name = old_name pairs}
 }
 \value{
 The supplied data frame, with column names in tidy-column-name format
 }
 \description{
-Untidy raw med_admin colnames
+The standard data format from Clinical Informatics is handled by default. If
+variations from this format occur, custom renaming can be performed
+using the \code{names} argument
 }
 \author{
 R.J.B. Goudie

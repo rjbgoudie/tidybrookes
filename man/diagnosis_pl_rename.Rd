@@ -4,16 +4,28 @@
 \alias{diagnosis_pl_rename}
 \title{Tidy raw diagnosis_pl colnames}
 \usage{
-diagnosis_pl_rename(x)
+diagnosis_pl_rename(
+  x,
+  names = c(person_id = "STUDY_SUBJECT_DIGEST", icd10_list = "ICD10_LIST", description =
+    "DX_DESCRIPTION", description_displayed = "DX_DESC_DISPLAYED", status =
+    "DIAGNOSIS_STATUS", entered_datetime = "DIAGNOSIS_ENTERED_DATE", diagnosis_datetime =
+    "DIAGNOSIS_DATE", resolved_datetime = "RESOLVED_DATE", icd10_1 = "ICD10_1", icd10_2 =
+    "ICD10_2", icd10_3 = "ICD10_3", icd10_4 = "ICD10_4", snomed = "SNOMED_CONCEPTS",
+    comment = "PROBLEM_CMT")
+)
 }
 \arguments{
 \item{x}{A data frame of raw diagnosis_pl data}
+
+\item{names}{A vector of new_name = old_name pairs}
 }
 \value{
 The supplied data frame, with column names in tidy-column-name format
 }
 \description{
-Tidy raw diagnosis_pl colnames
+The standard data format from Clinical Informatics is handled by default. If
+variations from this format occur, custom renaming can be performed
+using the \code{names} argument
 }
 \author{
 R.J.B. Goudie

@@ -20,7 +20,8 @@ to group the summarise or slice}
 A summarised (or sliced) data frame, usually with one row per group
 }
 \description{
-Summarise or slice grouped data
+Summarise (or slice if \code{type = "slice"}) data grouped by
+\code{group_by}, using the supplied \code{formula}.
 }
 \author{
 R.J.B. Goudie

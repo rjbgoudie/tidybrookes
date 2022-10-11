@@ -4,16 +4,28 @@
 \alias{tests_rename}
 \title{Tidy raw tests colnames}
 \usage{
-tests_rename(x)
+tests_rename(
+  x,
+  names = c(person_id = "STUDY_SUBJECT_DIGEST", name = "TestName", value = "ResultValue",
+    ordered_datetime = "ORDERED_DATETIME", collected_datetime = "COLLECTED_DATETIME",
+    received_datetime = "RECEIVED_DATETIME", result_datetime = "ResultDate",
+    ordering_department = "ORDERING_DEPARTMENT_NAME", range_low = "ReferenceLow",
+    range_high = "ReferenceHigh", unit = "ResultUnit", method = "Method", group =
+    "TestGroupName", order_id = "OrderProcId")
+)
 }
 \arguments{
 \item{x}{A data frame of raw test data}
+
+\item{names}{A vector of new_name = old_name pairs}
 }
 \value{
 The supplied data frame, with column names in tidy-column-name format
 }
 \description{
-Tidy raw tests colnames
+The standard data format from Clinical Informatics is handled by default. If
+variations from this format occur, custom renaming can be performed
+using the \code{names} argument
 }
 \author{
 R.J.B. Goudie

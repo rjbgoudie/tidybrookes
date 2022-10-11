@@ -4,16 +4,26 @@
 \alias{fsheet_io_rename}
 \title{Tidy raw fsheet_io colnames}
 \usage{
-fsheet_io_rename(x)
+fsheet_io_rename(
+  x,
+  names = c(person_id = "STUDY_SUBJECT_DIGEST", name = "FLO_MEAS_NAME", description =
+    "disp_name", value = "measured_value", comment = "meas_comment", measurement_datetime
+    = "MEASURE_TIME", data_id = "fsd_id", measurement_id = "flo-meas_id", line_id =
+    "line", template = "template", form = "form")
+)
 }
 \arguments{
 \item{x}{A data frame of raw fsheet_io data}
+
+\item{names}{A vector of new_name = old_name pairs}
 }
 \value{
 The supplied data frame, with column names in tidy-column-name format
 }
 \description{
-Tidy raw fsheet_io colnames
+The standard data format from Clinical Informatics is handled by default. If
+variations from this format occur, custom renaming can be performed
+using the \code{names} argument
 }
 \author{
 R.J.B. Goudie

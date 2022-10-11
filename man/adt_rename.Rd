@@ -4,16 +4,27 @@
 \alias{adt_rename}
 \title{Tidy raw tests colnames}
 \usage{
-adt_rename(x)
+adt_rename(
+  x,
+  names = c(person_id = "STUDY_SUBJECT_DIGEST", visit_id = "PAT_ENC_CSN", event_type =
+    "EVENT_TYPE", start_datetime = "IN_DTTM", discharge_datetime = "HOSP_DISCH_TIME",
+    department = "ADT_DEPARTMENT_NAME", room = "ROOM_NAME", bed = "BED_LABEL",
+    service_area = "ADT_SERV_AREA_NAME", service_name = "HOSP_SERV_NAME", event_type_c =
+    "EVENT_TYPE_C")
+)
 }
 \arguments{
 \item{x}{A data frame of raw adt data}
+
+\item{names}{A vector of new_name = old_name pairs}
 }
 \value{
 The supplied data frame, with column names in tidy-column-name format
 }
 \description{
-Tidy raw tests colnames
+The standard data format from Clinical Informatics is handled by default. If
+variations from this format occur, custom renaming can be performed
+using the \code{names} argument
 }
 \author{
 R.J.B. Goudie

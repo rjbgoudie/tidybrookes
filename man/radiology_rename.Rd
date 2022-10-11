@@ -4,16 +4,25 @@
 \alias{radiology_rename}
 \title{Tidy raw radiology colnames}
 \usage{
-radiology_rename(x)
+radiology_rename(
+  x,
+  names = c(person_id = "STUDY_SUBJECT_DIGEST", name = "Proc_Name", procedure_datetime =
+    "Proc_Date", narrative = "Proc_Narrative", impression = "Proc_Impression", addenda =
+    "Proc_Addenda", assessment = "Proc_Assessment", code = "Proc_Code")
+)
 }
 \arguments{
 \item{x}{A data frame of raw radiology data}
+
+\item{names}{A vector of new_name = old_name pairs}
 }
 \value{
 The supplied data frame, with column names in tidy-column-name format
 }
 \description{
-Tidy raw radiology colnames
+The standard data format from Clinical Informatics is handled by default. If
+variations from this format occur, custom renaming can be performed
+using the \code{names} argument
 }
 \author{
 R.J.B. Goudie
