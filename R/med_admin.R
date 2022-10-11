@@ -1,3 +1,15 @@
+# infusion or bolus
+# for infusion - name, concentration, [dose], mg/hr, start time, end time
+# for bolus - name, concentration, dose, mg
+
+# routes: systemic vs topical
+# action: filter rows separately for infusion and bolus
+
+# 
+
+
+
+
 #' Tidy raw med_admin colnames
 #'
 #' The standard data format from Clinical Informatics is handled by default. If
