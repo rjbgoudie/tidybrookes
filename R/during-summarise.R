@@ -90,12 +90,13 @@ pivot_value_wider <- function(x,
     names_suffix <- paste0("_", names_suffix)
   }
 
-  # # only include datetime if it is in the data frame
-  # values_from <- if ("datetime" %in% colnames(x)){
-  #   values_from
-  # } else {
-  #   setdiff(values_from, "datetime")
-  # }
+  # only include datetime if it is in the data frame
+  # this handles cases like "ever_during" where no datetime is available
+  values_from <- if ("datetime" %in% colnames(x)){
+    values_from
+  } else {
+    setdiff(values_from, "datetime")
+  }
 
   names_glue <- paste0(magic_prefix,  "{",
                        names_from, "}",
