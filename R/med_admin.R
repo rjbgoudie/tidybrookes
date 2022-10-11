@@ -104,8 +104,14 @@ med_admin_add <- function(med_admin_def,
                           route_exclude = NA,
                           action,
                           action_exclude = NA,
+                          dose_as_number_fn = case_when(TRUE ~ dose_as_number),
+                          unit_relabel_fn = case_when(TRUE ~ unit),
+                          dose_rescale_fn = case_when(TRUE ~ dose_as_number),
                           expect_after = TRUE){
   expect_after <- enquo(expect_after)
+  dose_as_number_fn <- enquo(dose_as_number_fn)
+  dose_rescale_fn <- enquo(dose_rescale_fn)
+  unit_relabel_fn <- enquo(unit_relabel_fn)
 
   new <- list(symbol = symbol,
               title = title,
@@ -117,6 +123,9 @@ med_admin_add <- function(med_admin_def,
               route_exclude = route_exclude,
               action = action,
               action_exclude = action_exclude,
+              dose_as_number_fn = dose_as_number_fn,
+              dose_rescale_fn = dose_rescale_fn,
+              unit_relabel_fn = unit_relabel_fn,
               expect_after = expect_after)
   med_admin_def <- append(med_admin_def, list(new))
   names(med_admin_def)[length(med_admin_def)] <- symbol
@@ -153,27 +162,50 @@ med_admin_extract <- function(x, med_admin_def, errors = stop){
 }
 
 med_admin_extract_single <- function(x, med_admin_def, errors = stop){
-  ## possible_new <- med_admin_check_for_new(x, med_admin_def)
-  ## if (nrow(possible_new) > 0){
-  ##   possible_new_names <- str_flatten(possible_new$name, "; ")
-  ##   warning(format_error_bullets(c(
-  ##     i = glue("{nrow(possible_new)} possible new medication names: ",
-  ##              "{possible_new_names}"))),
-  ##     immediate. = TRUE)
-  ## }
+  possible_new <- med_admin_check_for_new_names(x, med_admin_def)
+  if (nrow(possible_new) > 0){
+    possible_new_names <- format_as_argument(possible_new$name)
+    warning(format_error_bullets(c(
+      i = glue("{nrow(possible_new)} possible new medication names: ",
+               "{possible_new_names}"))),
+      immediate. = TRUE)
+  }
 
   # Filter to only CUH med_admin
-  out <- x %>%
-    filter(name %in% med_admin_def$names &
-             route %in% med_admin_def$route &
-             action %in% med_admin_def$action)
+  out <- x %>% filter(name %in% med_admin_def$names)
+
+  possible_new_route <- med_admin_check_for_new_route(out, med_admin_def)
+  if (nrow(possible_new_route) > 0){
+    possible_new_routes <- format_as_argument(possible_new_route$route)
+    warning(format_error_bullets(c(
+      i = glue("{nrow(possible_new_route)} possible new medication routes: ",
+               "{possible_new_routes}"))),
+      immediate. = TRUE)
+  }
+
+  out <- out %>%
+    filter(route %in% med_admin_def$route)
+
+  possible_new_action <- med_admin_check_for_new_action(out, med_admin_def)
+  if (nrow(possible_new_action) > 0){
+    possible_new_actions <- format_as_argument(possible_new_action$action)
+    warning(format_error_bullets(c(
+      i = glue("{nrow(possible_new_action)} possible new medication actions: ",
+               "{possible_new_actions}"))),
+      immediate. = TRUE)
+  }
+
+  out <- out %>%
+    filter(action %in% med_admin_def$action)
 
   # Add symbol and title
   out <- out %>%
     mutate(symbol = med_admin_def$symbol, .after = person_id) %>%
     mutate(title = med_admin_def$title, .after = unit) %>%
     relocate(name, .after = unit) %>%
-    mutate(value_as_logical = TRUE)
+    mutate(value_as_logical = TRUE) %>%
+    rename(dose_original = dose) %>%
+    mutate(administered_date = as.Date(administered_datetime))
 
   # Remove duplicate rows
   out <- out %>%
@@ -185,6 +217,24 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
     filter_inform(!will_silently_exclude_na_routes,
                   since = "since route was NA")
 
+  out <- out %>%
+    group_by(name) %>%
+    mutate(dose_as_number = suppressWarnings({
+      as.numeric(dose_original)
+    }),
+    dose_as_number = !!med_admin_def$dose_as_number_fn,
+    .after = dose_original) %>%
+    ungroup
+
+  check_that_all(out,
+                 suppressWarnings({!is.na(as.numeric(dose_as_number))}),
+                 name = "all doses being numeric")
+
+  # Rescale units
+  out <- out %>%
+    mutate(dose = !!med_admin_def$dose_rescale_fn,
+           unit = !!med_admin_def$unit_relabel_fn,)
+
   # Check expect_after condition
   check_that_all(out, !!med_admin_def$expect_after, "expect_after")
 
@@ -194,6 +244,37 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
     select(-will_silently_exclude_na_routes) %>%
     arrange(administered_datetime)
 }
+
+med_admin_check_for_new_names <- function(x,
+                                med_admin_def){
+  if (!all(is.na(med_admin_def$search_exclude))){
+    med_admin_def$search_exclude <- c(med_admin_def$names, med_admin_def$search_exclude)
+  } else {
+    med_admin_def$search_exclude <- med_admin_def$names
+  }
+  med_admin_def$search_pattern <- paste0(med_admin_def$search_pattern, collapse = "|")
+  x %>%
+    filter(str_detect(name, regex(med_admin_def$search_pattern, ignore_case = TRUE)) &
+             (!name %in% c(med_admin_def$names, med_admin_def$search_exclude))) %>%
+    count(name)
+}
+
+med_admin_check_for_new_route <- function(x,
+                                          med_admin_def){
+  x %>%
+    filter(!route %in% c(med_admin_def$route_exclude,
+                        med_admin_def$route)) %>%
+    count(route)
+}
+
+med_admin_check_for_new_action <- function(x,
+                                          med_admin_def){
+  x %>%
+    filter(!action %in% c(med_admin_def$action_exclude,
+                        med_admin_def$action)) %>%
+    count(action)
+}
+
 
 #' Generate a stub definition of medication administration
 #'
