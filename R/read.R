@@ -57,6 +57,10 @@ extract_col_types <- function(col_types){
       ADT_SERV_AREA_NAME = col_character(),
       HOSP_SERV_NAME = col_character(),
       PAT_ENC_CSN = col_integer())
+  } else if (col_types == "demogs"){
+    col_types <- cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      GENDER_DESC = col_character())
   } else if (col_types == "fsheet"){
     col_types <- cols(
       STUDY_SUBJECT_DIGEST = col_character(),
@@ -110,6 +114,26 @@ extract_col_types <- function(col_types){
       DepartmentName = col_character(),
       MAR_ENC_CSN = col_integer(),
       MARAction = col_character())
+  } else if (col_types == "med_prescr"){
+    col_types <- cols(
+      "STUDY_SUBJECT_DIGEST" = col_character(),
+      "DrugName" = col_character(),
+      "StartDate" = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      "EndDate" = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      "Dose" = col_character(),
+      "Strength" = col_character(),
+      "DoseUnit" = col_character(),
+      "DoseFrequency" = col_character(),
+      "RouteOfMedication" = col_character(),
+      "InOrOutPatient" = col_character(),
+      "FormOfMedication" = col_character(),
+      "THERA_CLASS" = col_character(),
+      "PHARM_CLASS" = col_character(),
+      "PHARM_SUBCLASS" = col_character(),
+      "PAT_ENC_CSN_ID" = col_integer(),
+      "OrderStatusCat" = col_character(),
+      "ProviderType" = col_character(),
+      "Order_Class" = col_character())
   } else if (col_types == "diagnosis_pl"){
     col_types <- cols(
       STUDY_SUBJECT_DIGEST = col_character(),
