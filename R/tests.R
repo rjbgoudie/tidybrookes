@@ -254,73 +254,78 @@ tests_extract_single <- function(x, test_def, errors = stop){
     filter_inform(!will_silently_exclude,
                   since = "due to exclude_when condition")
 
-  # Convert values to numeric, and handle censoring
-  out <- out %>%
-    group_by(name) %>%
-    mutate(
-      value_as_character = suppressWarnings({
-        as.character(value_original)
-      }),
-      value_as_number = suppressWarnings({
-        as.numeric(value_original)
-      }),
-      value_as_logical = suppressWarnings({
-        as.logical(value_original)
-      }),
-      value_as_character = !!test_def$value_as_character_fn,
-      value_as_number = !!test_def$value_as_number_fn,
-      value_as_logical = !!test_def$value_as_logical_fn,
-      censoring = !!test_def$censoring_fn,
-      .after = value_original) %>%
-    relocate(censoring, .after = value_as_number) %>%
-    ungroup
-
-  # Check for nonnumeric values in the post-exclusion and
-  # post-handling-censoring data frame
-  if (test_def$type == "numeric"){
-    check_that_all(out,
-                   suppressWarnings({!is.na(as.numeric(value_as_number))}),
-                   name = "all values being numeric")
-  }
-
-  # Rescale units
-  out <- out %>%
-    mutate(value_as_number = !!test_def$unit_rescale_fn,
-           unit = !!test_def$unit_relabel_fn)
-
-  # Discard too high values
-  if (!is.na(test_def$range_discard_above)){
-    out <- out %>%
-      mutate(is_too_high = value_as_number > test_def$range_discard_above) %>%
-      filter_inform(!is_too_high,
-                    since = glue("since >{test_def$range_discard_above}"))
+  if (nrow(out) == 0){
+    out %>% select(-will_silently_exclude,
+                   -will_silently_exclude_na,
+                   -value_original)
   } else {
+    # Convert values to numeric, and handle censoring
     out <- out %>%
-      mutate(is_too_high = FALSE)
+      group_by(name) %>%
+      mutate(
+        value_as_character = suppressWarnings({
+          as.character(value_original)
+        }),
+        value_as_number = suppressWarnings({
+          as.numeric(value_original)
+        }),
+        value_as_logical = suppressWarnings({
+          as.logical(value_original)
+        }),
+        value_as_character = !!test_def$value_as_character_fn,
+        value_as_number = !!test_def$value_as_number_fn,
+        value_as_logical = !!test_def$value_as_logical_fn,
+        censoring = !!test_def$censoring_fn,
+        .after = value_original) %>%
+      relocate(censoring, .after = value_as_number) %>%
+      ungroup
+
+    # Check for nonnumeric values in the post-exclusion and
+    # post-handling-censoring data frame
+    if (test_def$type == "numeric"){
+      check_that_all(out,
+                     suppressWarnings({!is.na(as.numeric(value_as_number))}),
+                     name = "all values being numeric")
+    }
+
+    # Rescale units
+    out <- out %>%
+      mutate(value_as_number = !!test_def$unit_rescale_fn,
+             unit = !!test_def$unit_relabel_fn)
+
+    # Discard too high values
+    if (!is.na(test_def$range_discard_above)){
+      out <- out %>%
+        mutate(is_too_high = value_as_number > test_def$range_discard_above) %>%
+        filter_inform(!is_too_high,
+                      since = glue("since >{test_def$range_discard_above}"))
+    } else {
+      out <- out %>%
+        mutate(is_too_high = FALSE)
+    }
+
+    # Discard too low values
+    if (!is.na(test_def$range_discard_below)){
+      out <- out %>%
+        mutate(is_too_low = value_as_number < test_def$range_discard_below) %>%
+        filter_inform(!is_too_low,
+                      since = glue("since <{test_def$range_discard_below}"))
+    } else {
+      out <- out %>%
+        mutate(is_too_low = FALSE)
+    }
+
+    # Check expect_after condition
+    check_that_all(out, !!test_def$expect_after, "expect_after")
+
+    # Return result
+    inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
+    out %>%
+      select(-will_silently_exclude, -will_silently_exclude_na,
+             -value_original, -is_too_high, -is_too_low) %>%
+      arrange(collected_datetime)
   }
-
-  # Discard too low values
-  if (!is.na(test_def$range_discard_below)){
-    out <- out %>%
-      mutate(is_too_low = value_as_number < test_def$range_discard_below) %>%
-      filter_inform(!is_too_low,
-                    since = glue("since <{test_def$range_discard_below}"))
-  } else {
-    out <- out %>%
-      mutate(is_too_low = FALSE)
-  }
-
-  # Check expect_after condition
-  check_that_all(out, !!test_def$expect_after, "expect_after")
-
-  # Return result
-  inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
-  out %>%
-    select(-will_silently_exclude, -will_silently_exclude_na,
-           -value_original, -is_too_high, -is_too_low) %>%
-    arrange(collected_datetime)
 }
-
 
 tests_check_for_new <- function(x,
                                 test_def){
