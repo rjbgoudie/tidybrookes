@@ -1,5 +1,32 @@
 #' @importFrom readr read_csv cols col_character col_integer col_double locale col_datetime
-read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
+read_tidybrookes_csv <- function(file, col_types, n_max = Inf, na = c("", "NA")){
+  col_types <- extract_col_types(col_types = col_types)
+  read_csv(file = file,
+           col_types = col_types,
+           locale = locale(tz = "Europe/London"),
+           n_max = n_max,
+           na = na) %>%
+    as_tibble
+}
+
+
+#' @importFrom readr read_delim cols col_character col_integer col_double locale col_datetime
+read_tidybrookes_delim <- function(file,
+                                   col_types,
+                                   delim = "|",
+                                   n_max = Inf,
+                                   na = c("", "NA")){
+  col_types <- extract_col_types(col_types = col_types)
+  read_delim(file = file,
+             delim = delim,
+             col_types = col_types,
+             locale = locale(tz = "Europe/London"),
+             n_max = n_max,
+             na = na) %>%
+    as_tibble
+}
+
+extract_col_types <- function(col_types){
   if (inherits(col_types, "col_spec")){
     col_types <- col_types
   } else if (col_types == "adm"){
@@ -120,9 +147,5 @@ read_tidybrookes_csv <- function(file, col_types, n_max = Inf){
       Proc_Addenda = col_character(),
       Proc_Assessment = col_character())
   }
-  read_csv(file = file,
-           col_types = col_types,
-           locale = locale(tz = "Europe/London"),
-           n_max = n_max) %>%
-    as_tibble
+  col_types
 }
