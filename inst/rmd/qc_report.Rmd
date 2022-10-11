@@ -1,0 +1,210 @@
+---
+title: "qc"
+output:
+  html_document:
+    self_contained: true
+    toc: true
+    toc_depth: 2
+    toc_float: true
+params:
+  adm_data: adm_data
+  adt_data: adt_data
+  tests_data: tests_data
+  tests_def: tests_def
+  fsheet_data: fsheet_data
+  fsheet_def: fsheet_def
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Adm {.tabset}
+
+## By person (first visit)
+
+```{r}
+adm_person_age_at_visit_start <- adm_data %>%
+  group_by(person_id) %>%
+  filter(visit_id == min(visit_id)) %>%
+  summarise(age_at_visit_start = first(age_at_visit_start))
+
+ggplot(adm_person_age_at_visit_start, aes(x = age_at_visit_start)) +
+  geom_bar()
+
+```
+
+## By visit
+
+```{r}
+adm_visit_age_at_visit_start <- adm_data %>%
+  group_by(visit_id) %>%
+  summarise(age_at_visit_start = first(age_at_visit_start))
+
+ggplot(adm_visit_age_at_visit_start, aes(x = age_at_visit_start)) +
+  geom_bar()
+
+
+#ggplot(adm_data, aes(y = discharge_destination)) +
+#  geom_bar()
+```
+
+# Other
+
+
+```{r}
+adt_data %>%
+  group_by(department) %>%
+  mutate(total_time = interval(start_datetime,end_datetime)/ddays(1)) %>%
+  filter(department == "ADD G6 WARD", is.na(total_time))
+
+adt_total_time_department <- function(x){
+  x %>%
+    group_by(department) %>%
+    mutate(total_time = interval(start_datetime,end_datetime)/ddays(1)) %>%
+    summarise(total_time = sum(total_time)) %>%
+    arrange(desc(total_time)) %>%
+    ungroup %>%
+    mutate(department = forcats::fct_reorder(department, total_time))
+}
+
+ggplot(adt_total_time_department(adt_data),
+       aes(y = department,
+           x = total_time)) +
+  geom_segment(aes(xend = 0, yend = department))
+
+adm_adt_data <- adm_data %>%
+  select(-event_type) %>%
+  left_join(adt_data) %>%
+    mutate(start_since_presentation = interval(visit_start_datetime, start_datetime)/days(1),
+           end_since_presentation = interval(visit_start_datetime,end_datetime)/days(1))
+
+```
+```{r, fig.height=100}
+# ggplot(adm_adt_data, aes(x = start_since_presentation,
+#                          xend = end_since_presentation,
+#                          y = person_id,
+#                          yend = person_id,
+#                          colour = department)) +
+#   geom_segment() +
+#   geom_text(aes(label = department)) +
+#   theme(legend.position = "bottom",
+#         axis.text.y = element_blank())
+```
+
+# Laboratory tests
+
+```{r, results='asis'}
+categorical_table <- function(x){
+      if (any(!is.na(x$value_as_logical))){
+      x %>%
+        count(value_as_logical, value_as_character) %>%
+        knitr::kable() %>%
+        print()
+      cat("\n")
+    }
+}
+
+tests_plot <- function(x, group, tests_def){
+  s <- group$symbol
+  def <- tests_def[[s]]
+  if (nrow(x) > 0){
+    title <- def$title
+    range_mainly_low <- def$range_mainly_low
+    range_mainly_high <- def$range_mainly_high
+    range_discard_below <- as.numeric(def$range_discard_below)
+    range_discard_above <- as.numeric(def$range_discard_above)
+    names_cuh <- def$names_cuh
+
+    title <- glue("{title} [{unique(group$symbol)}]")
+    cat("\n\n##   ", title, "\n\n")
+
+    df <-
+      tribble(~name, ~value,
+              "CUH names", paste0("\"", names_cuh, "\"", collapse = ","),
+                "Number of rows", as.character(nrow(x)))
+
+    df %>%
+      knitr::kable() %>%
+        print()
+      cat("\n")
+
+    if (any(x$type == "numeric")){
+      print(tests_plot_numeric(x, range_mainly_low, range_mainly_high, range_discard_below, range_discard_above))
+    }
+
+    categorical_table(x)
+
+    x <- x %>%
+      mutate(datetime = if_else(!is.na(collected_datetime),
+                                collected_datetime,
+                                result_datetime))
+
+    plot_time_of_day <- tests_histogram_time_of_day(x)
+    plot_by_date <- tests_histogram_by_date(x)
+    plot_by_weekday <- tests_histogram_by_weekday(x)
+
+    time_plot <- (plot_time_of_day + plot_by_weekday) / plot_by_date
+    print(time_plot)
+  }
+}
+
+tests_data %>%
+  group_by(symbol) %>%
+  group_walk(~ tests_plot(.x, .y, tests_def))
+
+
+```
+
+# Flowsheets
+
+```{r,results='asis'}
+
+fsheet_plot <- function(x, group, tests_def){
+  s <- group$symbol
+  def <- tests_def[[s]]
+  if (nrow(x) > 0){
+    title <- def$title
+    range_mainly_low <- as.numeric(def$range_mainly_low)
+    range_mainly_high <- as.numeric(def$range_mainly_high)
+    range_discard_below <- as.numeric(def$range_discard_below)
+    range_discard_above <- as.numeric(def$range_discard_above)
+    names_cuh <- def$names_cuh
+
+    title <- glue("{title} [{unique(group$symbol)}]")
+    cat("\n\n##   ", title, "\n\n")
+
+    df <-
+      tribble(~name, ~value,
+              "CUH names", paste0("\"", names_cuh, "\"", collapse = ","),
+                "Number of rows", as.character(nrow(x)))
+
+    df %>%
+      knitr::kable() %>%
+        print()
+      cat("\n")
+
+    if (any(x$type == "numeric")){
+      print(tests_plot_numeric(x, range_mainly_low, range_mainly_high, range_discard_below, range_discard_above))
+    }
+
+    categorical_table(x)
+
+    x <- x %>%
+      mutate(datetime = measurement_datetime)
+
+    plot_time_of_day <- tests_histogram_time_of_day(x)
+    plot_by_date <- tests_histogram_by_date(x)
+    plot_by_weekday <- tests_histogram_by_weekday(x)
+
+    time_plot <- (plot_time_of_day + plot_by_weekday) / plot_by_date
+    print(time_plot)
+  }
+}
+
+fsheet_data %>%
+  group_by(symbol) %>%
+  group_walk(~ fsheet_plot(.x, .y, fsheet_def))
+
+```
+
