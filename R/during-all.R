@@ -66,7 +66,8 @@ all_during <- function(x,
                       datetime >= visit_start_datetime &
                        datetime <= visit_end_datetime,
                     is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime))
+                      datetime >= visit_start_datetime)) %>%
+      mutate(days_since_visit_start = interval(visit_start_datetime, datetime)/days(1))
   } else if (during == "during_visit_initial_24h"){
     out <- x %>%
       join_fn(
