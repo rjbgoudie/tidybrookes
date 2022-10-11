@@ -75,7 +75,9 @@ adt_annotate <- function(x, fixed_labels, annotate_fn){
     mutate(visit_index = cumsum(event_type == "Admission"),
            .after = event_type) %>%
     select(-event_type_c) %>%
+    group_by(visit_id) %>%
     mutate(end_datetime = lead(start_datetime), .after = start_datetime) %>%
+    adt_department_summary() %>%
     left_join(department_labels,
               by = "department") %>%
     annotate_fn()
@@ -86,3 +88,17 @@ adt_annotate <- function(x, fixed_labels, annotate_fn){
 
   out
 }
+
+adt_department_summary <- function(x){
+  x %>%
+    group_by(person_id, visit_id) %>%
+    mutate(department_just_moved = replace_na(lag(department) != department, TRUE),
+           department_visit_index = cumsum(department_just_moved)) %>%
+    group_by(person_id, visit_id, department_visit_index) %>%
+    mutate(department_start_datetime = first(start_datetime),
+           department_end_datetime = last(end_datetime),
+           department_length_days =
+             replace_na(interval(department_start_datetime, department_end_datetime)/days(1), 0)) %>%
+    ungroup
+}
+

@@ -95,6 +95,32 @@ all_during <- function(x,
                     is.na(visit_end_datetime) ~
                       datetime >= visit_start_datetime &
                       datetime <= visit_start_datetime + dhours(72)))
+  } else if (during == "during_department"){
+    warning("Note that this only handle single icu_visit at the moment, at hosital visit level")
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", "department_visit_index", names_from),
+        filter_condition =
+          case_when(!is.na(department_end_datetime) ~
+                      datetime >= department_start_datetime &
+                      datetime <= department_end_datetime,
+                    is.na(department_end_datetime) ~
+                      datetime >= department_start_datetime))
+  } else if (during == "during_department_after_48h"){
+    warning("Note that this only handle single icu_visit at the moment, at hosital visit level")
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", "department_visit_index", names_from),
+        filter_condition =
+          case_when(!is.na(department_end_datetime) ~
+                      datetime >= department_start_datetime + dhours(48) &
+                      datetime <= department_end_datetime,
+                    is.na(department_end_datetime) ~
+                      datetime >= department_start_datetime + dhours(48)))
   } else if (during == "during_icu"){
     warning("Note that this only handle single icu_visit at the moment, at hosital visit level")
     out <- x %>%
