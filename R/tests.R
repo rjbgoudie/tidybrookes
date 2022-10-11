@@ -471,3 +471,26 @@ tests_abg <- function(bg_data, bg_specimen_type){
 
   abg_data
 }
+
+
+tests_info <- function(tests_def){
+  if (length(tests_def) == 1 & "symbol" %in% names(tests_def)){
+    tests_info_single(tests_def)
+  } else {
+    out <- lapply(tests_def, function(y){
+      tests_info_single(y)
+    })
+    bind_rows(out)
+  }
+}
+
+tests_info_single <- function(test_def){
+  tibble(symbol = test_def$symbol,
+         title = test_def$title,
+         names_cuh = list(test_def$names_cuh),
+         #names_external = test_def$names_external,
+         range_mainly_low = test_def$range_mainly_low,
+         range_mainly_high = test_def$range_mainly_high,
+         range_discard_below = test_def$range_discard_below,
+         range_discard_above = test_def$range_discard_above)
+}
