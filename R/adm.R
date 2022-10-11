@@ -60,5 +60,6 @@ adm_annotate <- function(x){
   x <- x %>%
     mutate(visit_length_days =
              as.numeric(visit_end_datetime - visit_start_datetime,
-                        units = "days"))
+                        units = "days"),
+           person_id_short = person_id_shorten(person_id))
 }

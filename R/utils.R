@@ -196,3 +196,15 @@ rename_ignoring_missing <- function(...){
 relocate_ignoring_missing <- function(...){
   fn_ignoring_missing(rename, ...)
 }
+
+person_id_shorten <- function(person_id){
+  original_unique <- length(unique(person_id))
+  shorten_unique <- 0
+  n_chars <- 0
+  while (shorten_unique < original_unique){
+    n_chars <- n_chars + 1
+    person_id_short <- str_sub(person_id, end = n_chars)
+    shorten_unique <- length(unique(person_id_short))
+  }
+  person_id_short
+}
