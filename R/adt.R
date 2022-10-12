@@ -130,7 +130,7 @@ adt_annotate <- function(x, fixed_labels, annotate_fn){
     group_by(visit_id) %>%
     mutate(end_datetime = lead(start_datetime), .after = start_datetime) %>%
     adt_department_summary() %>%
-    left_join(department_labels,
+    left_join(fixed_labels,
               by = "department") %>%
     annotate_fn()
 
