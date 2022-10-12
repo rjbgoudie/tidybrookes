@@ -1,4 +1,4 @@
-#' Tidy raw tests colnames
+#' Tidy raw demogs colnames
 #'
 #' The standard data format from Clinical Informatics is handled by default. If
 #' variations from this format occur, custom renaming can be performed

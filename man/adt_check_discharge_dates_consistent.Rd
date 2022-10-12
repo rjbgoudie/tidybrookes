@@ -6,6 +6,16 @@
 \usage{
 adt_check_discharge_dates_consistent(x)
 }
+\arguments{
+\item{x}{Tidy ADT data, as tidied by \code{\link[=adt_rename]{adt_rename()}}}
+}
+\value{
+The supplied tidy ADT data \code{x}, with an additional logical column
+\code{check_discharge_data_consistent}, with \code{FALSE} indicating inconsistencies
+}
 \description{
 Check disharge date consistent with final date
+}
+\author{
+R.J.B. Goudie
 }

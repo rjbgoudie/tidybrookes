@@ -6,8 +6,8 @@
 \usage{
 diagnosis_pl_rename(
   x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", icd10_list = "ICD10_LIST", description =
-    "DX_DESCRIPTION", description_displayed = "DX_DESC_DISPLAYED", status =
+  names = c(person_id = "STUDY_SUBJECT_DIGEST", icd10_list = "ICD10_LIST", description
+    = "DX_DESCRIPTION", description_displayed = "DX_DESC_DISPLAYED", status =
     "DIAGNOSIS_STATUS", entered_datetime = "DIAGNOSIS_ENTERED_DATE", diagnosis_datetime =
     "DIAGNOSIS_DATE", resolved_datetime = "RESOLVED_DATE", icd10_1 = "ICD10_1", icd10_2 =
     "ICD10_2", icd10_3 = "ICD10_3", icd10_4 = "ICD10_4", snomed = "SNOMED_CONCEPTS",

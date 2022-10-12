@@ -2,7 +2,7 @@
 % Please edit documentation in R/demogs.R
 \name{demogs_rename}
 \alias{demogs_rename}
-\title{Tidy raw tests colnames}
+\title{Tidy raw demogs colnames}
 \usage{
 demogs_rename(
   x,

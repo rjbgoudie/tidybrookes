@@ -6,12 +6,12 @@
 \usage{
 tests_unrename(
   x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", TestName = "name", ResultValue = "value",
-    ORDERED_DATETIME = "ordered_datetime", COLLECTED_DATETIME = "collected_datetime",
-    RECEIVED_DATETIME = "received_datetime", ResultDate = "result_datetime",
-    ORDERING_DEPARTMENT_NAME = "ordering_department", ReferenceLow = "range_low",
-    ReferenceHigh = "range_high", ResultUnit = "unit", Method = "method", TestGroupName =
-    "group", OrderProcId = "order_id")
+  names = c(STUDY_SUBJECT_DIGEST = "person_id", TestName = "name", ResultValue =
+    "value", ORDERED_DATETIME = "ordered_datetime", COLLECTED_DATETIME =
+    "collected_datetime", RECEIVED_DATETIME = "received_datetime", ResultDate =
+    "result_datetime", ORDERING_DEPARTMENT_NAME = "ordering_department", ReferenceLow =
+    "range_low", ReferenceHigh = "range_high", ResultUnit = "unit", Method = "method",
+    TestGroupName = "group", OrderProcId = "order_id")
 )
 }
 \arguments{

@@ -6,10 +6,10 @@
 \usage{
 fsheet_io_unrename(
   x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", disp_name = "description", FLO_MEAS_NAME
-    = "name", measured_value = "value", meas_comment = "comment", MEASURE_TIME =
-    "measurement_datetime", fsd_id = "data_id", `flo-meas_id` = "measurement_id", line =
-    "line_id", template = "template", form = "form")
+  names = c(STUDY_SUBJECT_DIGEST = "person_id", disp_name = "description",
+    FLO_MEAS_NAME = "name", measured_value = "value", meas_comment = "comment",
+    MEASURE_TIME = "measurement_datetime", fsd_id = "data_id", `flo-meas_id` =
+    "measurement_id", line = "line_id", template = "template", form = "form")
 )
 }
 \arguments{

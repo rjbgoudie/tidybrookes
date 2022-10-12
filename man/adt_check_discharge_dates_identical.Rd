@@ -6,6 +6,17 @@
 \usage{
 adt_check_discharge_dates_identical(x)
 }
+\arguments{
+\item{x}{Tidy ADT data, as tidied by \code{\link[=adt_rename]{adt_rename()}}}
+}
+\value{
+The supplied tidy ADT data \code{x}, with an additional logical column
+\code{check_all_discharge_dates_identical}, with \code{FALSE} indicating
+inconsistencies
+}
 \description{
-All discharge_datetime should be the same within a visit
+Check that all discharge_datetime are the same within a `visit_id``
+}
+\author{
+R.J.B. Goudie
 }

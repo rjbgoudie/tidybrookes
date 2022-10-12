@@ -54,6 +54,14 @@ adm_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
+#' Annotate ADM data
+#'
+#' Checks that all the gender data are in known values.
+#' Adds `visit_length_days`, `person_id_short`.
+#'
+#' @param x A tidied adm data frame, as tidied by [adm_rename()]
+#' @return The supplied data frame `x` with additional annotations
+#' @author R.J.B. Goudie
 adm_annotate <- function(x){
   check_that_all(x, gender %in% c("Female", "Male", "Unknown"))
 

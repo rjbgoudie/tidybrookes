@@ -24,17 +24,51 @@ adt_rename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
+#' Summarise department visits data in ADT data
+#'
+#' Annotates department visits with `department_visit_index`, which indexes
+#' the department visits WITHIN a `visit_id`.
+#'
+#' Also adds `department_start_datetime`, `department_end_datetime`,
+#' `department_length_days`.
+#'
+#' @param x Tidy ADT data, as tidied by [adt_rename()]
+#' @return The supplied tidy ADT data `x`, with an additional columns
+#' @author R.J.B. Goudie
+adt_department_summary <- function(x){
+  x %>%
+    group_by(person_id, visit_id) %>%
+    mutate(department_just_moved = replace_na(lag(department) != department, TRUE),
+           department_visit_index = cumsum(department_just_moved)) %>%
+    group_by(person_id, visit_id, department_visit_index) %>%
+    mutate(department_start_datetime = first(start_datetime),
+           department_end_datetime = last(end_datetime),
+           department_length_days =
+             replace_na(interval(department_start_datetime, department_end_datetime)/days(1), 0)) %>%
+    ungroup
+}
+
 #' Check discharge dates identical within a visit
 #'
-#' All discharge_datetime should be the same within a visit
+#' Check that all discharge_datetime are the same within a `visit_id``
+#'
+#' @param x Tidy ADT data, as tidied by [adt_rename()]
+#' @return The supplied tidy ADT data `x`, with an additional logical column
+#'   `check_all_discharge_dates_identical`, with `FALSE` indicating
+#'   inconsistencies
+#' @author R.J.B. Goudie
 adt_check_discharge_dates_identical <- function(x){
   x %>%
     group_by(person_id, visit_id) %>%
     summarise(check_all_discharge_dates_identical =
                 all(discharge_datetime == first(discharge_datetime)))
 }
-
 #' Check disharge date consistent with final date
+#'
+#' @param x Tidy ADT data, as tidied by [adt_rename()]
+#' @return The supplied tidy ADT data `x`, with an additional logical column
+#'   `check_discharge_data_consistent`, with `FALSE` indicating inconsistencies
+#' @author R.J.B. Goudie
 adt_check_discharge_dates_consistent <- function(x){
   x %>%
     group_by(person_id, visit_id) %>%
@@ -47,6 +81,24 @@ adt_check_discharge_dates_consistent <- function(x){
           false = all(last(start_datetime) == discharge_datetime)))
 }
 
+#' Annotate ADT data
+#'
+#' Removes duplicate rows
+#'
+#' Preforms the following checks
+#' * Checks discharge dates are identical within a visit
+#" * Checks discharge date matches the final datetime for the visit
+#'
+#' Annotates the ADT data with
+#' * `visit_index`
+#' * `end_datetime`
+#'
+#' @param x Tidy ADT data, as tidied by [adt_rename()]
+#' @param fixed_labels A data frame with a colum `department`, which will be
+#'   joined to the ADT data
+#' @param annotate_fn A function that provides additional annotation
+#' @return The supplied tidy ADT data `x` with additional annotations
+#' @author R.J.B. Goudie
 adt_annotate <- function(x, fixed_labels, annotate_fn){
   # check numeric event type and text event type match
   stopifnot(x %>% count(event_type_c, event_type) %>% nrow == 3)
@@ -88,17 +140,3 @@ adt_annotate <- function(x, fixed_labels, annotate_fn){
 
   out
 }
-
-adt_department_summary <- function(x){
-  x %>%
-    group_by(person_id, visit_id) %>%
-    mutate(department_just_moved = replace_na(lag(department) != department, TRUE),
-           department_visit_index = cumsum(department_just_moved)) %>%
-    group_by(person_id, visit_id, department_visit_index) %>%
-    mutate(department_start_datetime = first(start_datetime),
-           department_end_datetime = last(end_datetime),
-           department_length_days =
-             replace_na(interval(department_start_datetime, department_end_datetime)/days(1), 0)) %>%
-    ungroup
-}
-
