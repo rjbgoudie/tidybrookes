@@ -161,6 +161,15 @@ fsheet_add <- function(fsheet_def,
   fsheet_def
 }
 
+#' Convert fsheet_def to data frame
+fsheet_info <- function(fsheet_def){
+  fsheet_def2 <- map(fsheet_def, ~map_if(., ~inherits(., "quosure"), ~ list(.)))
+  fsheet_def2 <- map(fsheet_def2, ~map_if(., ~inherits(., "function"), ~ list(.)))
+  fsheet_def2 <- map(fsheet_def2, ~map_if(., ~is.null(.), ~ list(.)))
+  fsheet_def2 <- map(fsheet_def2, ~map_at(., c("search_exclude", "search_pattern"), ~ list(.)))
+  map_dfr(fsheet_def2, ~as_tibble(.))
+}
+
 #' Extract fsheet data into tidy format
 #'
 #' @param x Flowsheet data in renamed format (after applying `fsheet_rename`)
@@ -184,7 +193,6 @@ fsheet_extract <- function(x, fsheet_def, errors = stop){
     out %>% arrange(symbol, measurement_datetime)
   }
 }
-
 
 fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   out <- x %>%
