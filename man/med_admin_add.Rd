@@ -2,7 +2,7 @@
 % Please edit documentation in R/med_admin.R
 \name{med_admin_add}
 \alias{med_admin_add}
-\title{Add a new definition of a test item}
+\title{Add a new definition of a medication administration drug}
 \usage{
 med_admin_add(
   med_admin_def,
@@ -20,15 +20,15 @@ med_admin_add(
   action_include = default_action_include(action_class),
   action_exclude = default_action_exclude(action_class),
   concentration_fn = case_when(TRUE ~ NA_real_),
-  dose_as_number_fn = case_when(TRUE ~ dose_original_as_number),
   dose_range_discard_above_fn = case_when(TRUE ~ Inf),
   dose_range_mainly_below_fn = NA,
-  bolus_or_infusion_fn = case_when(TRUE ~ "bolus"),
   expect_after = TRUE
 )
 }
 \arguments{
 \item{med_admin_def}{A list of existing test definitions to add this to}
+
+\item{note}{A character vector of notes that should be printed}
 
 \item{symbol}{A short name for the flowsheet item. This should be a
 character vector that is suitable to use as an R object name}
@@ -39,57 +39,57 @@ figure titles etc}
 \item{names}{The names of the Medications (\code{DrugName} in raw format)}
 
 \item{search_pattern}{A charater vector of potential synonymns for this
-test, in case new names (\code{TestName} in raw format) for the
-same test are added in future.}
+drug, in case new names (\code{DrugName} in raw format) for the
+same drug are added in future.}
 
-\item{search_exclude}{A character vector of test names
-(\code{TestName} in raw format) that are known NOT to be relevant to this test.}
+\item{search_exclude}{A character vector of drug names
+(\code{DrugName} in raw format) that are known NOT to be relevant to this drug}
+
+\item{silently_exclude_na_routes}{An logical specifying whether medication
+administration records with \code{NA} routes should be automatically
+excluded.}
+
+\item{route_class}{One of \code{enteral}, \code{intravenous}, \code{other_systemic},
+\code{respiratory} or \code{topical}. These classes will use the
+classification in \code{med_admin_routes.csv} to specify a list of routes
+to include}
+
+\item{route_include}{A vector of route names (\code{RouteOfMedicationAbbreviated}
+in raw format) to include}
+
+\item{route_exclude}{A vector of route names (\code{RouteOfMedicationAbbreviated}
+in raw format) to exclude}
+
+\item{action_class}{One of \code{infusion}, \code{bolus}, \code{pca}, \code{feed}. These classes
+will use the classification in \code{med_admin_action.csv} to specify a list of
+actions to include}
+
+\item{action_include}{A vector of action names (\code{MARAction} in raw format) to
+include}
+
+\item{action_exclude}{A vector of action names (\code{MARAction} in raw format) to
+exclude}
+
+\item{concentration_fn}{A function that codes the concentration of each
+row of the medication administration records (for that drug). It should
+return a real. This will typically be done on the basis of
+the \code{name}, \code{info_concentration}, \code{info_conversion} or \code{info_rate},
+but can use any variables in the dataframe.}
+
+\item{dose_range_mainly_below_fn}{NOT CURRRENTLY IMPLEMENTED.
+An indicative lower and upper range
+for most values. Values outside this range are NOT excluded: this is purely
+for setting default scales of plots etc}
 
 \item{expect_after}{An expression that returns a logical value,
 specifying a condition that should be \code{TRUE} in the processed (output) data}
 
-\item{search_exclude_group}{A character vector of test group names
-(\code{TestGroupName} in raw format) that are known NOT to be relevant to
-this test.}
-
-\item{type}{Whether flowsheet item is a number or a string. Either
-\code{"numeric"} or \code{"character"}}
-
-\item{silently_exclude_na_when}{An expression that returns a logical value,
-specifying the circumstances when \code{NA} values should be automatically
-excluded.}
-
-\item{silently_exclude_when}{An expression that returns a logical value,
-specifying the circumstances when values should be automatically
-excluded}
-
-\item{censoring_fn}{A function specifying the value of the \code{censoring} column}
-
-\item{value_as_number_fn}{A function specifying how to generate the
-\code{value_as_number} column}
-
-\item{value_as_character_fn}{A function specifying how to generate the
-\code{value_as_character} column}
-
-\item{unit_rescale_fn}{A function specifying how to rescale the result
-values. By default, does not rescale.}
-
-\item{unit_relabel_fn}{A function specifying how to relabel the units of the
-the result values. By default, does not rescale.}
-
-\item{expect_before}{An expression that returns a logical value,
-specifying a condition that should be \code{TRUE} in the raw data}
-
-\item{range_mainly_low, range_mainly_high}{An indicative lower and upper range
-for most values. Values outside this range are NOT excluded: this is purely
-for setting default scales of plots etc}
-
-\item{range_discard_below, range_discard_above}{This pair set the lower and
-upper range for the flowsheet item. Values outside this range are
+\item{dose_range_discard_above_fne}{NOT CURRRENTLY IMPLEMENTED.
+This seta the upper range for the dose item. Values outside this range are
 EXCLUDED.}
 }
 \description{
-Add a new definition of a test item
+Add a new definition of a medication administration drug
 }
 \author{
 R.J.B. Goudie

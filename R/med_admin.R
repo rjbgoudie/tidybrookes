@@ -1,8 +1,3 @@
-# infusion or bolus
-# for infusion - name, concentration, [dose], mg/hr, start time, end time
-# for bolus - name, concentration, dose, mg
-
-
 #' Tidy raw med_admin colnames
 #'
 #' The standard data format from Clinical Informatics is handled by default. If
@@ -44,49 +39,52 @@ med_admin_unrename <- function(x,
 }
 
 
-#' Add a new definition of a test item
+#' Add a new definition of a medication administration drug
 #'
 #' @param med_admin_def A list of existing test definitions to add this to
+#' @param note A character vector of notes that should be printed
 #' @param symbol A short name for the flowsheet item. This should be a
 #'   character vector that is suitable to use as an R object name
 #' @param title The full name for the test item, suitable for using in
 #'   figure titles etc
 #' @param names The names of the Medications (`DrugName` in raw format)
 #' @param search_pattern A charater vector of potential synonymns for this
-#'   test, in case new names (`TestName` in raw format) for the
-#'   same test are added in future.
-#' @param search_exclude A character vector of test names
-#'   (`TestName` in raw format) that are known NOT to be relevant to this test.
-#' @param search_exclude_group A character vector of test group names
-#'   (`TestGroupName` in raw format) that are known NOT to be relevant to
-#'   this test.
-#' @param type Whether flowsheet item is a number or a string. Either
-#'   `"numeric"` or `"character"`
-#' @param silently_exclude_na_when An expression that returns a logical value,
-#'   specifying the circumstances when `NA` values should be automatically
+#'   drug, in case new names (`DrugName` in raw format) for the
+#'   same drug are added in future.
+#' @param search_exclude A character vector of drug names
+#'   (`DrugName` in raw format) that are known NOT to be relevant to this drug
+#' @param silently_exclude_na_routes An logical specifying whether medication
+#'   administration records with `NA` routes should be automatically
 #'   excluded.
-#' @param silently_exclude_when An expression that returns a logical value,
-#'  specifying the circumstances when values should be automatically
-#'  excluded
-#' @param censoring_fn A function specifying the value of the `censoring` column
-#' @param value_as_number_fn A function specifying how to generate the
-#'   `value_as_number` column
-#' @param value_as_character_fn A function specifying how to generate the
-#'   `value_as_character` column
-#' @param unit_rescale_fn A function specifying how to rescale the result
-#'   values. By default, does not rescale.
-#' @param unit_relabel_fn A function specifying how to relabel the units of the
-#'   the result values. By default, does not rescale.
-#' @param expect_before An expression that returns a logical value,
-#'  specifying a condition that should be `TRUE` in the raw data
-#' @param expect_after An expression that returns a logical value,
-#'  specifying a condition that should be `TRUE` in the processed (output) data
-#' @param range_mainly_low,range_mainly_high An indicative lower and upper range
+#' @param route_class One of `enteral`, `intravenous`, `other_systemic`,
+#'   `respiratory` or `topical`. These classes will use the
+#'   classification in `med_admin_routes.csv` to specify a list of routes
+#'   to include
+#' @param route_include A vector of route names (`RouteOfMedicationAbbreviated`
+#'   in raw format) to include
+#' @param route_exclude A vector of route names (`RouteOfMedicationAbbreviated`
+#'   in raw format) to exclude
+#' @param action_class One of `infusion`, `bolus`, `pca`, `feed`. These classes
+#'   will use the classification in `med_admin_action.csv` to specify a list of
+#'   actions to include
+#' @param action_include A vector of action names (`MARAction` in raw format) to
+#'   include
+#' @param action_exclude A vector of action names (`MARAction` in raw format) to
+#'   exclude
+#' @param concentration_fn A function that codes the concentration of each
+#'   row of the medication administration records (for that drug). It should
+#'   return a real. This will typically be done on the basis of
+#'   the `name`, `info_concentration`, `info_conversion` or `info_rate`,
+#'   but can use any variables in the dataframe.
+#' @param dose_range_mainly_below_fn NOT CURRRENTLY IMPLEMENTED.
+#'   An indicative lower and upper range
 #'   for most values. Values outside this range are NOT excluded: this is purely
 #'   for setting default scales of plots etc
-#' @param range_discard_below,range_discard_above This pair set the lower and
-#'   upper range for the flowsheet item. Values outside this range are
+#' @param dose_range_discard_above_fne NOT CURRRENTLY IMPLEMENTED.
+#'   This seta the upper range for the dose item. Values outside this range are
 #'   EXCLUDED.
+#' @param expect_after An expression that returns a logical value,
+#'  specifying a condition that should be `TRUE` in the processed (output) data
 #' @author R.J.B. Goudie
 med_admin_add <- function(med_admin_def,
                           note,
@@ -276,7 +274,6 @@ med_admin_extract_single <- function(x,
     mutate(symbol = med_admin_def$symbol, .after = person_id) %>%
     mutate(title = med_admin_def$title, .after = dose_unit) %>%
     relocate(name, .after = dose_unit) %>%
-    mutate(value_as_logical = TRUE) %>%
     rename(dose_original = dose,
            dose_unit_original = dose_unit,
            rate_ml_per_hour_original = rate) %>%
@@ -308,6 +305,8 @@ med_admin_extract_single <- function(x,
 
   # CONVERT TO CANONICAL DOSE UNIT
   ################################
+
+  # Code up final dose and dose_unit
   out <- out %>%
     left_join(med_admin_units, by = "dose_unit_original") %>%
     med_admin_map_units_to_canonical()
@@ -333,7 +332,12 @@ med_admin_extract_single <- function(x,
              case_when(is.na(dose_unit) ~ NA,
                        dose_unit %in% infusion_dose_units ~ TRUE,
                        TRUE ~ FALSE),
-           bolus_from_dose_unit = !infusion_from_dose_unit)
+           bolus_from_dose_unit = !infusion_from_dose_unit,
+
+           # TODO is this correct always?
+           value_as_logical =
+             case_when(dose > 0 ~ TRUE,
+                       TRUE ~ FALSE))
 
   # Rate
   out <- out %>%
@@ -346,6 +350,7 @@ med_admin_extract_single <- function(x,
   # Convert dose to rate
   ######################
   if ("info_rate" %in% colnames(out)){
+    # add weight_info_rate
     out <- out %>%
       med_admin_info_rate_Weight()
   }
@@ -374,6 +379,18 @@ med_admin_extract_single <- function(x,
   # Return result
   inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
   out %>%
+    relocate(person_id,
+             symbol,
+             administered_datetime,
+             dose,
+             rate_ml_per_hour,
+             rate_mg_per_hour,
+             concentration,
+             bolus,
+             infusion,
+             pca,
+             feed,
+             action) %>%
     select(-will_silently_exclude_na_routes) %>%
     arrange(administered_datetime)
 }
@@ -589,7 +606,19 @@ med_admin_map_units_to_canonical <- function(x){
           dose_unit_original_type == "volume" ~ "ml",
           dose_unit_original_type == "volume/time" ~ "ml/hr",
           dose_unit_original_type == "volume/weight/time" ~ "ml/kg/hr"
-        ))
+        )) %>%
+    select(-mass_multiplier,
+           -volume_multiplier,
+           -weight_multiplier,
+           -time_multiplier,
+           -dose_unit_is_checked,
+           -dose_unit_original_type,
+           -dose_unit_original_mass,
+           -dose_unit_original_volume,
+           -dose_unit_original_weight,
+           -dose_unit_original_time,
+           -dose_unit_original_effect,
+           -dose_unit_original_area)
 }
 
 med_admin_info_rate_Weight <- function(x){
