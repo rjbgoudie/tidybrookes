@@ -34,6 +34,8 @@ summarise_during <- function(x,
                              names_suffix){
   formula <- enquo(formula)
   datetime <- enquo(datetime)
+
+  inform(format_error_bullets(c("Extracting all during")))
   out <- x %>%
     all_during(y,
                datetime = !! datetime,
@@ -41,11 +43,15 @@ summarise_during <- function(x,
                names_from = names_from,
                join = "inner")
 
+  inform(format_error_bullets(c("Summarising/slicing")))
   out <- out %>%
     grouped_summarise_or_slice(
       type = type,
       formula = !! formula,
-      group_by = c(c("person_id", "visit_id"), names_from)) %>%
+      group_by = c(c("person_id", "visit_id"), names_from))
+
+  inform(format_error_bullets(c("Pivoting wider")))
+  out <- out%>%
     pivot_value_wider(id_cols = c("person_id", "visit_id"),
                       names_from = names_from,
                       values_from = values_from,
