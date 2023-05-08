@@ -103,14 +103,10 @@ med_admin_add <- function(med_admin_def,
                           action_include = default_action_include(action_class),
                           action_exclude = default_action_exclude(action_class),
                           concentration_fn = case_when(TRUE ~ NA_real_),
-                          dose_as_number_fn = case_when(TRUE ~ dose_original_as_number),
                           dose_range_discard_above_fn = case_when(TRUE ~ Inf),
                           dose_range_mainly_below_fn = NA,
-                          bolus_or_infusion_fn = case_when(TRUE ~ "bolus"),
                           expect_after = TRUE){
   expect_after <- enquo(expect_after)
-  dose_as_number_fn <- enquo(dose_as_number_fn)
-  bolus_or_infusion_fn <- enquo(bolus_or_infusion_fn)
   concentration_fn <- enquo(concentration_fn)
   dose_range_discard_above_fn <- enquo(dose_range_discard_above_fn)
   dose_range_mainly_below_fn <- enquo(dose_range_mainly_below_fn)
@@ -126,10 +122,8 @@ med_admin_add <- function(med_admin_def,
               action_include = action_include,
               action_exclude = action_exclude,
               concentration_fn = concentration_fn,
-              dose_as_number_fn = dose_as_number_fn,
               dose_range_discard_above_fn = dose_range_discard_above_fn,
               dose_range_mainly_below_fn = dose_range_mainly_below_fn,
-              bolus_or_infusion_fn = bolus_or_infusion_fn,
               expect_after = expect_after)
   med_admin_def <- append(med_admin_def, list(new))
   names(med_admin_def)[length(med_admin_def)] <- symbol
@@ -208,26 +202,27 @@ med_admin_extract_single <- function(x,
 
   # Exclude NAs when requested
   out <- out %>%
-    mutate(will_silently_exclude_na_routes = (is.na(route) & med_admin_def$silently_exclude_na_routes)) %>%
+    mutate(will_silently_exclude_na_routes =
+             (is.na(route) & med_admin_def$silently_exclude_na_routes)) %>%
     filter_inform(!will_silently_exclude_na_routes,
                   since = "since route was NA")
 
   if (is.list(med_admin_def$route_exclude)){
     walk2(med_admin_def$route_exclude,
           names(med_admin_def$route_exclude),
-         function(x, y){
-           # this is not nice code
-           out <<- out %>%
-             filter_inform(
-               !(route %in% x) | (!med_admin_def$silently_exclude_na_routes & is.na(route)),
-               since = glue("since route is {y}"))
-         })
-
+          function(x, y){
+            # this is not nice code
+            out <<- out %>%
+              filter_inform(
+                !(route %in% x) |
+                  (!med_admin_def$silently_exclude_na_routes & is.na(route)),
+                since = glue("since route is {y}"))
+          })
   } else {
     out <- out %>%
       filter_inform(route %in% med_admin_def$route_include |
-               (!med_admin_def$silently_exclude_na_routes & is.na(route)),
-               since = glue("route is {med_admin_def$route_include}"))
+                      (!med_admin_def$silently_exclude_na_routes & is.na(route)),
+                    since = glue("route is {med_admin_def$route_include}"))
   }
 
   # ACTIONS
@@ -257,23 +252,24 @@ med_admin_extract_single <- function(x,
   } else {
     out <- out %>%
       filter_inform(!(action %in% med_admin_exclude),
-               since = glue("since action is in {med_admin_exclude}"))
+                    since = glue("since action is in {med_admin_exclude}"))
   }
 
   out <- out %>%
-    mutate(bolus_from_action =
-             case_when(action %in% med_admin_def$action_include$bolus ~ TRUE,
-                       TRUE ~ FALSE),
-           infusion_from_action =
-             case_when(action %in% med_admin_def$action_include$infusion ~ TRUE,
-                       TRUE ~ FALSE),
-           pca_from_action =
-             case_when(action %in% med_admin_def$action_include$pca ~ TRUE,
-                       TRUE ~ FALSE),
-           feed_from_action =
-             case_when(action %in% med_admin_def$action_include$feed ~ TRUE,
-                       TRUE ~ FALSE)
-           )
+    mutate(
+      bolus_from_action =
+        case_when(action %in% med_admin_def$action_include$bolus ~ TRUE,
+                  TRUE ~ FALSE),
+      infusion_from_action =
+        case_when(action %in% med_admin_def$action_include$infusion ~ TRUE,
+                  TRUE ~ FALSE),
+      pca_from_action =
+        case_when(action %in% med_admin_def$action_include$pca ~ TRUE,
+                  TRUE ~ FALSE),
+      feed_from_action =
+        case_when(action %in% med_admin_def$action_include$feed ~ TRUE,
+                  TRUE ~ FALSE)
+    )
 
   # Add symbol and title
   out <- out %>%
@@ -290,7 +286,7 @@ med_admin_extract_single <- function(x,
   out <- out %>%
     distinct_inform
 
-  # TODO how best to do this? Code concentration
+  # Concentration
   out <- out %>%
     mutate(concentration = !!med_admin_def$concentration_fn)
 
@@ -304,8 +300,6 @@ med_admin_extract_single <- function(x,
       rate_ml_per_hour = suppressWarnings({
         as.numeric(rate_ml_per_hour_original)
       }),
-
-      dose_original_as_number = !!med_admin_def$dose_as_number_fn,
 
       rate_mg_per_hour = rate_ml_per_hour * concentration,
 
@@ -385,11 +379,13 @@ med_admin_extract_single <- function(x,
 }
 
 med_admin_check_for_new_names <- function(x,
-                                med_admin_def){
+                                          med_admin_def){
   if (!all(is.na(med_admin_def$search_exclude))){
-    med_admin_def$search_exclude <- c(med_admin_def$names, med_admin_def$search_exclude)
+    med_admin_def$search_exclude <-
+      c(med_admin_def$names, med_admin_def$search_exclude)
   } else {
-    med_admin_def$search_exclude <- med_admin_def$names
+    med_admin_def$search_exclude <-
+      med_admin_def$names
   }
   med_admin_def$search_pattern <- paste0(med_admin_def$search_pattern, collapse = "|")
   x %>%
@@ -408,7 +404,7 @@ med_admin_check_for_new_route <- function(x,
 }
 
 med_admin_check_for_new_dose_unit <- function(x,
-                                          med_admin_def){
+                                              med_admin_def){
   x %>%
     filter((is.na(dose_unit_is_checked) | !dose_unit_is_checked) &
              !is.na(dose_unit_original)) %>%
@@ -424,9 +420,6 @@ med_admin_check_for_new_action <- function(x,
                unlist(med_admin_def$action_include))) %>%
     count(action)
 }
-
-
-# TODO update this to account for action_bolus and action_infusion
 
 #' Generate a stub definition of medication administration
 #'
@@ -449,105 +442,77 @@ med_admin_check_for_new_action <- function(x,
 #'   names to include.
 #' @param names The names of the Medications (`DrugName` in raw format). Only
 #'   used if `search = NULL`.
-med_admin_stub_def <-
-  function(x,
-           symbol,
-           title,
-           search = NULL,
-           names = NULL,
-           route_class = NULL,
-           action_class = NULL){
-    if (!is.null(search)){
-      possible_includes <- filter_med_admin(x, search)
-    } else {
-      possible_includes <- x %>%
-        filter(name %in% names)
-    }
+med_admin_stub_def <- function(x,
+                               symbol,
+                               title,
+                               search = NULL,
+                               names = NULL,
+                               route_class = NULL,
+                               action_class = NULL){
+  if (!is.null(search)){
+    possible_includes <- filter_med_admin(x, search)
+  } else {
+    possible_includes <- x %>%
+      filter(name %in% names)
+  }
 
-    route_include <- default_route_include(route_class)
-    route_exclude <- default_route_exclude(route_class)
-    action_include <- default_action_include(action_class)
-    action_exclude <- default_action_exclude(action_class)
+  route_include <- default_route_include(route_class)
+  route_exclude <- default_route_exclude(route_class)
+  action_include <- default_action_include(action_class)
+  action_exclude <- default_action_exclude(action_class)
 
-    possible_includes_pre_route_action_excludes <- possible_includes
-    walk2(route_exclude,
-          names(route_exclude),
-          function(x, y){
-            # this is not nice code
-            possible_includes <<- possible_includes %>%
-              filter_inform(
-                !(route %in% x),
-                since = glue("since route is {y}"))
-          })
+  possible_includes_pre_route_action_excludes <- possible_includes
+  walk2(route_exclude,
+        names(route_exclude),
+        function(x, y){
+          # this is not nice code
+          possible_includes <<- possible_includes %>%
+            filter_inform(
+              !(route %in% x),
+              since = glue("since route is {y}"))
+        })
 
-    action_exclude <- map(action_exclude,
-                          ~ setdiff(.x, unlist(action_include)))
-    walk2(action_exclude,
-          names(action_exclude),
-          function(x, y){
-            # this is not nice code
-            possible_includes <<- possible_includes %>%
-              filter_inform(
-                !(action %in% x),
-                since = glue("since action is {y}"))
-          })
-
-    # possible_excludes <- possible_includes %>%
-    # filter(str_detect(name, coll("MOUTHWASH", ignore_case = TRUE)) |
-    #          str_detect(name, coll("EYE DROPS", ignore_case = TRUE)) |
-    #          str_detect(name, coll("OINTMENT", ignore_case = TRUE)) |
-    #          str_detect(name, coll("CREAM", ignore_case = TRUE)) |
-    #          str_detect(name, coll("EAR DROP", ignore_case = TRUE)))
+  action_exclude <- map(action_exclude,
+                        ~ setdiff(.x, unlist(action_include)))
+  walk2(action_exclude,
+        names(action_exclude),
+        function(x, y){
+          # this is not nice code
+          possible_includes <<- possible_includes %>%
+            filter_inform(
+              !(action %in% x),
+              since = glue("since action is {y}"))
+        })
 
   possible_includes_names <- possible_includes %>%
     count(name) %>%
     arrange(name) %>%
     pull(name)
 
-  possible_includes_pre_route_action_excludes_names <- possible_includes_pre_route_action_excludes %>%
+  possible_includes_pre_route_action_excludes_names <-
+    possible_includes_pre_route_action_excludes %>%
     count(name, sort = TRUE) %>%
     pull(name)
 
-   possible_excludes_names <- setdiff(possible_includes_pre_route_action_excludes_names,
-                                      possible_includes_names)
+  possible_excludes_names <-
+    setdiff(possible_includes_pre_route_action_excludes_names,
+            possible_includes_names)
 
   possible_includes_routes <- possible_includes %>%
-     count(route, sort = TRUE) %>%
-     pull(route)
+    count(route, sort = TRUE) %>%
+    pull(route)
 
   possible_exclude_na_routes <- ""
   if (any(is.na(possible_includes_routes))){
     possible_exclude_na_routes <- "silently_exclude_na_routes = FALSE,\n  "
-    possible_includes_routes <- possible_includes_routes[!is.na(possible_includes_routes)]
+    possible_includes_routes <-
+      possible_includes_routes[!is.na(possible_includes_routes)]
   }
-
-  # possible_includes_action <- possible_includes %>%
-  #   count(action, sort = TRUE) %>%
-  #   pull(action)
-  #
-  # excludes_action <- intersect(possible_includes_action, action_exclude)
-  # ended_action <- intersect(possible_includes_action, action_ended)
-  # possible_includes_action <- setdiff(possible_includes_action,
-  #                                     c(excludes_action,
-  #                                       ended_action))
-
-  # possible_includes_unit <- possible_includes %>%
-  #   count(unit, sort = TRUE) %>%
-  #   pull(unit)
 
   possible <- format_as_argument(possible_includes_names)
   excludes <- format_as_argument(possible_excludes_names)
   search <- format_as_argument(search)
   possible_includes_routes <- format_as_argument(possible_includes_routes)
-
-  # possible_includes_expect_before <- ""
-  # if (length(possible_includes_unit) == 1 && !is.na(possible_includes_unit)){
-  #   possible_includes_expect_before <-
-  #     glue(",\n    expect_before = (unit == {format_as_argument(possible_includes_unit)})")
-  # } else if (length(possible_includes_unit) > 1 & all(!is.na(possible_includes_unit))){
-  #   possible_includes_expect_before <-
-  #     glue(",\n    expect_before = (unit %in% {format_as_argument(possible_includes_unit)})")
-  # }
 
   glue("med_admin_defs <- med_admin_defs %>%
   med_admin_add(
@@ -561,9 +526,6 @@ med_admin_stub_def <-
     concentration_fn =
        case_when(TRUE ~ NA_real_))")
 }
-
-
-
 
 med_admin_map_units_to_canonical <- function(x){
   x %>%
@@ -600,17 +562,23 @@ med_admin_map_units_to_canonical <- function(x){
           dose_unit_original_type == "mass" ~
             (dose_original_as_number / mass_multiplier),
           dose_unit_original_type == "mass/time" ~
-            (dose_original_as_number / mass_multiplier) * time_multiplier,
+            (dose_original_as_number / mass_multiplier) *
+            time_multiplier,
           dose_unit_original_type == "mass/weight/time" ~
-            (dose_original_as_number / mass_multiplier) * weight_multiplier * time_multiplier,
+            (dose_original_as_number / mass_multiplier) *
+            weight_multiplier *
+            time_multiplier,
 
           dose_unit_original_type == "volume" ~
             (dose_original_as_number / volume_multiplier),
           dose_unit_original_type == "volume/time" ~
-            (dose_original_as_number / volume_multiplier) * time_multiplier,
+            (dose_original_as_number / volume_multiplier) *
+            time_multiplier,
           dose_unit_original_type == "volume/weight/time" ~
-            (dose_original_as_number / volume_multiplier) * weight_multiplier * time_multiplier
-          ),
+            (dose_original_as_number / volume_multiplier) *
+            weight_multiplier *
+            time_multiplier
+        ),
 
       dose_unit =
         case_when(
@@ -626,7 +594,9 @@ med_admin_map_units_to_canonical <- function(x){
 
 med_admin_info_rate_Weight <- function(x){
   x %>%
-    mutate(weight_info_rate = as.numeric(str_match(info_rate, "([0-9.]+) kg")[,2]))
+    mutate(
+      weight_info_rate = as.numeric(str_match(info_rate, "([0-9.]+) kg")[,2])
+    )
 }
 
 med_admin_unweight_adjust <- function(x){
