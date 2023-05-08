@@ -9,18 +9,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 adt_rename <- function(x,
-                       names =
-                         c(person_id = "STUDY_SUBJECT_DIGEST",
-                           visit_id = "PAT_ENC_CSN",
-                           event_type = "EVENT_TYPE",
-                           start_datetime = "IN_DTTM",
-                           discharge_datetime = "HOSP_DISCH_TIME",
-                           department  = "ADT_DEPARTMENT_NAME",
-                           room = "ROOM_NAME",
-                           bed = "BED_LABEL",
-                           service_area = "ADT_SERV_AREA_NAME",
-                           service_name = "HOSP_SERV_NAME",
-                           event_type_c = "EVENT_TYPE_C")){
+                       names = default_rename("adt")){
   relocate_ignoring_missing(x, names)
 }
 

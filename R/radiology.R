@@ -9,15 +9,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 radiology_rename <- function(x,
-                             names =
-                               c(person_id = "STUDY_SUBJECT_DIGEST",
-                                 name = "Proc_Name",
-                                 procedure_datetime = "Proc_Date",
-                                 narrative = "Proc_Narrative",
-                                 impression = "Proc_Impression",
-                                 addenda = "Proc_Addenda",
-                                 assessment = "Proc_Assessment",
-                                 code = "Proc_Code")){
+                             names = default_rename("radiology")){
   relocate_ignoring_missing(x, names)
 }
 

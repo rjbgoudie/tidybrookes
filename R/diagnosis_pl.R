@@ -9,21 +9,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 diagnosis_pl_rename <- function(x,
-                                names =
-                                  c(person_id = "STUDY_SUBJECT_DIGEST",
-                                    icd10_list = "ICD10_LIST",
-                                    description = "DX_DESCRIPTION",
-                                    description_displayed = "DX_DESC_DISPLAYED",
-                                    status = "DIAGNOSIS_STATUS",
-                                    entered_datetime = "DIAGNOSIS_ENTERED_DATE",
-                                    diagnosis_datetime = "DIAGNOSIS_DATE",
-                                    resolved_datetime = "RESOLVED_DATE",
-                                    icd10_1 = "ICD10_1",
-                                    icd10_2 = "ICD10_2",
-                                    icd10_3 = "ICD10_3",
-                                    icd10_4 = "ICD10_4",
-                                    snomed = "SNOMED_CONCEPTS",
-                                    comment = "PROBLEM_CMT")){
+                                names = default_rename("diagnosis_pl")){
   x %>%
     relocate_ignoring_missing(names) %>%
     mutate(source = "problem_list", .after = resolved_datetime)

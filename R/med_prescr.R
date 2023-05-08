@@ -9,25 +9,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 med_prescr_rename <- function(x,
-                              names =
-                                c(person_id = "STUDY_SUBJECT_DIGEST",
-                                  name = "DrugName",
-                                  start_datetime = "StartDate",
-                                  end_datetime = "EndDate",
-                                  dose = "Dose",
-                                  unit = "DoseUnit",
-                                  strength = "Strength",
-                                  dose_frequency = "DoseFrequency",
-                                  route = "RouteOfMedication",
-                                  in_or_out_patient = "InOrOutPatient",
-                                  form = "FormOfMedication",
-                                  thera_class = "THERA_CLASS",
-                                  pharm_class = "PHARM_CLASS",
-                                  pharm_subclass = "PHARM_SUBCLASS",
-                                  visit_id = "PAT_ENC_CSN_ID",
-                                  status = "OrderStatusCat",
-                                  provider_type = "ProviderType",
-                                  order_class = "Order_Class")){
+                              names = default_rename("med_prescr")){
   relocate_ignoring_missing(x, names)
 }
 

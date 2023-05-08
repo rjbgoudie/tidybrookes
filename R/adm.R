@@ -9,20 +9,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 adm_rename <- function(x,
-                       names =
-                         c(person_id = "STUDY_SUBJECT_DIGEST",
-                           visit_id = "PAT_ENC_CSN",
-                           visit_start_datetime = "IN_DTTM",
-                           visit_end_datetime = "HOSP_DISCH_TIME",
-                           gender = "GENDER_DESC",
-                           ethnicity = "ETHNIC_GROUP_GROUPED",
-                           death_date = "DATE_OF_DEATH",
-                           age_at_visit_start = "AGE_AT_ADM",
-                           adm_service = "ADM_SERVICE",
-                           ward = "ADT_DEPARTMENT_NAME",
-                           discharge_destination = "DISCH_DEST",
-                           discharged_deceased = "DISCH_DECEASED",
-                           readmitted_within_30_days = "READMIT_WITHIN_30")){
+                       names = default_rename("adm")){
   relocate_ignoring_missing(x, names)
 }
 

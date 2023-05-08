@@ -9,7 +9,8 @@ read_tidybrookes_delim(
   col_types,
   delim = "|",
   n_max = Inf,
-  na = c("", "NA")
+  na = c("", "NA"),
+  quote = "\\""
 )
 }
 \arguments{

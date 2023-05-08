@@ -4,13 +4,7 @@
 \alias{med_hist_rename}
 \title{Tidy raw diagnosis_pl colnames}
 \usage{
-med_hist_rename(
-  x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", icd10_list = "CURRENT_ICD10_LIST",
-    description = "DX_NAME", entered_datetime = "CONTACT_DATE",
-    medical_history_datetime_freetext = "MEDICAL_HX_DATE", visit_id = "HX_LNK_ENC_CSN",
-    comment = "COMMENTS", comment_annotation = "MED_HX_ANNOTATION")
-)
+med_hist_rename(x, names = default_rename("med_hist"))
 }
 \arguments{
 \item{x}{A data frame of raw diagnosis_pl data}

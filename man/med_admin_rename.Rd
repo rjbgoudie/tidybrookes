@@ -4,13 +4,7 @@
 \alias{med_admin_rename}
 \title{Tidy raw med_admin colnames}
 \usage{
-med_admin_rename(
-  x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", administered_datetime =
-    "TimeAdministered", name = "DrugName", dose = "DoseAsLabelled", rate =
-    "InfusionRate", unit = "DoseUnitAbbreviated", route = "RouteOfMedicationAbbreviated",
-    department = "DepartmentName", visit_id = "MAR_ENC_CSN", action = "MARAction")
-)
+med_admin_rename(x, names = default_rename("med_admin"))
 }
 \arguments{
 \item{x}{A data frame of raw med_admin data}

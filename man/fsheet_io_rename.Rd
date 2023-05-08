@@ -4,13 +4,7 @@
 \alias{fsheet_io_rename}
 \title{Tidy raw fsheet_io colnames}
 \usage{
-fsheet_io_rename(
-  x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", name = "FLO_MEAS_NAME", description =
-    "disp_name", value = "measured_value", comment = "meas_comment", measurement_datetime
-    = "MEASURE_TIME", data_id = "fsd_id", measurement_id = "flo-meas_id", line_id =
-    "line", template = "template", form = "form")
-)
+fsheet_io_rename(x, names = default_rename("fsheet_io"))
 }
 \arguments{
 \item{x}{A data frame of raw fsheet_io data}

@@ -4,12 +4,7 @@
 \alias{radiology_rename}
 \title{Tidy raw radiology colnames}
 \usage{
-radiology_rename(
-  x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", name = "Proc_Name", procedure_datetime
-    = "Proc_Date", narrative = "Proc_Narrative", impression = "Proc_Impression", addenda
-    = "Proc_Addenda", assessment = "Proc_Assessment", code = "Proc_Code")
-)
+radiology_rename(x, names = default_rename("radiology"))
 }
 \arguments{
 \item{x}{A data frame of raw radiology data}

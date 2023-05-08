@@ -4,15 +4,7 @@
 \alias{adm_rename}
 \title{Tidy raw tests colnames}
 \usage{
-adm_rename(
-  x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", visit_id = "PAT_ENC_CSN",
-    visit_start_datetime = "IN_DTTM", visit_end_datetime = "HOSP_DISCH_TIME", gender =
-    "GENDER_DESC", ethnicity = "ETHNIC_GROUP_GROUPED", death_date = "DATE_OF_DEATH",
-    age_at_visit_start = "AGE_AT_ADM", adm_service = "ADM_SERVICE", ward =
-    "ADT_DEPARTMENT_NAME", discharge_destination = "DISCH_DEST", discharged_deceased =
-    "DISCH_DECEASED", readmitted_within_30_days = "READMIT_WITHIN_30")
-)
+adm_rename(x, names = default_rename("adm"))
 }
 \arguments{
 \item{x}{A data frame of raw adm data}

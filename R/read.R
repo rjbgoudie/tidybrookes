@@ -13,14 +13,97 @@
 #' @param na Character vector of strings to interpret as missing values.
 #'   Set this option to `character()` to indicate no missing values.
 #' @importFrom readr read_csv cols col_character col_integer col_double locale col_datetime
-read_tidybrookes_csv <- function(file, col_types, n_max = Inf, na = c("", "NA")){
+read_tidybrookes_csv <- function(file, col_types, n_max = Inf, na = c("", "NA"),
+                                 quote = "\""){
   col_types <- extract_col_types(col_types = col_types)
   read_csv(file = file,
            col_types = col_types,
            locale = locale(tz = "Europe/London"),
            n_max = n_max,
+           quote = quote,
            na = na) %>%
     as_tibble
+}
+
+#' Load data from Epic in CSV format
+#'
+#' @param file Either a path to a file, a connection, or literal data (either
+#'   a single string or a raw vector), as per [readr::read_delim()]
+#' @param col_types Either a string specifying the name of the table that the
+#'   data comes from, for which a standard format can be used. Available
+#'   value are `adm`, `adt`, `demogs`, `fsheet`, `fsheet_io`, `tests`,
+#'   `med_admin`, `med_prescr`, `diagnosis_pl`, `med_hist`, `radiology`.
+#'
+#'   Or a [readr::cols()] format list of column names and types, which
+#'   can be used where a nonstandard data format are supplied.
+#' @param n_max Maximum number of lines to read.
+#' @param na Character vector of strings to interpret as missing values.
+#'   Set this option to `character()` to indicate no missing values.
+#' @importFrom readr read_csv_chunked cols col_character col_integer col_double locale col_datetime
+#' @importFrom DBI dbWriteTable
+db_write_tidybrookes_csv <- function(file,
+                                     connection,
+                                     table_name,
+                                     col_types,
+                                     #n_max = Inf,
+                                     na = c("", "NA"),
+                                     quote = "\"",
+                                     progress = TRUE){
+  col_types <- extract_col_types(col_types = col_types)
+  cat("Loading..\n")
+  read_csv_chunked(
+    file = file,
+    callback = function(chunk, index) {
+      dbWriteTable(connection,
+                   chunk,
+                   name = table_name,
+                   append = TRUE)
+    },
+    col_types = col_types,
+    locale = locale(tz = "Europe/London"),
+    quote = quote,
+    na = na,
+    progress = progress)
+}
+
+#' Load data from Epic in delim format
+#'
+#' @param file Either a path to a file, a connection, or literal data (either
+#'   a single string or a raw vector), as per [readr::read_delim()]
+#' @param col_types Either a string specifying the name of the table that the
+#'   data comes from, for which a standard format can be used. Available
+#'   value are `adm`, `adt`, `demogs`, `fsheet`, `fsheet_io`, `tests`,
+#'   `med_admin`, `med_prescr`, `diagnosis_pl`, `med_hist`, `radiology`.
+#'
+#'   Or a [readr::cols()] format list of column names and types, which
+#'   can be used where a nonstandard data format are supplied.
+#' @param n_max Maximum number of lines to read.
+#' @param na Character vector of strings to interpret as missing values.
+#'   Set this option to `character()` to indicate no missing values.
+#' @importFrom readr read_csv_chunked cols col_character col_integer col_double locale col_datetime
+#' @importFrom DBI dbWriteTable
+db_write_tidybrookes_delim <- function(file,
+                                     connection,
+                                     table_name,
+                                     col_types,
+                                     #n_max = Inf,
+                                     na = c("", "NA"),
+                                     quote = "\"",
+                                     ...){
+  col_types <- extract_col_types(col_types = col_types)
+  read_delim_chunked(
+    file = file,
+    callback = function(chunk, index) {
+      dbWriteTable(connection,
+                   chunk,
+                   name = table_name,
+                   append = TRUE)
+    },
+    col_types = col_types,
+    locale = locale(tz = "Europe/London"),
+    quote = quote,
+    na = na,
+    ...)
 }
 
 #' Load data from Epic in delimited format
@@ -43,13 +126,15 @@ read_tidybrookes_delim <- function(file,
                                    col_types,
                                    delim = "|",
                                    n_max = Inf,
-                                   na = c("", "NA")){
+                                   na = c("", "NA"),
+                                   quote = "\""){
   col_types <- extract_col_types(col_types = col_types)
   read_delim(file = file,
              delim = delim,
              col_types = col_types,
              locale = locale(tz = "Europe/London"),
              n_max = n_max,
+             quote = quote,
              na = na) %>%
     as_tibble
 }
@@ -209,4 +294,144 @@ extract_col_types <- function(col_types){
       Proc_Assessment = col_character())
   }
   col_types
+}
+
+#' @export
+default_rename <- function(x){
+  if (x == "tests"){
+  c(person_id = "STUDY_SUBJECT_DIGEST",
+    name = "TestName",
+    value = "ResultValue",
+    ordered_datetime = "ORDERED_DATETIME",
+    collected_datetime = "COLLECTED_DATETIME",
+    received_datetime = "RECEIVED_DATETIME",
+    result_datetime = "ResultDate",
+    ordering_department = "ORDERING_DEPARTMENT_NAME",
+    range_low = "ReferenceLow",
+    range_high = "ReferenceHigh",
+    unit = "ResultUnit",
+    method = "Method",
+    group = "TestGroupName",
+    order_id = "OrderProcId")
+  } else if (x == "fsheet"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      name = "disp_name",
+      value = "measured_value",
+      comment = "meas_comment",
+      measurement_datetime = "MEASURE_TIME",
+      data_id = "fsd_id",
+      measurement_id = "flo-meas_id",
+      line_id = "line",
+      template = "template",
+      form = "form")
+  } else if (x == "adt"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      visit_id = "PAT_ENC_CSN",
+      event_type = "EVENT_TYPE",
+      start_datetime = "IN_DTTM",
+      discharge_datetime = "HOSP_DISCH_TIME",
+      department  = "ADT_DEPARTMENT_NAME",
+      room = "ROOM_NAME",
+      bed = "BED_LABEL",
+      service_area = "ADT_SERV_AREA_NAME",
+      service_name = "HOSP_SERV_NAME",
+      event_type_c = "EVENT_TYPE_C")
+  } else if (x == "adm"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      visit_id = "PAT_ENC_CSN",
+      visit_start_datetime = "IN_DTTM",
+      visit_end_datetime = "HOSP_DISCH_TIME",
+      gender = "GENDER_DESC",
+      ethnicity = "ETHNIC_GROUP_GROUPED",
+      death_date = "DATE_OF_DEATH",
+      age_at_visit_start = "AGE_AT_ADM",
+      adm_service = "ADM_SERVICE",
+      ward = "ADT_DEPARTMENT_NAME",
+      discharge_destination = "DISCH_DEST",
+      discharged_deceased = "DISCH_DECEASED",
+      readmitted_within_30_days = "READMIT_WITHIN_30")
+  } else if (x == "demogs"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      gender = "GENDER_DESC")
+  } else if (x == "diagnosis_pl"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      icd10_list = "ICD10_LIST",
+      description = "DX_DESCRIPTION",
+      description_displayed = "DX_DESC_DISPLAYED",
+      status = "DIAGNOSIS_STATUS",
+      entered_datetime = "DIAGNOSIS_ENTERED_DATE",
+      diagnosis_datetime = "DIAGNOSIS_DATE",
+      resolved_datetime = "RESOLVED_DATE",
+      icd10_1 = "ICD10_1",
+      icd10_2 = "ICD10_2",
+      icd10_3 = "ICD10_3",
+      icd10_4 = "ICD10_4",
+      snomed = "SNOMED_CONCEPTS",
+      comment = "PROBLEM_CMT")
+  } else if (x == "fsheet_io"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      name = "FLO_MEAS_NAME",
+      description = "disp_name",
+      value = "measured_value",
+      comment = "meas_comment",
+      measurement_datetime = "MEASURE_TIME",
+      data_id = "fsd_id",
+      measurement_id = "flo-meas_id",
+      line_id = "line",
+      template = "template",
+      form = "form")
+  } else if (x == "med_admin"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      administered_datetime = "TimeAdministered",
+      name = "DrugName",
+      dose = "DoseAsLabelled",
+      rate = "InfusionRate",
+      dose_unit = "DoseUnitAbbreviated",
+      route = "RouteOfMedicationAbbreviated",
+      department = "DepartmentName",
+      visit_id = "MAR_ENC_CSN",
+      action = "MARAction",
+      mpp_code = "AMPP_VMPP_CODE",
+      mpp_description = "AMPP_VMPP_DESC",
+      info_concentration = "CALC_DOSE_INFO",
+      info_rate = "RATE_CALC_INFO",
+      info_conversion = "CONCENTRATION")
+  } else if (x == "med_hist"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      icd10_list = "CURRENT_ICD10_LIST",
+      description = "DX_NAME",
+      entered_datetime = "CONTACT_DATE",
+      medical_history_datetime_freetext = "MEDICAL_HX_DATE",
+      visit_id = "HX_LNK_ENC_CSN",
+      comment = "COMMENTS",
+      comment_annotation = "MED_HX_ANNOTATION")
+  } else if (x == "med_presc"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      name = "DrugName",
+      start_datetime = "StartDate",
+      end_datetime = "EndDate",
+      dose = "Dose",
+      unit = "DoseUnit",
+      strength = "Strength",
+      dose_frequency = "DoseFrequency",
+      route = "RouteOfMedication",
+      in_or_out_patient = "InOrOutPatient",
+      form = "FormOfMedication",
+      thera_class = "THERA_CLASS",
+      pharm_class = "PHARM_CLASS",
+      pharm_subclass = "PHARM_SUBCLASS",
+      visit_id = "PAT_ENC_CSN_ID",
+      status = "OrderStatusCat",
+      provider_type = "ProviderType",
+      order_class = "Order_Class")
+  } else if (x == "radiology"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      name = "Proc_Name",
+      procedure_datetime = "Proc_Date",
+      narrative = "Proc_Narrative",
+      impression = "Proc_Impression",
+      addenda = "Proc_Addenda",
+      assessment = "Proc_Assessment",
+      code = "Proc_Code")
+  }
 }

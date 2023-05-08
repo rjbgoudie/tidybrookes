@@ -4,10 +4,7 @@
 \alias{demogs_rename}
 \title{Tidy raw demogs colnames}
 \usage{
-demogs_rename(
-  x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", gender = "GENDER_DESC")
-)
+demogs_rename(x, names = default_rename("demogs"))
 }
 \arguments{
 \item{x}{A data frame of raw demogs data}

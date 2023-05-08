@@ -9,9 +9,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 demogs_rename <- function(x,
-                       names =
-                         c(person_id = "STUDY_SUBJECT_DIGEST",
-                           gender = "GENDER_DESC")){
+                          names = default_rename("demogs")){
   relocate_ignoring_missing(x, names)
 }
 

@@ -4,14 +4,7 @@
 \alias{adt_rename}
 \title{Tidy raw tests colnames}
 \usage{
-adt_rename(
-  x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", visit_id = "PAT_ENC_CSN", event_type =
-    "EVENT_TYPE", start_datetime = "IN_DTTM", discharge_datetime = "HOSP_DISCH_TIME",
-    department = "ADT_DEPARTMENT_NAME", room = "ROOM_NAME", bed = "BED_LABEL",
-    service_area = "ADT_SERV_AREA_NAME", service_name = "HOSP_SERV_NAME", event_type_c =
-    "EVENT_TYPE_C")
-)
+adt_rename(x, names = default_rename("adt"))
 }
 \arguments{
 \item{x}{A data frame of raw adt data}

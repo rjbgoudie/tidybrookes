@@ -9,21 +9,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 tests_rename <- function(x,
-                         names =
-                           c(person_id = "STUDY_SUBJECT_DIGEST",
-                             name = "TestName",
-                             value = "ResultValue",
-                             ordered_datetime = "ORDERED_DATETIME",
-                             collected_datetime = "COLLECTED_DATETIME",
-                             received_datetime = "RECEIVED_DATETIME",
-                             result_datetime = "ResultDate",
-                             ordering_department = "ORDERING_DEPARTMENT_NAME",
-                             range_low = "ReferenceLow",
-                             range_high = "ReferenceHigh",
-                             unit = "ResultUnit",
-                             method = "Method",
-                             group = "TestGroupName",
-                             order_id = "OrderProcId")){
+                         names = default_rename("tests")){
   relocate_ignoring_missing(x, names)
 }
 

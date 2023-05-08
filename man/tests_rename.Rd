@@ -4,15 +4,7 @@
 \alias{tests_rename}
 \title{Tidy raw tests colnames}
 \usage{
-tests_rename(
-  x,
-  names = c(person_id = "STUDY_SUBJECT_DIGEST", name = "TestName", value =
-    "ResultValue", ordered_datetime = "ORDERED_DATETIME", collected_datetime =
-    "COLLECTED_DATETIME", received_datetime = "RECEIVED_DATETIME", result_datetime =
-    "ResultDate", ordering_department = "ORDERING_DEPARTMENT_NAME", range_low =
-    "ReferenceLow", range_high = "ReferenceHigh", unit = "ResultUnit", method = "Method",
-    group = "TestGroupName", order_id = "OrderProcId")
-)
+tests_rename(x, names = default_rename("tests"))
 }
 \arguments{
 \item{x}{A data frame of raw test data}

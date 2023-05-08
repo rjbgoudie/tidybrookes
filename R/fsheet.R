@@ -9,16 +9,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 fsheet_rename <- function(x,
-                          names = c(person_id = "STUDY_SUBJECT_DIGEST",
-                                     name = "disp_name",
-                                     value = "measured_value",
-                                     comment = "meas_comment",
-                                     measurement_datetime = "MEASURE_TIME",
-                                     data_id = "fsd_id",
-                                     measurement_id = "flo-meas_id",
-                                     line_id = "line",
-                                     template = "template",
-                                     form = "form")){
+                          names = default_rename("fsheet")){
   relocate_ignoring_missing(x, names)
 }
 
