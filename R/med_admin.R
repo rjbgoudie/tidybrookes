@@ -2,13 +2,6 @@
 # for infusion - name, concentration, [dose], mg/hr, start time, end time
 # for bolus - name, concentration, dose, mg
 
-# routes: systemic vs topical
-# action: filter rows separately for infusion and bolus
-
-# 
-
-
-
 
 #' Tidy raw med_admin colnames
 #'
@@ -21,17 +14,7 @@
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 med_admin_rename <- function(x,
-                             names =
-                               c(person_id = "STUDY_SUBJECT_DIGEST",
-                                 administered_datetime = "TimeAdministered",
-                                 name = "DrugName",
-                                 dose = "DoseAsLabelled",
-                                 rate = "InfusionRate",
-                                 unit = "DoseUnitAbbreviated",
-                                 route = "RouteOfMedicationAbbreviated",
-                                 department = "DepartmentName",
-                                 visit_id = "MAR_ENC_CSN",
-                                 action = "MARAction")){
+                             names = default_rename("med_admin")){
   relocate_ignoring_missing(x, names)
 }
 
@@ -106,24 +89,31 @@ med_admin_unrename <- function(x,
 #'   EXCLUDED.
 #' @author R.J.B. Goudie
 med_admin_add <- function(med_admin_def,
+                          note,
                           symbol,
                           title,
                           names = NA,
                           search_pattern,
                           search_exclude = NA,
                           silently_exclude_na_routes = FALSE,
-                          route,
-                          route_exclude = NA,
-                          action,
-                          action_exclude = NA,
-                          dose_as_number_fn = case_when(TRUE ~ dose_as_number),
-                          unit_relabel_fn = case_when(TRUE ~ unit),
-                          dose_rescale_fn = case_when(TRUE ~ dose_as_number),
+                          route_class = "intravenous",
+                          route_include = default_route_include(route_class),
+                          route_exclude = default_route_exclude(route_class),
+                          action_class = c("bolus", "infusion", "pca"),
+                          action_include = default_action_include(action_class),
+                          action_exclude = default_action_exclude(action_class),
+                          concentration_fn = case_when(TRUE ~ NA_real_),
+                          dose_as_number_fn = case_when(TRUE ~ dose_original_as_number),
+                          dose_range_discard_above_fn = case_when(TRUE ~ Inf),
+                          dose_range_mainly_below_fn = NA,
+                          bolus_or_infusion_fn = case_when(TRUE ~ "bolus"),
                           expect_after = TRUE){
   expect_after <- enquo(expect_after)
   dose_as_number_fn <- enquo(dose_as_number_fn)
-  dose_rescale_fn <- enquo(dose_rescale_fn)
-  unit_relabel_fn <- enquo(unit_relabel_fn)
+  bolus_or_infusion_fn <- enquo(bolus_or_infusion_fn)
+  concentration_fn <- enquo(concentration_fn)
+  dose_range_discard_above_fn <- enquo(dose_range_discard_above_fn)
+  dose_range_mainly_below_fn <- enquo(dose_range_mainly_below_fn)
 
   new <- list(symbol = symbol,
               title = title,
@@ -131,13 +121,15 @@ med_admin_add <- function(med_admin_def,
               search_pattern = search_pattern,
               search_exclude = search_exclude,
               silently_exclude_na_routes = silently_exclude_na_routes,
-              route = route,
+              route_include = route_include,
               route_exclude = route_exclude,
-              action = action,
+              action_include = action_include,
               action_exclude = action_exclude,
+              concentration_fn = concentration_fn,
               dose_as_number_fn = dose_as_number_fn,
-              dose_rescale_fn = dose_rescale_fn,
-              unit_relabel_fn = unit_relabel_fn,
+              dose_range_discard_above_fn = dose_range_discard_above_fn,
+              dose_range_mainly_below_fn = dose_range_mainly_below_fn,
+              bolus_or_infusion_fn = bolus_or_infusion_fn,
               expect_after = expect_after)
   med_admin_def <- append(med_admin_def, list(new))
   names(med_admin_def)[length(med_admin_def)] <- symbol
@@ -148,6 +140,7 @@ med_admin_add <- function(med_admin_def,
 #'
 #' @param x Medication administration data in tidy-column-name format (after
 #'   applying `med_admin_rename`)
+#'
 #' @param med_admin_def A med_admin definition
 #' @param errors A function indicating what to do when an error is found
 #'
@@ -160,20 +153,36 @@ med_admin_add <- function(med_admin_def,
 #'
 #' The result will be sorted by administered_datetime
 #' @author R.J.B. Goudie
-med_admin_extract <- function(x, med_admin_def, errors = stop){
+med_admin_extract <- function(x,
+                              med_admin_def,
+                              med_admin_units,
+                              errors = stop){
   if (length(med_admin_def) == 1 & "symbol" %in% names(med_admin_def)){
-    med_admin_extract_single(x, med_admin_def)
+    med_admin_extract_single(x,
+                             med_admin_def,
+                             med_admin_units = med_admin_units)
   } else {
     out <- bind_rows(lapply(med_admin_def, function(y){
       inform(format_error_bullets(c(
         glue("\nExtracting {y$title} ({y$symbol})"))))
-      med_admin_extract_single(x, y, errors = errors)
+      med_admin_extract_single(x,
+                               y,
+                               med_admin_units = med_admin_units,
+                               errors = errors)
     }))
     out %>% arrange(symbol, administered_datetime)
   }
 }
 
-med_admin_extract_single <- function(x, med_admin_def, errors = stop){
+med_admin_extract_single <- function(x,
+                                     med_admin_def,
+                                     med_admin_units = med_admin_units,
+                                     errors = stop){
+
+  # med_admin name
+  ################
+
+  # Check for possible new med_admin names
   possible_new <- med_admin_check_for_new_names(x, med_admin_def)
   if (nrow(possible_new) > 0){
     possible_new_names <- format_as_argument(possible_new$name)
@@ -186,6 +195,8 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
   # Filter to only CUH med_admin
   out <- x %>% filter(name %in% med_admin_def$names)
 
+  # ROUTES
+  ########
   possible_new_route <- med_admin_check_for_new_route(out, med_admin_def)
   if (nrow(possible_new_route) > 0){
     possible_new_routes <- format_as_argument(possible_new_route$route)
@@ -195,10 +206,34 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
       immediate. = TRUE)
   }
 
+  # Exclude NAs when requested
   out <- out %>%
-    filter(route %in% med_admin_def$route)
+    mutate(will_silently_exclude_na_routes = (is.na(route) & med_admin_def$silently_exclude_na_routes)) %>%
+    filter_inform(!will_silently_exclude_na_routes,
+                  since = "since route was NA")
 
-  possible_new_action <- med_admin_check_for_new_action(out, med_admin_def)
+  if (is.list(med_admin_def$route_exclude)){
+    walk2(med_admin_def$route_exclude,
+          names(med_admin_def$route_exclude),
+         function(x, y){
+           # this is not nice code
+           out <<- out %>%
+             filter_inform(
+               !(route %in% x) | (!med_admin_def$silently_exclude_na_routes & is.na(route)),
+               since = glue("since route is {y}"))
+         })
+
+  } else {
+    out <- out %>%
+      filter_inform(route %in% med_admin_def$route_include |
+               (!med_admin_def$silently_exclude_na_routes & is.na(route)),
+               since = glue("route is {med_admin_def$route_include}"))
+  }
+
+  # ACTIONS
+  #########
+  possible_new_action <- med_admin_check_for_new_action(out,
+                                                        med_admin_def)
   if (nrow(possible_new_action) > 0){
     possible_new_actions <- format_as_argument(possible_new_action$action)
     warning(format_error_bullets(c(
@@ -207,45 +242,137 @@ med_admin_extract_single <- function(x, med_admin_def, errors = stop){
       immediate. = TRUE)
   }
 
+  med_admin_exclude <- map(med_admin_def$action_exclude,
+                           ~ setdiff(.x, unlist(med_admin_def$action_include)))
+  if (is.list(med_admin_exclude)){
+    walk2(med_admin_exclude,
+          names(med_admin_exclude),
+          function(x, y){
+            out <<- out %>%
+              filter_inform(
+                !(action %in% x),
+                since = glue("since action is {y}"))
+          })
+
+  } else {
+    out <- out %>%
+      filter_inform(!(action %in% med_admin_exclude),
+               since = glue("since action is in {med_admin_exclude}"))
+  }
+
   out <- out %>%
-    filter(action %in% med_admin_def$action)
+    mutate(bolus_from_action =
+             case_when(action %in% med_admin_def$action_include$bolus ~ TRUE,
+                       TRUE ~ FALSE),
+           infusion_from_action =
+             case_when(action %in% med_admin_def$action_include$infusion ~ TRUE,
+                       TRUE ~ FALSE),
+           pca_from_action =
+             case_when(action %in% med_admin_def$action_include$pca ~ TRUE,
+                       TRUE ~ FALSE),
+           feed_from_action =
+             case_when(action %in% med_admin_def$action_include$feed ~ TRUE,
+                       TRUE ~ FALSE)
+           )
 
   # Add symbol and title
   out <- out %>%
     mutate(symbol = med_admin_def$symbol, .after = person_id) %>%
-    mutate(title = med_admin_def$title, .after = unit) %>%
-    relocate(name, .after = unit) %>%
+    mutate(title = med_admin_def$title, .after = dose_unit) %>%
+    relocate(name, .after = dose_unit) %>%
     mutate(value_as_logical = TRUE) %>%
-    rename(dose_original = dose) %>%
+    rename(dose_original = dose,
+           dose_unit_original = dose_unit,
+           rate_ml_per_hour_original = rate) %>%
     mutate(administered_date = as.Date(administered_datetime))
 
   # Remove duplicate rows
   out <- out %>%
     distinct_inform
 
-  # Exclude NAs when requested
+  # TODO how best to do this? Code concentration
   out <- out %>%
-    mutate(will_silently_exclude_na_routes = (is.na(route) & med_admin_def$silently_exclude_na_routes)) %>%
-    filter_inform(!will_silently_exclude_na_routes,
-                  since = "since route was NA")
+    mutate(concentration = !!med_admin_def$concentration_fn)
 
   out <- out %>%
     group_by(name) %>%
-    mutate(dose_as_number = suppressWarnings({
-      as.numeric(dose_original)
-    }),
-    dose_as_number = !!med_admin_def$dose_as_number_fn,
-    .after = dose_original) %>%
+    mutate(
+      dose_original_as_number = suppressWarnings({
+        as.numeric(dose_original)
+      }),
+
+      rate_ml_per_hour = suppressWarnings({
+        as.numeric(rate_ml_per_hour_original)
+      }),
+
+      dose_original_as_number = !!med_admin_def$dose_as_number_fn,
+
+      rate_mg_per_hour = rate_ml_per_hour * concentration,
+
+      .after = dose_original) %>%
     ungroup
 
-  check_that_all(out,
-                 suppressWarnings({!is.na(as.numeric(dose_as_number))}),
-                 name = "all doses being numeric")
-
-  # Rescale units
+  # CONVERT TO CANONICAL DOSE UNIT
+  ################################
   out <- out %>%
-    mutate(dose = !!med_admin_def$dose_rescale_fn,
-           unit = !!med_admin_def$unit_relabel_fn,)
+    left_join(med_admin_units, by = "dose_unit_original") %>%
+    med_admin_map_units_to_canonical()
+
+  possible_new_dose_unit <- med_admin_check_for_new_dose_unit(
+    # TODO IS THIS OK TO AVOID REPORTING NA dose_unit?
+    out %>%
+      filter(is.na(dose_unit_original))
+  )
+  if (nrow(possible_new_dose_unit) > 0){
+    possible_new_dose_unit <- format_as_argument(possible_new_dose_unit$dose_unit_original)
+    warning(format_error_bullets(c(
+      i = glue("{nrow(possible_new_dose_unit)} possible new dose_unit: ",
+               "{possible_new_dose_unit}"))),
+      immediate. = TRUE)
+  }
+
+  # bolus/infusion inference from dose_unit
+  infusion_dose_units <- c("mg/hr", "mg/kg/hr", "ml/hr", "ml/kg/hr")
+
+  out <- out %>%
+    mutate(infusion_from_dose_unit =
+             case_when(is.na(dose_unit) ~ NA,
+                       dose_unit %in% infusion_dose_units ~ TRUE,
+                       TRUE ~ FALSE),
+           bolus_from_dose_unit = !infusion_from_dose_unit)
+
+  # Rate
+  out <- out %>%
+    mutate(infusion_from_rate =
+             if_else(!is.na(rate_ml_per_hour),
+                     true = TRUE,
+                     false = FALSE),
+           bolus_from_rate = !infusion_from_rate)
+
+  # Convert dose to rate
+  ######################
+  if ("info_rate" %in% colnames(out)){
+    out <- out %>%
+      med_admin_info_rate_Weight()
+  }
+
+  # Discard non-bolus or infusions by action
+  out <- out %>%
+    mutate(bolus = bolus_from_action,
+           infusion = infusion_from_action,
+           pca = pca_from_action,
+           feed = feed_from_action)
+
+  # # Discard too high doses
+  # out <- out %>%
+  #   mutate(is_too_high = dose > !!med_admin_def$dose_range_discard_above_fn) %>%
+  #   filter_inform(!is_too_high,
+  #                 since = glue("since above dose_range_discard_above_fn"))
+
+  # TODO exclude rows where no dose or rate?
+  # check_that_all(out,
+  #                suppressWarnings({!is.na(as.numeric(dose_original_as_number))}),
+  #                name = "all doses being numeric")
 
   # Check expect_after condition
   check_that_all(out, !!med_admin_def$expect_after, "expect_after")
@@ -273,20 +400,33 @@ med_admin_check_for_new_names <- function(x,
 
 med_admin_check_for_new_route <- function(x,
                                           med_admin_def){
+  handled_routes <- c(unlist(med_admin_def$route_exclude),
+                      unlist(med_admin_def$route_include))
   x %>%
-    filter(!route %in% c(med_admin_def$route_exclude,
-                        med_admin_def$route)) %>%
+    filter(!route %in% handled_routes & !is.na(route)) %>%
     count(route)
 }
 
-med_admin_check_for_new_action <- function(x,
+med_admin_check_for_new_dose_unit <- function(x,
                                           med_admin_def){
   x %>%
-    filter(!action %in% c(med_admin_def$action_exclude,
-                        med_admin_def$action)) %>%
+    filter((is.na(dose_unit_is_checked) | !dose_unit_is_checked) &
+             !is.na(dose_unit_original)) %>%
+    count(dose_unit_original)
+}
+
+
+med_admin_check_for_new_action <- function(x,
+                                           med_admin_def){
+  x %>%
+    filter(!action %in%
+             c(unlist(med_admin_def$action_exclude),
+               unlist(med_admin_def$action_include))) %>%
     count(action)
 }
 
+
+# TODO update this to account for action_bolus and action_infusion
 
 #' Generate a stub definition of medication administration
 #'
@@ -315,18 +455,8 @@ med_admin_stub_def <-
            title,
            search = NULL,
            names = NULL,
-           action_exclude = c("Missed",
-                              "Cancelled Entry",
-                              "MAR Hold",
-                              "MAR Unhold",
-                              "Doctor Medication Unhold",
-                              "See Alternative",
-                              "Doctor Medication Hold",
-                              "Held",
-                              "Automatically Held",
-                              "Pending",
-                              "Due",
-                              "Stopped")){
+           route_class = NULL,
+           action_class = NULL){
     if (!is.null(search)){
       possible_includes <- filter_med_admin(x, search)
     } else {
@@ -334,24 +464,56 @@ med_admin_stub_def <-
         filter(name %in% names)
     }
 
-    possible_excludes <- possible_includes %>%
-    filter(str_detect(name, coll("MOUTHWASH", ignore_case = TRUE)) |
-             str_detect(name, coll("EYE DROPS", ignore_case = TRUE)) |
-             str_detect(name, coll("OINTMENT", ignore_case = TRUE)) |
-             str_detect(name, coll("CREAM", ignore_case = TRUE)) |
-             str_detect(name, coll("EAR DROP", ignore_case = TRUE)))
+    route_include <- default_route_include(route_class)
+    route_exclude <- default_route_exclude(route_class)
+    action_include <- default_action_include(action_class)
+    action_exclude <- default_action_exclude(action_class)
+
+    possible_includes_pre_route_action_excludes <- possible_includes
+    walk2(route_exclude,
+          names(route_exclude),
+          function(x, y){
+            # this is not nice code
+            possible_includes <<- possible_includes %>%
+              filter_inform(
+                !(route %in% x),
+                since = glue("since route is {y}"))
+          })
+
+    action_exclude <- map(action_exclude,
+                          ~ setdiff(.x, unlist(action_include)))
+    walk2(action_exclude,
+          names(action_exclude),
+          function(x, y){
+            # this is not nice code
+            possible_includes <<- possible_includes %>%
+              filter_inform(
+                !(action %in% x),
+                since = glue("since action is {y}"))
+          })
+
+    # possible_excludes <- possible_includes %>%
+    # filter(str_detect(name, coll("MOUTHWASH", ignore_case = TRUE)) |
+    #          str_detect(name, coll("EYE DROPS", ignore_case = TRUE)) |
+    #          str_detect(name, coll("OINTMENT", ignore_case = TRUE)) |
+    #          str_detect(name, coll("CREAM", ignore_case = TRUE)) |
+    #          str_detect(name, coll("EAR DROP", ignore_case = TRUE)))
 
   possible_includes_names <- possible_includes %>%
+    count(name) %>%
+    arrange(name) %>%
+    pull(name)
+
+  possible_includes_pre_route_action_excludes_names <- possible_includes_pre_route_action_excludes %>%
     count(name, sort = TRUE) %>%
     pull(name)
 
-  possible_excludes_names <- possible_excludes %>%
-    count(name, sort = TRUE) %>%
-    pull(name)
+   possible_excludes_names <- setdiff(possible_includes_pre_route_action_excludes_names,
+                                      possible_includes_names)
 
   possible_includes_routes <- possible_includes %>%
-    count(route, sort = TRUE) %>%
-    pull(route)
+     count(route, sort = TRUE) %>%
+     pull(route)
 
   possible_exclude_na_routes <- ""
   if (any(is.na(possible_includes_routes))){
@@ -359,44 +521,165 @@ med_admin_stub_def <-
     possible_includes_routes <- possible_includes_routes[!is.na(possible_includes_routes)]
   }
 
-  possible_includes_action <- possible_includes %>%
-    count(action, sort = TRUE) %>%
-    pull(action)
+  # possible_includes_action <- possible_includes %>%
+  #   count(action, sort = TRUE) %>%
+  #   pull(action)
+  #
+  # excludes_action <- intersect(possible_includes_action, action_exclude)
+  # ended_action <- intersect(possible_includes_action, action_ended)
+  # possible_includes_action <- setdiff(possible_includes_action,
+  #                                     c(excludes_action,
+  #                                       ended_action))
 
-  excludes_action <- intersect(possible_includes_action, action_exclude)
-  possible_includes_action <- setdiff(possible_includes_action,
-                                      excludes_action)
+  # possible_includes_unit <- possible_includes %>%
+  #   count(unit, sort = TRUE) %>%
+  #   pull(unit)
 
-  possible_includes_unit <- possible_includes %>%
-    count(unit, sort = TRUE) %>%
-    pull(unit)
-
-  possible <- format_as_argument(setdiff(possible_includes_names, possible_excludes_names))
+  possible <- format_as_argument(possible_includes_names)
   excludes <- format_as_argument(possible_excludes_names)
   search <- format_as_argument(search)
-  possible_excludes_names <- format_as_argument(possible_excludes_names)
   possible_includes_routes <- format_as_argument(possible_includes_routes)
-  possible_includes_action <- format_as_argument(possible_includes_action)
-  excludes_action <- format_as_argument(excludes_action)
 
-  possible_includes_expect_before <- ""
-  if (length(possible_includes_unit) == 1 && !is.na(possible_includes_unit)){
-    possible_includes_expect_before <-
-      glue(",\n    expect_before = (unit == {format_as_argument(possible_includes_unit)})")
-  } else if (length(possible_includes_unit) > 1 & all(!is.na(possible_includes_unit))){
-    possible_includes_expect_before <-
-      glue(",\n    expect_before = (unit %in% {format_as_argument(possible_includes_unit)})")
-  }
+  # possible_includes_expect_before <- ""
+  # if (length(possible_includes_unit) == 1 && !is.na(possible_includes_unit)){
+  #   possible_includes_expect_before <-
+  #     glue(",\n    expect_before = (unit == {format_as_argument(possible_includes_unit)})")
+  # } else if (length(possible_includes_unit) > 1 & all(!is.na(possible_includes_unit))){
+  #   possible_includes_expect_before <-
+  #     glue(",\n    expect_before = (unit %in% {format_as_argument(possible_includes_unit)})")
+  # }
 
-  glue("med_admin_def <- med_admin_def %>%
+  glue("med_admin_defs <- med_admin_defs %>%
   med_admin_add(
     symbol = \"{symbol}\",
     title = \"{title}\",
     names = {possible},
     search_pattern = {search},
-    search_exclude = {possible_excludes_names},
-    {possible_exclude_na_routes}route = {possible_includes_routes},
-    route_exclude = c(),
-    action = {possible_includes_action},
-    action_exclude = {excludes_action}{possible_includes_expect_before})")
+    search_exclude = {excludes},
+    {possible_exclude_na_routes}route_class = {format_as_argument(route_class)},
+    action_class = {format_as_argument(action_class)},
+    concentration_fn =
+       case_when(TRUE ~ NA_real_))")
+}
+
+
+
+
+med_admin_map_units_to_canonical <- function(x){
+  x %>%
+    mutate(mass_multiplier =
+             case_when(
+               dose_unit_original_mass == "g" ~ 1/1000,
+               dose_unit_original_mass == "mg" ~ 1, # Canonical unit
+               dose_unit_original_mass == "mcg" ~ 1000,
+               dose_unit_original_mass == "ng" ~ 1000 * 1000,
+               is.na(dose_unit_original_mass) ~ NA_real_# in mg
+             ),
+           volume_multiplier =
+             case_when(
+               dose_unit_original_volume == "l" ~ 1/1000,
+               dose_unit_original_volume == "ml" ~ 1 # Canonical unit
+             ),
+           weight_multiplier =
+             case_when(
+               dose_unit_original_weight == "kg" ~ 1, # Canonical unit
+               #dose_unit_original_weight == "g" ~ 1000,
+               is.na(dose_unit_original_weight) ~ NA_real_
+             ),
+           time_multiplier =
+             case_when(
+               dose_unit_original_time == "day" ~ 1/24,
+               dose_unit_original_time == "hr" ~ 1, # Canonical unit
+               dose_unit_original_time == "min" ~ 60,
+
+               is.na(dose_unit_original_time) ~ NA_real_
+             )) %>%
+    mutate(
+      dose =
+        case_when(
+          dose_unit_original_type == "mass" ~
+            (dose_original_as_number / mass_multiplier),
+          dose_unit_original_type == "mass/time" ~
+            (dose_original_as_number / mass_multiplier) * time_multiplier,
+          dose_unit_original_type == "mass/weight/time" ~
+            (dose_original_as_number / mass_multiplier) * weight_multiplier * time_multiplier,
+
+          dose_unit_original_type == "volume" ~
+            (dose_original_as_number / volume_multiplier),
+          dose_unit_original_type == "volume/time" ~
+            (dose_original_as_number / volume_multiplier) * time_multiplier,
+          dose_unit_original_type == "volume/weight/time" ~
+            (dose_original_as_number / volume_multiplier) * weight_multiplier * time_multiplier
+          ),
+
+      dose_unit =
+        case_when(
+          dose_unit_original_type == "mass" ~ "mg",
+          dose_unit_original_type == "mass/time" ~ "mg/hr",
+          dose_unit_original_type == "mass/weight/time" ~ "mg/kg/hr",
+
+          dose_unit_original_type == "volume" ~ "ml",
+          dose_unit_original_type == "volume/time" ~ "ml/hr",
+          dose_unit_original_type == "volume/weight/time" ~ "ml/kg/hr"
+        ))
+}
+
+med_admin_info_rate_Weight <- function(x){
+  x %>%
+    mutate(weight_info_rate = as.numeric(str_match(info_rate, "([0-9.]+) kg")[,2]))
+}
+
+med_admin_unweight_adjust <- function(x){
+  x %>%
+    mutate(rate_mg_per_hour_from_dose =
+             case_when(dose_unit == "mg/kg/hr" ~ dose * weight_info_rate,
+                       dose_unit == "mg/hr" ~ dose,
+                       dose_unit == "ml/hr" ~ dose * concentration,
+                       TRUE ~ NA_real_),
+           rate_ml_per_hour_from_dose =
+             case_when(dose_unit == "ml/kg/hr" ~ dose * weight_info_rate,
+                       dose_unit == "ml/hr" ~ dose,
+                       dose_unit == "mg/hr" ~ dose / concentration,
+                       TRUE ~ NA_real_))
+}
+
+
+default_route_include <- function(route_class){
+  med_admin_routes  %>%
+    tidyr:::pivot_longer(-c(route, comment, classified),
+                         names_to = "type",
+                         values_to = "include") %>%
+    filter(include) %>%
+    filter(type %in% route_class)  %>%
+    unstack(route ~ type)
+}
+
+default_route_exclude <- function(route_class){
+  med_admin_routes %>%
+    tidyr:::pivot_longer(-c(route, comment, classified),
+                         names_to = "type",
+                         values_to = "include") %>%
+    filter(include) %>%
+    filter(!(type %in% route_class))  %>%
+    unstack(route ~ type)
+}
+
+default_action_include <- function(action_class){
+  med_admin_action %>%
+    tidyr:::pivot_longer(-c(action),
+                         names_to = "type",
+                         values_to = "include") %>%
+    filter(include) %>%
+    filter(type %in% action_class)  %>%
+    unstack(action ~ type)
+}
+
+default_action_exclude <- function(action_class){
+  med_admin_action %>%
+    tidyr:::pivot_longer(-c(action),
+                         names_to = "type",
+                         values_to = "include") %>%
+    filter(include) %>%
+    filter(!(type %in% action_class))  %>%
+    unstack(action ~ type)
 }

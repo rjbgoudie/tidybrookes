@@ -14,7 +14,7 @@ filter_tests <- function(x, pattern){
 
 filter_med_prescr <- filter_med_admin <- function(x, pattern){
   x %>%
-    filter(str_detect(name, coll(pattern, ignore_case = TRUE)))
+    filter(str_detect(name, regex(pattern, ignore_case = TRUE)))
 }
 
 filter_numeric <- function(x){

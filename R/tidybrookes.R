@@ -3,9 +3,9 @@
 #' @importFrom glue glue
 #' @importFrom lubridate ymd ymd_hms dhours dseconds dminutes ddays dweeks dyears dmonths interval int_length
 #' @importFrom tidyr pivot_wider separate replace_na
-#' @importFrom stringr str_ends str_starts str_replace str_remove str_detect regex str_flatten coll fixed str_replace_all
+#' @importFrom stringr str_ends str_starts str_replace str_remove str_detect regex str_flatten coll fixed str_replace_all str_sub str_match
 #' @importFrom tibble tibble as_tibble tribble enframe
-#' @importFrom purrr reduce compact
+#' @importFrom purrr reduce compact walk2
 #' @importFrom patchwork plot_layout
 #' @importFrom readr read_delim cols col_character col_integer col_double locale col_datetime
 NULL

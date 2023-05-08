@@ -6,19 +6,24 @@
 \usage{
 med_admin_add(
   med_admin_def,
+  note,
   symbol,
   title,
   names = NA,
   search_pattern,
   search_exclude = NA,
   silently_exclude_na_routes = FALSE,
-  route,
-  route_exclude = NA,
-  action,
-  action_exclude = NA,
-  dose_as_number_fn = case_when(TRUE ~ dose_as_number),
-  unit_relabel_fn = case_when(TRUE ~ unit),
-  dose_rescale_fn = case_when(TRUE ~ dose_as_number),
+  route_class = "intravenous",
+  route_include = default_route_include(route_class),
+  route_exclude = default_route_exclude(route_class),
+  action_class = c("bolus", "infusion", "pca"),
+  action_include = default_action_include(action_class),
+  action_exclude = default_action_exclude(action_class),
+  concentration_fn = case_when(TRUE ~ NA_real_),
+  dose_as_number_fn = case_when(TRUE ~ dose_original_as_number),
+  dose_range_discard_above_fn = case_when(TRUE ~ Inf),
+  dose_range_mainly_below_fn = NA,
+  bolus_or_infusion_fn = case_when(TRUE ~ "bolus"),
   expect_after = TRUE
 )
 }
@@ -39,9 +44,6 @@ same test are added in future.}
 
 \item{search_exclude}{A character vector of test names
 (\code{TestName} in raw format) that are known NOT to be relevant to this test.}
-
-\item{unit_relabel_fn}{A function specifying how to relabel the units of the
-the result values. By default, does not rescale.}
 
 \item{expect_after}{An expression that returns a logical value,
 specifying a condition that should be \code{TRUE} in the processed (output) data}
@@ -71,6 +73,9 @@ excluded}
 
 \item{unit_rescale_fn}{A function specifying how to rescale the result
 values. By default, does not rescale.}
+
+\item{unit_relabel_fn}{A function specifying how to relabel the units of the
+the result values. By default, does not rescale.}
 
 \item{expect_before}{An expression that returns a logical value,
 specifying a condition that should be \code{TRUE} in the raw data}

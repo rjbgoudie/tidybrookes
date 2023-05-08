@@ -10,9 +10,8 @@ med_admin_stub_def(
   title,
   search = NULL,
   names = NULL,
-  action_exclude = c("Missed", "Cancelled Entry", "MAR Hold", "MAR Unhold",
-    "Doctor Medication Unhold", "See Alternative", "Doctor Medication Hold", "Held",
-    "Automatically Held", "Pending", "Due", "Stopped")
+  route_class = NULL,
+  action_class = NULL
 )
 }
 \arguments{

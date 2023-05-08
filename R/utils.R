@@ -56,12 +56,17 @@ nonnumeric <- function(x){
 #' @param x A vector
 #' @return A character string of `x`
 format_as_argument <- function(x){
-  x %>%
-    dput() %>%
-    capture.output() %>%
-    str_flatten() %>%
-    str_replace_all("\", \"", "\",\n    \"") %>%
-    str_replace(fixed("c(\""), "\n    c(\"")
+  # x %>%
+  #   dput() %>%
+  #   capture.output() %>%
+  #   str_flatten() %>%
+  #   str_replace_all("\", \"", "\",\n    \"") %>%
+  #   str_replace(fixed("c(\""), "\n    c(\"")
+  f <- file()
+  dput(x, f)
+  out <- paste(readLines(f), collapse = " ")
+  close.connection(f)
+  out
 }
 
 #' Filter, but report the filtering that occurs

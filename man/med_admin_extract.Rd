@@ -4,7 +4,7 @@
 \alias{med_admin_extract}
 \title{Extract med_admin data into tidy format}
 \usage{
-med_admin_extract(x, med_admin_def, errors = stop)
+med_admin_extract(x, med_admin_def, med_admin_units, errors = stop)
 }
 \arguments{
 \item{x}{Medication administration data in tidy-column-name format (after

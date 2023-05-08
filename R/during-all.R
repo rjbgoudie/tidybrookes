@@ -209,6 +209,18 @@ all_during <- function(x,
                     is.na(visit_end_datetime) ~
                       datetime >= visit_start_datetime - dyears(1) &
                       datetime <= visit_start_datetime + dhours(24)))
+  } else if (during == "during_value"){
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", names_from),
+        filter_condition =
+          case_when(!is.na(value_end_datetime) ~
+                      datetime >= value_start_datetime &
+                      datetime <= value_end_datetime,
+                    is.na(value_end_datetime) ~
+                      datetime >= value_start_datetime))
   } else {
     stop("all_during does not know how to hangle this `during` value:",
          during)
