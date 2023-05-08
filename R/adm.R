@@ -51,10 +51,13 @@ adm_unrename <- function(x,
 #' @author R.J.B. Goudie
 adm_annotate <- function(x){
   check_that_all(x, gender %in% c("Female", "Male", "Unknown"))
+  original_groups <- group_vars(x)
 
   x <- x %>%
+    ungroup() %>%
     mutate(visit_length_days =
              as.numeric(visit_end_datetime - visit_start_datetime,
                         units = "days"),
-           person_id_short = person_id_shorten(person_id))
+           person_id_short = person_id_shorten(person_id)) %>%
+    group_by(across(all_of(original_groups)))
 }
