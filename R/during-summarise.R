@@ -27,6 +27,8 @@ summarise_during <- function(x,
                              type = "none",
                              formula,
                              names_from = "symbol",
+                             group_by = c(c("person_id", "visit_id"),
+                                          names_from),
                              values_from = c("value_as_number",
                                              "value_as_character",
                                              "value_as_logical",
@@ -48,11 +50,11 @@ summarise_during <- function(x,
     grouped_summarise_or_slice(
       type = type,
       formula = !! formula,
-      group_by = c(c("person_id", "visit_id"), names_from))
+      group_by = group_by)
 
   inform(format_error_bullets(c("Pivoting wider")))
   out <- out%>%
-    pivot_value_wider(id_cols = c("person_id", "visit_id"),
+    pivot_value_wider(id_cols = setdiff(group_by, names_from),
                       names_from = names_from,
                       values_from = values_from,
                       names_suffix = glue("{names_suffix}_{during}"))
