@@ -170,7 +170,7 @@ all_during <- function(x,
                       datetime >= visit_start_datetime - dyears(1) &
                       datetime <= visit_end_datetime,
                     is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - dyears(14)))
+                      datetime >= visit_start_datetime - dyears(1)))
   } else if (during == "before_visit_end"){
     out <- x %>%
       join_fn(
