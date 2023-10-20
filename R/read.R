@@ -405,7 +405,7 @@ default_rename <- function(x){
       visit_id = "HX_LNK_ENC_CSN",
       comment = "COMMENTS",
       comment_annotation = "MED_HX_ANNOTATION")
-  } else if (x == "med_presc"){
+  } else if (x == "med_prescr"){
     c(person_id = "STUDY_SUBJECT_DIGEST",
       name = "DrugName",
       start_datetime = "StartDate",
@@ -421,9 +421,13 @@ default_rename <- function(x){
       pharm_class = "PHARM_CLASS",
       pharm_subclass = "PHARM_SUBCLASS",
       visit_id = "PAT_ENC_CSN_ID",
-      status = "OrderStatusCat",
+      order_status_category = "OrderStatusCat",
+      order_status = "ORDERSTATUS",
       provider_type = "ProviderType",
-      order_class = "Order_Class")
+      order_class = "Order_Class",
+      status_discontinuous = "DISCONTINUOUS_STATUS",
+      mpp_code = "AMPP_VMPP_CODE",
+      mpp_description = "AMPP_VMPP_DESC")
   } else if (x == "radiology"){
     c(person_id = "STUDY_SUBJECT_DIGEST",
       name = "Proc_Name",
