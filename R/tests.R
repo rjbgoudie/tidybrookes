@@ -184,17 +184,29 @@ tests_remove <- function(test_def, symbol){
 #'
 #' The result will be sorted by collected_datetime
 #' @author R.J.B. Goudie
-tests_extract <- function(x, tests_def, errors = stop){
+tests_extract <- function(x,
+                          tests_def,
+                          errors = stop,
+                          rds_only = FALSE,
+                          rds_filepath_fn = NULL){
   if (length(tests_def) == 1 & "symbol" %in% names(tests_def)){
-    tests_extract_single(x, tests_def)
-  } else {
-    out <- lapply(tests_def, function(y){
-      inform(format_error_bullets(c(
-        glue("\nExtracting {y$title} ({y$symbol})"))))
-      tests_extract_single(x, y, errors = errors)
-    })
-    out <- bind_rows(out)
+    out <- tests_extract_single(x, tests_def)
     out %>% arrange(symbol, collected_datetime)
+  } else {
+    if (!rds_only){
+      out <- bind_rows(lapply(tests_def, function(y){
+        tests_extract_single(x, y, errors = errors)
+      }))
+      out %>% arrange(symbol, collected_datetime)
+    } else if (rds_only){
+      lapply(tests_def, function(y){
+        symbol <- y$symbol
+        out <- tests_extract_single(x, y, errors = errors)
+        out <- out %>% arrange(symbol, collected_datetime)
+        saveRDS(out,
+                file = rds_filepath_fn(symbol))
+      })
+    }
   }
 }
 
