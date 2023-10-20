@@ -211,6 +211,13 @@ tests_extract <- function(x,
 }
 
 tests_extract_single <- function(x, test_def, errors = stop){
+  # Filter to only CUH tests
+  out <- x %>%
+    filter(name %in% test_def$names_cuh)
+
+  inform(format_error_bullets(c(
+    glue("\nExtracting {test_def$title} ({test_def$symbol}) from ",
+         "{nrow(out)} raw rows"))))
 
   possible_new <- tests_check_for_new(x, test_def)
   if (nrow(possible_new) > 0){
@@ -220,10 +227,6 @@ tests_extract_single <- function(x, test_def, errors = stop){
                "{possible_new_names}"))),
       immediate. = TRUE)
   }
-
-  # Filter to only CUH tests
-  out <- x %>%
-    filter(name %in% test_def$names_cuh)
 
   # Add symbol and title
   out <- out %>%
