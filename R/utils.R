@@ -126,7 +126,10 @@ fn_inform <- function(x, fn, ..., since = "for unknown reason"){
 #' @param x A data frame
 #' @param condition A condition
 #' @param name Character string, a name for the condition
-check_that_all <- function(x, condition, name){
+check_that_all <- function(x,
+                           condition,
+                           name = "Unnamed",
+                           summary = identity){
   condition <- enquo(condition)
   unexpected <- x %>%
     mutate(satisfies_expect_before = !!condition) %>%
@@ -141,6 +144,7 @@ check_that_all <- function(x, condition, name){
                "{name} condition: ",
                "{condition_str}"))),
       immediate. = TRUE)
+    print(summary(unexpected))
   }
 }
 

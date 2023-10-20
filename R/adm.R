@@ -50,7 +50,9 @@ adm_unrename <- function(x,
 #' @return The supplied data frame `x` with additional annotations
 #' @author R.J.B. Goudie
 adm_annotate <- function(x){
-  check_that_all(x, gender %in% c("Female", "Male", "Unknown"))
+  check_that_all(x,
+                 gender %in% c("Female", "Male", "Unknown"),
+                 name = "gender are Female, Male or Unknown")
   original_groups <- group_vars(x)
 
   x <- x %>%

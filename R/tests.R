@@ -271,7 +271,11 @@ tests_extract_single <- function(x, test_def, errors = stop){
     if (test_def$type == "numeric"){
       check_that_all(out,
                      suppressWarnings({!is.na(as.numeric(value_as_number))}),
-                     name = "all values being numeric")
+                     name = "all values being numeric",
+                     summary = function(x){
+                       list(x %>% count(value_original),
+                            x %>% count(value_original) %>% pull(value_original) %>% dput)
+                       })
     }
 
     # Rescale units
