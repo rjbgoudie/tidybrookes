@@ -453,3 +453,59 @@ fsheet_spo2_on_room_air <- function(x, shape = "long"){
     out
   }
 }
+
+fsheet_timepoints_within_timeranges <-function(timepoints, timeranges){
+  timepoints <- timepoints %>%
+    select(person_id,
+           measurement_datetime,
+           symbol,
+           value_as_character,
+           value_as_number,
+           value_as_logical
+    )
+
+  timeranges <- timeranges %>%
+    select(person_id,
+           #measurement_datetime,
+           #symbol,
+           start_datetime,
+           end_datetime)
+
+  full_join(timeranges, timepoints) %>%
+    group_by(person_id) %>%
+    arrange(measurement_datetime) %>%
+    fill(#timepoints
+      # value_as_character,
+      # value_as_number,
+      # value_as_logical,
+
+      # timeranges
+      start_datetime,
+      end_datetime) %>%
+    filter(measurement_datetime >= start_datetime &
+             measurement_datetime <= end_datetime)
+}
+
+fsheet_label_timepoints_before_timepoint <- function(timepoints,
+                                               before_timepoints){
+  timepoints <- timepoints %>%
+    select(person_id,
+           measurement_datetime,
+           symbol,
+           value_as_character,
+           value_as_number,
+           value_as_logical
+    )
+
+  before_timepoints <- before_timepoints %>%
+    select(person_id,
+           datetime)
+
+  left_join(timepoints, before_timepoints) %>%
+    group_by(person_id) %>%
+    arrange(measurement_datetime) %>%
+    mutate(before_timepoint = case_when(
+      is.na(datetime) ~ TRUE,
+      !is.na(datetime) ~ measurement_datetime < datetime
+    ))
+}
