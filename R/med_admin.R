@@ -352,7 +352,7 @@ med_admin_extract_single <- function(x,
   if ("info_rate" %in% colnames(out)){
     # add weight_info_rate
     out <- out %>%
-      med_admin_info_rate_Weight()
+      med_admin_info_rate_weight()
   }
 
   # Discard non-bolus or infusions by action
@@ -391,7 +391,19 @@ med_admin_extract_single <- function(x,
              pca,
              feed,
              action) %>%
-    select(-will_silently_exclude_na_routes) %>%
+    select(-will_silently_exclude_na_routes,
+           -mass_multiplier,
+           -volume_multiplier,
+           -weight_multiplier,
+           -time_multiplier,
+           -dose_unit_is_checked,
+           -dose_unit_original_type,
+           -dose_unit_original_mass,
+           -dose_unit_original_volume,
+           -dose_unit_original_weight,
+           -dose_unit_original_time,
+           -dose_unit_original_effect,
+           -dose_unit_original_area) %>%
     arrange(administered_datetime)
 }
 
@@ -606,41 +618,183 @@ med_admin_map_units_to_canonical <- function(x){
           dose_unit_original_type == "volume" ~ "ml",
           dose_unit_original_type == "volume/time" ~ "ml/hr",
           dose_unit_original_type == "volume/weight/time" ~ "ml/kg/hr"
-        )) %>%
-    select(-mass_multiplier,
-           -volume_multiplier,
-           -weight_multiplier,
-           -time_multiplier,
-           -dose_unit_is_checked,
-           -dose_unit_original_type,
-           -dose_unit_original_mass,
-           -dose_unit_original_volume,
-           -dose_unit_original_weight,
-           -dose_unit_original_time,
-           -dose_unit_original_effect,
-           -dose_unit_original_area)
+        ))
 }
 
-med_admin_info_rate_Weight <- function(x){
+
+
+resolve_simultaneous_administration_datetime <- function(x){
+  x <- x %>%
+    group_by(person_id, symbol, administered_datetime) %>%
+    mutate(n = n())
+
+  x_unproblematic <- x %>%
+    filter(n == 1)
+
+  x_problematic <- x %>%
+    filter(n > 1) %>%
+    group_by(person_id, symbol, administered_datetime)
+
+  num_ticks <- n_groups(x_problematic)
+  pb <- progress::progress_bar$new(format = "[:bar] :current/:total (:percent) elapsed :elapsed eta :eta",
+                         total = num_ticks)
+
+  x_problematic_coalesced <- x_problematic %>%
+    group_modify(function(.x, ...){
+      pb$tick()
+      coalesce_simultaneous_administration_datetime(.x)
+    })
+
+  bind_rows(x_unproblematic, x_problematic_coalesced) %>%
+    group_by(person_id, symbol) %>%
+    arrange(administered_datetime)
+}
+
+coalesce_simultaneous_administration_datetime <- function(x){
+  # TODO this is very simplistic, and could probably be improved
+  x %>%
+    slice_min(order_by = rate_ml_per_hour)
+}
+
+med_admin_info_rate_weight <- function(x){
   x %>%
     mutate(
       weight_info_rate = as.numeric(str_match(info_rate, "([0-9.]+) kg")[,2])
     )
 }
 
-med_admin_unweight_adjust <- function(x){
-  x %>%
-    mutate(rate_mg_per_hour_from_dose =
-             case_when(dose_unit == "mg/kg/hr" ~ dose * weight_info_rate,
-                       dose_unit == "mg/hr" ~ dose,
-                       dose_unit == "ml/hr" ~ dose * concentration,
-                       TRUE ~ NA_real_),
-           rate_ml_per_hour_from_dose =
-             case_when(dose_unit == "ml/kg/hr" ~ dose * weight_info_rate,
-                       dose_unit == "ml/hr" ~ dose,
-                       dose_unit == "mg/hr" ~ dose / concentration,
-                       TRUE ~ NA_real_))
+
+med_admin_rate_rescale <- function(x,
+                                   fsheet_weight){
+
+  fsheet_weight_by_administered_datetime <-
+    x %>%
+    select(person_id,
+           visit_id,
+           visit_start_datetime,
+           visit_end_datetime,
+           administered_datetime) %>%
+    last_during_before_event(fsheet_weight,
+                             during = "year_before_visit_until_visit_end",
+                             datetime = measurement_datetime,
+                             event_datetime = administered_datetime,
+                             group_by = c("person_id",
+                                          "visit_id",
+                                          "administered_datetime"),
+                             names_suffix = "administration")
+
+  x <- x %>%
+    left_join(fsheet_weight_by_administered_datetime,
+              by = c("person_id",
+                     "visit_id",
+                     "administered_datetime",
+                     "visit_start_datetime",
+                     "visit_end_datetime")) %>%
+    rename(weight_fsheet =
+             weight_last_before_administration_year_before_visit_until_visit_end,
+           weight_fsheet_datetime =
+             weight_last_before_administration_year_before_visit_until_visit_end_datetime)
+
+  x <- x %>%
+    mutate(
+      weight = coalesce(weight_info_rate, weight_fsheet),
+
+      rate_mg_per_hour_from_dose =
+        case_when(dose_unit == "mg/kg/hr" ~ dose * weight,
+                  dose_unit == "mg/hr" ~ dose,
+                  dose_unit == "ml/hr" ~ dose * concentration,
+                  TRUE ~ NA_real_),
+      rate_ml_per_hour_from_dose =
+        case_when(dose_unit == "ml/kg/hr" ~ dose * weight,
+                  dose_unit == "ml/hr" ~ dose,
+                  dose_unit == "mg/hr" ~ dose / concentration,
+                  TRUE ~ NA_real_),
+
+      rate_mg_per_hour_from_rate = rate_mg_per_hour,
+      rate_mg_per_hour =
+        coalesce(rate_mg_per_hour_from_dose, rate_mg_per_hour_from_rate),
+
+      rate_mg_per_kg_per_hour_from_rate = rate_mg_per_hour_from_rate/weight,
+      rate_mg_per_kg_per_hour = rate_mg_per_hour/weight) %>%
+    relocate(rate_mg_per_kg_per_hour,
+             .after = rate_mg_per_hour)
 }
+
+
+
+
+curtail_infusions <- function(x,
+                                      infusion_bag_size){
+  x %>%
+    left_join(infusion_bag_size) %>%
+    ungroup %>%
+    mutate(bag_max_hours = bag_size_ml/rate_ml_per_hour,
+           mar_gap_max_hours = 24) %>%
+    group_by(person_id, visit_id, symbol) %>%
+    rename(administered_start_datetime = administered_datetime) %>%
+    mutate(administered_end_datetime = lead(administered_start_datetime),
+           administered_start_to_end_hours = as.numeric(administered_end_datetime -
+                                                          administered_start_datetime,
+                                                        units = "hours")) %>%
+    mutate(administration_curtailed =
+             case_when(
+               rate_mg_per_hour > 0 &
+                 is.na(administered_start_to_end_hours) ~
+                 "unended",
+
+               rate_mg_per_hour > 0 &
+                 administered_start_to_end_hours > bag_max_hours ~
+                 "exceeds_bag_size",
+
+               # # long gap between MAR records
+               # administered_start_to_end_hours > 24 ~
+               #   administered_start_datetime + dhours(24),
+
+               # otherwise, leave as is
+               TRUE ~ "unproblematic"),
+           administered_end_datetime =
+             case_when(
+               administration_curtailed == "unended" ~
+                 administered_start_datetime + dhours(bag_max_hours),
+
+               administration_curtailed == "exceeds_bag_size" ~
+                 administered_start_datetime + dhours(bag_max_hours),
+
+               # # long gap between MAR records
+               # administered_start_to_end_hours > 24 ~
+               #   administered_start_datetime + dhours(24),
+
+               # otherwise, leave as is
+               TRUE ~ administered_end_datetime)
+    ) %>%
+    pivot_longer(c(administered_start_datetime, administered_end_datetime),
+                 names_to = "administered_event_type",
+                 values_to = "administered_datetime") %>%
+    relocate(administered_datetime,
+             .after = symbol) %>%
+    filter(administered_event_type == "administered_start_datetime" |
+             (administration_curtailed != "unproblematic")) %>%
+    mutate(is_curtailed =
+             administered_event_type == "administered_end_datetime" &
+             administration_curtailed != "unproblematic",
+           across(c(rate_ml_per_hour,
+                    rate_mg_per_hour,
+                    rate_mg_per_kg_per_hour,
+
+                    rate_mg_per_hour_from_rate,
+                    rate_mg_per_kg_per_hour_from_rate,
+
+                    dose,
+                    dose_original_as_number,
+
+                    rate_ml_per_hour_from_dose,
+                    rate_mg_per_hour_from_dose,),
+                  ~ if_else(is_curtailed, 0, .x)),
+           action = if_else(is_curtailed, "Stopped", action))
+}
+
+
+
 
 
 default_route_include <- function(route_class){
@@ -681,4 +835,148 @@ default_action_exclude <- function(action_class){
     filter(include) %>%
     filter(!(type %in% action_class))  %>%
     unstack(action ~ type)
+}
+
+
+
+# note uses rate!
+infusion_fn_by_visit <- function(x){
+  x %>%
+    filter(infusion) %>%
+    arrange(administered_datetime) %>%
+    group_by(person_id, visit_id, symbol) %>%
+    mutate(hours_since_visit_start_datetime =
+             as.numeric(administered_datetime - visit_start_datetime,
+                        units = "hours")) %>%
+    summarise(
+      #   infusion_start_hours_since_first_administered_datetime = first(hours_since_first_administered_datetime),
+      #   infusion_end_hours_since_first_administered_datetime = last(hours_since_first_administered_datetime),
+      #   infusion_start_datetime = first(administered_datetime),
+      #   infusion_end_datetime = last(administered_datetime),
+      rate_mg_per_hour_fn = list(
+        approxfun(x = hours_since_visit_start_datetime,
+                  y = rate_mg_per_hour,
+                  method = "constant",
+                  yleft = 0,
+                  yright = 0,
+
+                  # Not sure if this is the best option
+                  ties = "ordered"
+        )),
+      rate_mg_per_kg_per_hour_fn = list(
+        approxfun(x = hours_since_visit_start_datetime,
+                  y = rate_mg_per_kg_per_hour,
+                  method = "constant",
+                  yleft = 0,
+                  yright = 0,
+
+                  # Not sure if this is the best option
+                  ties = "ordered"
+        )))
+}
+
+integrate_by_min <- function(f, lower, upper){
+  s <- seq(from = lower, to = upper, by = 1/(60))
+  ff <- f(s)
+  list(value = sum(ff)/(60))
+}
+
+
+
+infusion_grid <- function(.x,
+                          seq_unit,
+                          time_unit,
+                          .progress = NULL){
+  if (!is.null(.progress)){
+    .progress$tick()
+  }
+  .x %>%
+    summarise(grid_datetime =
+                seq(from = floor_date(start_datetime,
+                                      unit = seq_unit),
+                    to = ceiling_date(end_datetime,
+                                      unit = seq_unit),
+                    by = time_unit),
+              grid_index = seq_along(grid_datetime),
+              visit_start_datetime = visit_start_datetime,
+              visit_end_datetime = visit_end_datetime,
+              rate_mg_per_hour_fn = rate_mg_per_hour_fn,
+              rate_mg_per_kg_per_hour_fn = rate_mg_per_kg_per_hour_fn)
+}
+
+dose_in_grid <- function(.x, .progress = NULL){
+  if (!is.null(.progress)){
+    .progress$tick()
+  }
+  .x %>%
+    summarise(start = first(grid_start_hours_since_visit_start_datetime),
+              end = first(grid_end_hours_since_visit_start_datetime),
+              dose_mg_per_list =
+                list(integrate_by_min(first(rate_mg_per_hour_fn),
+                                      start,
+                                      end#,
+                                      #subdivisions = 1440L
+                )),
+              dose_mg_per = first(dose_mg_per_list)$value,
+              dose_mg_per_kg_per_list =
+                list(integrate_by_min(first(rate_mg_per_kg_per_hour_fn),
+                                      start,
+                                      end#,
+                                      #subdivisions = 1440L
+                )),
+              dose_mg_per_kg_per = first(dose_mg_per_kg_per_list)$value) %>%
+    select(-dose_mg_per_list, -dose_mg_per_kg_per_list)
+}
+
+
+
+# "visit_id", "imv_index"
+infusion_dose_per <- function(infusion_df,
+                              time_unit = "day",
+                              by){
+  if (time_unit == "day"){
+    seq_unit <- "day"
+    d_unit <- ddays(1)
+  } else if (time_unit == "hour"){
+    seq_unit <- "hour"
+    d_unit <- dhours(1)
+  }
+
+  grouping1 <- syms(c("person_id", "symbol", by))
+
+  df <- infusion_df %>%
+    group_by(!!!grouping1)
+
+  num_ticks <- n_groups(df)
+  pb <- progress::progress_bar$new(format = "[:bar] :current/:total (:percent) elapsed :elapsed eta :eta",
+                         total = num_ticks)
+
+  df <- df %>%
+    group_modify(~ infusion_grid(.x,
+                                 seq_unit = seq_unit,
+                                 time_unit = time_unit,
+                                 .progress = pb)) %>%
+    ungroup %>%
+    mutate(grid_start_hours_since_visit_start_datetime =
+             as.numeric(
+               grid_datetime - visit_start_datetime,
+               units = "hours"),
+           grid_end_hours_since_visit_start_datetime =
+             as.numeric(
+               grid_datetime + d_unit - visit_start_datetime,
+               units = "hours"))
+
+  grouping2 <- syms(c("person_id", "symbol", by, "grid_index", "grid_datetime"))
+
+  df <- df %>%
+    group_by(!!!grouping2)
+
+  num_ticks <- n_groups(df)
+  pb <- progress::progress_bar$new(format = "[:bar] :current/:total (:percent) elapsed :elapsed eta :eta",
+                         total = num_ticks)
+
+  df <- df %>%
+    group_modify(~ dose_in_grid(.x, .progress = pb))
+
+  df
 }
