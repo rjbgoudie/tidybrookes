@@ -4,7 +4,13 @@
 \alias{tests_extract}
 \title{Extract tests data into tidy format}
 \usage{
-tests_extract(x, tests_def, errors = stop)
+tests_extract(
+  x,
+  tests_def,
+  errors = stop,
+  rds_only = FALSE,
+  rds_filepath_fn = NULL
+)
 }
 \arguments{
 \item{x}{Test data in tidy-column-name format (after applying

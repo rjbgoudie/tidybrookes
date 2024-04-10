@@ -9,7 +9,10 @@ read_tidybrookes_csv(
   col_types,
   n_max = Inf,
   na = c("", "NA"),
-  quote = "\\""
+  quote = "\\"",
+  tz = "Europe/London",
+  nonexistent = NULL,
+  ambiguous = NULL
 )
 }
 \arguments{

@@ -4,7 +4,7 @@
 \alias{check_that_all}
 \title{Check all rows of a data frame satisfy a condition}
 \usage{
-check_that_all(x, condition, name)
+check_that_all(x, condition, name = "Unnamed", summary = identity)
 }
 \arguments{
 \item{x}{A data frame}

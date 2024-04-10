@@ -4,7 +4,13 @@
 \alias{fsheet_extract}
 \title{Extract fsheet data into tidy format}
 \usage{
-fsheet_extract(x, fsheet_def, errors = stop)
+fsheet_extract(
+  x,
+  fsheet_def,
+  errors = stop,
+  rds_only = FALSE,
+  rds_filepath_fn = NULL
+)
 }
 \arguments{
 \item{x}{Flowsheet data in renamed format (after applying \code{fsheet_rename})}
