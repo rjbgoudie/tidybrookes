@@ -83,13 +83,13 @@ db_write_tidybrookes_csv <- function(file,
 #' @importFrom readr read_csv_chunked cols col_character col_integer col_double locale col_datetime
 #' @importFrom DBI dbWriteTable
 db_write_tidybrookes_delim <- function(file,
-                                     connection,
-                                     table_name,
-                                     col_types,
-                                     #n_max = Inf,
-                                     na = c("", "NA"),
-                                     quote = "\"",
-                                     ...){
+                                       connection,
+                                       table_name,
+                                       col_types,
+                                       #n_max = Inf,
+                                       na = c("", "NA"),
+                                       quote = "\"",
+                                       ...){
   col_types <- extract_col_types(col_types = col_types)
   read_delim_chunked(
     file = file,
@@ -299,20 +299,20 @@ extract_col_types <- function(col_types){
 #' @export
 default_rename <- function(x){
   if (x == "tests"){
-  c(person_id = "STUDY_SUBJECT_DIGEST",
-    name = "TestName",
-    value = "ResultValue",
-    ordered_datetime = "ORDERED_DATETIME",
-    collected_datetime = "COLLECTED_DATETIME",
-    received_datetime = "RECEIVED_DATETIME",
-    result_datetime = "ResultDate",
-    ordering_department = "ORDERING_DEPARTMENT_NAME",
-    range_low = "ReferenceLow",
-    range_high = "ReferenceHigh",
-    unit = "ResultUnit",
-    method = "Method",
-    group = "TestGroupName",
-    order_id = "OrderProcId")
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      name = "TestName",
+      value = "ResultValue",
+      ordered_datetime = "ORDERED_DATETIME",
+      collected_datetime = "COLLECTED_DATETIME",
+      received_datetime = "RECEIVED_DATETIME",
+      result_datetime = "ResultDate",
+      ordering_department = "ORDERING_DEPARTMENT_NAME",
+      range_low = "ReferenceLow",
+      range_high = "ReferenceHigh",
+      unit = "ResultUnit",
+      method = "Method",
+      group = "TestGroupName",
+      order_id = "OrderProcId")
   } else if (x == "fsheet"){
     c(person_id = "STUDY_SUBJECT_DIGEST",
       name = "disp_name",
