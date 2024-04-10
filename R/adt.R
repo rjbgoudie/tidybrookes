@@ -64,10 +64,13 @@ adt_check_discharge_dates_consistent <- function(x){
     arrange(start_datetime) %>%
     summarise(
       check_discharge_dates_consistent =
-        if_else(
-          is.na(discharge_datetime),
-          true = TRUE,
-          false = all(last(start_datetime) == discharge_datetime)))
+        all(
+          if_else(
+            is.na(discharge_datetime),
+            true = TRUE,
+            false = all(last(start_datetime) == discharge_datetime))
+        )
+    )
 }
 
 #' Annotate ADT data
