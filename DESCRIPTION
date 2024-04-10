@@ -24,4 +24,5 @@ Imports:
     glue,
     lubridate,
     tidyr,
-    stringr
+    stringr,
+    clock

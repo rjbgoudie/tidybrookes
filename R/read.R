@@ -13,16 +13,33 @@
 #' @param na Character vector of strings to interpret as missing values.
 #'   Set this option to `character()` to indicate no missing values.
 #' @importFrom readr read_csv cols col_character col_integer col_double locale col_datetime
-read_tidybrookes_csv <- function(file, col_types, n_max = Inf, na = c("", "NA"),
-                                 quote = "\""){
+read_tidybrookes_csv <- function(file,
+                                 col_types,
+                                 n_max = Inf,
+                                 na = c("", "NA"),
+                                 quote = "\"",
+                                 tz = "Europe/London",
+                                 nonexistent = NULL,
+                                 ambiguous = NULL){
   col_types <- extract_col_types(col_types = col_types)
-  read_csv(file = file,
-           col_types = col_types,
-           locale = locale(tz = "Europe/London"),
-           n_max = n_max,
-           quote = quote,
-           na = na) %>%
-    as_tibble
+  col_types_original <- col_types
+  col_types <- col_types_rewrite_if_clock(col_types,
+                                          nonexistent = nonexistent,
+                                          ambiguous = ambiguous)
+
+  out <- read_csv(file = file,
+                  col_types = col_types,
+                  locale = locale(tz = tz),
+                  n_max = n_max,
+                  quote = quote,
+                  na = na)
+  out <- parse_datetime_cols_if_clock(out,
+                                      col_types_original,
+                                      tz = tz,
+                                      nonexistent = nonexistent,
+                                      ambiguous = ambiguous)
+
+  out
 }
 
 #' Load data from Epic in CSV format
@@ -438,4 +455,62 @@ default_rename <- function(x){
       assessment = "Proc_Assessment",
       code = "Proc_Code")
   }
+}
+
+col_is_datetime <- function(x){
+  class(x)[1] == "collector_datetime"
+}
+
+col_types_use_clock <- function(nonexistent, ambiguous){
+  !is.null(nonexistent) || !is.null(ambiguous)
+}
+
+col_types_rewrite_datetime_as_character <- function(x){
+  x$cols <- sapply(x$cols, function(y){
+    if (col_is_datetime(y)){
+      col_character()
+    } else {
+      y
+    }
+  })
+  x
+}
+
+col_extract_datetime_format <- function(x){
+  is_datetime <- vapply(x$cols, col_is_datetime, logical(1))
+  out <- sapply(x$cols[is_datetime],
+                function(y){
+                  y$format
+                })
+  names(out) <- names(x$cols)[is_datetime]
+  out
+}
+
+parse_datetime_cols_if_clock <- function(x,
+                                         col_types,
+                                         tz,
+                                         nonexistent,
+                                         ambiguous){
+  if (col_types_use_clock(nonexistent, ambiguous)){
+    cols_datetime_formats <- col_extract_datetime_format(col_types)
+    x %>%
+      mutate(across(names(cols_datetime_formats),
+                    ~ clock::date_time_parse(
+                      .x,
+                      format = cols_datetime_formats[cur_column()],
+                      zone = tz,
+                      nonexistent = nonexistent,
+                      ambiguous = ambiguous)))
+  } else {
+    x
+  }
+}
+
+col_types_rewrite_if_clock <- function(col_types,
+                                       ambiguous,
+                                       nonexistent){
+  if (col_types_use_clock(nonexistent, ambiguous)){
+    col_types <- col_types_rewrite_datetime_as_character(col_types)
+  }
+  col_types
 }
