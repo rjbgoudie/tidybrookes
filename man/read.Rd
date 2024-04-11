@@ -2,6 +2,7 @@
 % Please edit documentation in R/read.R
 \name{read_tidybrookes_csv}
 \alias{read_tidybrookes_csv}
+\alias{read_tidybrookes_delim}
 \title{Load data from Epic in CSV format}
 \usage{
 read_tidybrookes_csv(
@@ -14,10 +15,19 @@ read_tidybrookes_csv(
   nonexistent = NULL,
   ambiguous = NULL
 )
+
+read_tidybrookes_delim(
+  file,
+  col_types,
+  delim = "|",
+  n_max = Inf,
+  na = c("", "NA"),
+  quote = "\\""
+)
 }
 \arguments{
 \item{file}{Either a path to a file, a connection, or literal data (either
-a single string or a raw vector), as per \code{\link[readr:read_delim]{readr::read_delim()}}}
+a single string or a raw vector), as per \code{\link[readr:read_delim]{readr::read_delim()}}.}
 
 \item{col_types}{Either a string specifying the name of the table that the
 data comes from, for which a standard format can be used. Available
@@ -31,7 +41,11 @@ can be used where a nonstandard data format are supplied.}
 
 \item{na}{Character vector of strings to interpret as missing values.
 Set this option to \code{character()} to indicate no missing values.}
+
+\item{delim}{Single character used to separate fields within a record.}
 }
 \description{
 Load data from Epic in CSV format
+
+Load data from Epic in delimited format
 }

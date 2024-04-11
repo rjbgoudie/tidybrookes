@@ -2,6 +2,7 @@
 % Please edit documentation in R/read.R
 \name{db_write_tidybrookes_csv}
 \alias{db_write_tidybrookes_csv}
+\alias{db_write_tidybrookes_delim}
 \title{Load data from Epic in CSV format}
 \usage{
 db_write_tidybrookes_csv(
@@ -12,6 +13,16 @@ db_write_tidybrookes_csv(
   na = c("", "NA"),
   quote = "\\"",
   progress = TRUE
+)
+
+db_write_tidybrookes_delim(
+  file,
+  connection,
+  table_name,
+  col_types,
+  na = c("", "NA"),
+  quote = "\\"",
+  ...
 )
 }
 \arguments{
@@ -33,4 +44,6 @@ Set this option to \code{character()} to indicate no missing values.}
 }
 \description{
 Load data from Epic in CSV format
+
+Load data from Epic in delim format
 }

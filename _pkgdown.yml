@@ -1,0 +1,72 @@
+url: ~
+template:
+  bootstrap: 5
+
+reference:
+- title: Loading raw data
+
+- subtitle: Data loading
+  desc: >
+    Loading raw CSV files exported by clinical informatics into R or a
+    database
+  contents:
+  - starts_with("read_")
+  - starts_with("db_write")
+  - contains("_rename")
+  - contains("_unrename")
+  - extract_col_types
+
+- subtitle: Joining data
+  desc: >
+    Joining
+  contents:
+  - grouped_summarise_or_slice
+  - inner_join_filter
+  - left_join_filter
+  - pivot_value_wider
+
+- subtitle: Subsetting
+  desc: >
+    Extract longitudinal data in relation to other data, particularly
+    admissions data
+  contents:
+  - all_during
+  - summarise_during
+  - first_during_after_event
+  - first_during
+  - max_during
+
+- subtitle: Others
+  desc: >
+    Blah
+  contents:
+  - starts_with("adm_")
+  - starts_with("adt_")
+  - starts_with("condition_")
+  - starts_with("fsheet_")
+  - starts_with("med_admin_")
+  - starts_with("med_prescr_")
+  - starts_with("radiology_")
+  - starts_with("tests_")
+
+- subtitle: Example
+  desc: >
+    Blah
+  contents:
+  - tidybrookes_example
+
+- subtitle: Utilities
+  desc: >
+    Blah
+  contents:
+  - inform_if_all_times_are_midnight
+  - check_that_all
+  - distinct_inform
+  - filter_inform
+  - rename_ignoring_missing
+  - relocate_ignoring_missing
+  - fn_ignoring_missing
+  - format_as_argument
+  - nonnumeric
+  - relocate_and_clean_new_cols
+  - split_by_type

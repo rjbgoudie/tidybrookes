@@ -1,17 +1,4 @@
-#' Tidy raw tests colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw adt data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
-adt_rename <- function(x,
-                       names = default_rename("adt")){
-  relocate_ignoring_missing(x, names)
-}
+
 
 #' Summarise department visits data in ADT data
 #'
@@ -52,6 +39,7 @@ adt_check_discharge_dates_identical <- function(x){
     summarise(check_all_discharge_dates_identical =
                 all(discharge_datetime == first(discharge_datetime)))
 }
+
 #' Check disharge date consistent with final date
 #'
 #' @param x Tidy ADT data, as tidied by [adt_rename()]

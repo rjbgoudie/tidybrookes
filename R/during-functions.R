@@ -1,3 +1,6 @@
+#' During functions
+#'
+#' @rdname during_functions
 first_during <- function(...){
   summarise_during(...,
                    type = "slice",
@@ -5,6 +8,7 @@ first_during <- function(...){
                    names_suffix = "first")
 }
 
+#' @rdname during_functions
 last_during <- function(...){
   summarise_during(...,
                    type = "slice",
@@ -12,6 +16,7 @@ last_during <- function(...){
                    names_suffix = "last")
 }
 
+#' @rdname during_functions
 nearest_visit_start_during <- function(...){
   summarise_during(
     ...,
@@ -24,6 +29,9 @@ nearest_visit_start_during <- function(...){
     names_suffix = "nearest_visit_start")
 }
 
+#' During, adjacent to, functions
+#'
+#' @rdname adjacent_event_during
 first_during_after_event <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
   summarise_during(
@@ -37,6 +45,7 @@ first_during_after_event <- function(..., event_datetime, names_suffix = ""){
     names_suffix = glue("first_after_{names_suffix}"))
 }
 
+#' @rdname adjacent_event_during
 nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
   summarise_during(
@@ -50,6 +59,7 @@ nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
     names_suffix = glue("nearest_to_{names_suffix}"))
 }
 
+#' @rdname during_functions
 last_during_before_event <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
   summarise_during(
@@ -93,6 +103,9 @@ last_during_before_event <- function(..., event_datetime, names_suffix = ""){
 #   }
 # }
 
+#' Extremes during
+#'
+#' @rdname extremes_during
 max_during <- function(...){
   summarise_during(...,
                    type = "slice",
@@ -100,12 +113,14 @@ max_during <- function(...){
                    names_suffix = "max")
 }
 
+#' @rdname extremes_during
 min_during <- function(...){
   summarise_during(...,
                    type = "slice",
                    formula = which.min(value_as_number),
                    names_suffix = "min")
 }
+
 
 ever_during <- function(...){
   summarise_during(...,
