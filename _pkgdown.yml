@@ -15,7 +15,7 @@ reference:
   - starts_with("db_write")
   - contains("_rename")
   - contains("_unrename")
-  - extract_col_types
+  - default_col_types
 
 - title: Joining data
   desc: >

@@ -1,5 +1,14 @@
 #' Load data from Epic in delimited (including CSV) format
 #'
+#' Convenience wrapper around [readr::read_csv] and [readr::read_csv] that makes
+#' it easier to set the `col_types` for standard data from Epic. Also makes
+#' handling untimezoned data more robust through use of functions from
+#' [clock::parse_date_time].
+#'
+#' At transitions to and from daylight savings times there are nonexistent
+#' and ambiguous times. Using the parameters `nonexistent` and `ambiguous`
+#' the handling of these can be made explicit and consistent.
+#'
 #' @param file Either a path to a file, a connection, or literal data (either
 #'   a single string or a raw vector), as per [readr::read_delim()]
 #' @param col_types Either a string specifying the name of the table that the
@@ -56,6 +65,46 @@
 #'   locale col_datetime
 #' @rdname read
 #' @export
+#'
+#' @examples
+#' adm_file_path <- tidybrookes_example("adm.csv")
+#'
+#' read_tidybrookes_csv(
+#'   file = adm_file_path,
+#'   col_types = "adm"
+#' )
+#'
+#' read_tidybrookes_csv(
+#'   file = adm_file_path,
+#'   col_types = "adm",
+#'   tz = "Europe/London",
+#'   nonexistent = "roll-forward",
+#'   ambiguous = "latest"
+#' )
+#'
+#' # view default cols() format - this is what will be used if a character
+#' # string name of a table is used, such as "fsheet"
+#' default_col_types("fsheet")
+#'
+#' # custom col_types can be specified
+#' read_tidybrookes_csv(
+#'   file = adm_file_path,
+#'   col_types = cols(
+#'     STUDY_SUBJECT_DIGEST = col_character(),
+#'     fsd_id = col_character())
+#' )
+#'
+#' # Can use the clock package to determine handling of ambiguous and
+#' # nonexistent dates (due to transitions to and from daylight saving time)
+#' read_tidybrookes_csv(
+#'   file = adm_file_path,
+#'   col_types = cols(
+#'     STUDY_SUBJECT_DIGEST = col_character(),
+#'     fsd_id = col_character()),
+#'   tz = "Europe/London",
+#'   nonexistent = "roll-forward",
+#'   ambiguous = "latest"
+#' )
 read_tidybrookes_csv <- function(file,
                                  col_types,
                                  n_max = Inf,
@@ -64,7 +113,7 @@ read_tidybrookes_csv <- function(file,
                                  tz = "Europe/London",
                                  nonexistent = NULL,
                                  ambiguous = NULL){
-  col_types <- extract_col_types(col_types = col_types)
+  col_types <- default_col_types(col_types = col_types)
   col_types_original <- col_types
   col_types <- col_types_rewrite_if_clock(col_types,
                                           nonexistent = nonexistent,
@@ -94,7 +143,7 @@ read_tidybrookes_delim <- function(file,
                                    n_max = Inf,
                                    na = c("", "NA"),
                                    quote = "\""){
-  col_types <- extract_col_types(col_types = col_types)
+  col_types <- default_col_types(col_types = col_types)
   read_delim(file = file,
              delim = delim,
              col_types = col_types,
@@ -125,7 +174,7 @@ db_write_tidybrookes_csv <- function(file,
                                      na = c("", "NA"),
                                      quote = "\"",
                                      progress = TRUE){
-  col_types <- extract_col_types(col_types = col_types)
+  col_types <- default_col_types(col_types = col_types)
   cat("Loading..\n")
   read_csv_chunked(
     file = file,
@@ -153,7 +202,7 @@ db_write_tidybrookes_delim <- function(file,
                                        na = c("", "NA"),
                                        quote = "\"",
                                        ...){
-  col_types <- extract_col_types(col_types = col_types)
+  col_types <- default_col_types(col_types = col_types)
   read_delim_chunked(
     file = file,
     callback = function(chunk, index) {

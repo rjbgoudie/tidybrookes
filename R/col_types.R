@@ -7,7 +7,8 @@
 #'
 #'   Or a [readr::cols()] format list of column names and types, which
 #'   can be used where a nonstandard data format are supplied.
-extract_col_types <- function(col_types){
+#' @export
+default_col_types <- function(col_types){
   if (inherits(col_types, "col_spec")){
     col_types <- col_types
   } else if (col_types == "adm"){
@@ -155,7 +156,6 @@ extract_col_types <- function(col_types){
   col_types
 }
 
-
 col_is_datetime <- function(x){
   class(x)[1] == "collector_datetime"
 }
@@ -185,6 +185,7 @@ col_extract_datetime_format <- function(x){
   out
 }
 
+# @importFrom dplyr cur_column
 parse_datetime_cols_if_clock <- function(x,
                                          col_types,
                                          tz,
@@ -196,7 +197,7 @@ parse_datetime_cols_if_clock <- function(x,
       mutate(across(names(cols_datetime_formats),
                     ~ clock::date_time_parse(
                       .x,
-                      format = cols_datetime_formats[cur_column()],
+                      format = cols_datetime_formats[dplyr::cur_column()],
                       zone = tz,
                       nonexistent = nonexistent,
                       ambiguous = ambiguous)))

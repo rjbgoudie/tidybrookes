@@ -82,5 +82,53 @@ either length 1, or the same length as the input:
 \item{delim}{Single character used to separate fields within a record.}
 }
 \description{
-Load data from Epic in delimited (including CSV) format
+Convenience wrapper around \link[readr:read_delim]{readr::read_csv} and \link[readr:read_delim]{readr::read_csv} that makes
+it easier to set the \code{col_types} for standard data from Epic. Also makes
+handling untimezoned data more robust through use of functions from
+\link[clock:parse_date_time]{clock::parse_date_time}.
+}
+\details{
+At transitions to and from daylight savings times there are nonexistent
+and ambiguous times. Using the parameters \code{nonexistent} and \code{ambiguous}
+the handling of these can be made explicit and consistent.
+}
+\examples{
+adm_file_path <- tidybrookes_example("adm.csv")
+
+read_tidybrookes_csv(
+  file = adm_file_path,
+  col_types = "adm"
+)
+
+read_tidybrookes_csv(
+  file = adm_file_path,
+  col_types = "adm",
+  tz = "Europe/London",
+  nonexistent = "roll-forward",
+  ambiguous = "latest"
+)
+
+# view default cols() format - this is what will be used if a character
+# string name of a table is used, such as "fsheet"
+default_col_types("fsheet")
+
+# custom col_types can be specified
+read_tidybrookes_csv(
+  file = adm_file_path,
+  col_types = cols(
+    STUDY_SUBJECT_DIGEST = col_character(),
+    fsd_id = col_character())
+)
+
+# Can use the clock package to determine handling of ambiguous and
+# nonexistent dates (due to transitions to and from daylight saving time)
+read_tidybrookes_csv(
+  file = adm_file_path,
+  col_types = cols(
+    STUDY_SUBJECT_DIGEST = col_character(),
+    fsd_id = col_character()),
+  tz = "Europe/London",
+  nonexistent = "roll-forward",
+  ambiguous = "latest"
+)
 }

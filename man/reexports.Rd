@@ -5,6 +5,9 @@
 \alias{reexports}
 \alias{select}
 \alias{filter}
+\alias{cols}
+\alias{col_character}
+\alias{col_datetime}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -13,5 +16,7 @@ below to see their documentation.
 
 \describe{
   \item{dplyr}{\code{\link[dplyr]{filter}}, \code{\link[dplyr]{select}}}
+
+  \item{readr}{\code{\link[readr:parse_atomic]{col_character}}, \code{\link[readr:parse_datetime]{col_datetime}}, \code{\link[readr]{cols}}}
 }}
 

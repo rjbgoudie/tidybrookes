@@ -19,3 +19,15 @@ dplyr::select
 #' @importFrom dplyr filter
 #' @export
 dplyr::filter
+
+#' @importFrom readr cols
+#' @export
+readr::cols
+
+#' @importFrom readr col_character
+#' @export
+readr::col_character
+
+#' @importFrom readr col_datetime
+#' @export
+readr::col_datetime
