@@ -12,3 +12,47 @@ min_during(...)
 \description{
 Extremes during
 }
+\section{raw data that we will combine}{
+adm_data_example
+fsheet_news2_example
+}
+
+\section{extract the max of each fsheet symbol during the hospital visit}{
+adm_data_example \%>\%
+max_during(fsheet_news2_example,
+datetime = measurement_datetime,
+during = "during_visit") \%>\%
+select(person_id,
+visit_id,
+visit_start_datetime,
+visit_end_datetime,
+contains("news2"))
+}
+
+\section{extract the min of each fsheet symbol during the hospital visit}{
+adm_data_example \%>\%
+min_during(fsheet_news2_example,
+datetime = measurement_datetime,
+during = "during_visit") \%>\%
+select(person_id,
+visit_id,
+visit_start_datetime,
+visit_end_datetime,
+contains("news2"))
+}
+
+\section{can pipe together two summaries}{
+adm_data_example \%>\%
+max_during(fsheet_news2_example,
+datetime = measurement_datetime,
+during = "during_visit") \%>\%
+min_during(fsheet_news2_example,
+datetime = measurement_datetime,
+during = "during_visit") \%>\%
+select(person_id,
+visit_id,
+visit_start_datetime,
+visit_end_datetime,
+contains("news2"))
+}
+

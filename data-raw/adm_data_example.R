@@ -4,3 +4,5 @@ adm_data_example <-
     col_types = "adm"
   ) %>%
   adm_rename
+
+usethis::use_data(adm_data_example, overwrite = TRUE)

@@ -6,43 +6,57 @@
 #'
 #' # raw data that we will combine
 #' adm_data_example
-#' fsheet_data_example
+#' fsheet_news2_example
 #'
 #' # extract the first of each fsheet symbol during the hospital visit
 #' adm_data_example %>%
-#'   first_during(fsheet_data_example,
+#'   first_during(fsheet_news2_example,
 #'                datetime = measurement_datetime,
 #'                during = "during_visit") %>%
 #'   select(person_id,
 #'          visit_id,
 #'          visit_start_datetime,
 #'          visit_end_datetime,
-#'          contains("weight"))
+#'          contains("news2"))
 #'
 #' # extract the last of each fsheet symbol during the hospital visit
 #' adm_data_example %>%
-#'  last_during(fsheet_data_example,
+#'  last_during(fsheet_news2_example,
 #'              datetime = measurement_datetime,
 #'              during = "during_visit") %>%
 #'   select(person_id,
 #'          visit_id,
 #'          visit_start_datetime,
 #'          visit_end_datetime,
-#'          contains("weight"))
+#'          contains("news2"))
 #'
 #' # can pipe together two summaries
 #' adm_data_example %>%
-#'   first_during(fsheet_data_example,
+#'   first_during(fsheet_news2_example,
 #'                datetime = measurement_datetime,
 #'                during = "during_visit") %>%
-#'  last_during(fsheet_data_example,
+#'  last_during(fsheet_news2_example,
 #'              datetime = measurement_datetime,
 #'              during = "during_visit") %>%
 #'   select(person_id,
 #'          visit_id,
 #'          visit_start_datetime,
 #'          visit_end_datetime,
-#'          contains("weight"))
+#'          contains("news2"))
+#'
+#' # example data with 3 fsheet data fields
+#' fsheet_example
+#'
+#' # summaries for all symbols can be calculated together
+#' adm_data_example %>%
+#'   first_during(fsheet_example,
+#'                datetime = measurement_datetime,
+#'                during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("during"))
 #' @export
 first_during <- function(...){
   summarise_during(...,
@@ -106,7 +120,7 @@ nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
     names_suffix = glue("nearest_to_{names_suffix}"))
 }
 
-#' @rdname during_functions
+#' @rdname adjacent_event_during
 #' @export
 last_during_before_event <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
@@ -153,6 +167,45 @@ last_during_before_event <- function(..., event_datetime, names_suffix = ""){
 
 #' Extremes during
 #'
+#' # raw data that we will combine
+#' adm_data_example
+#' fsheet_news2_example
+#'
+#' # extract the max of each fsheet symbol during the hospital visit
+#' adm_data_example %>%
+#'   max_during(fsheet_news2_example,
+#'                datetime = measurement_datetime,
+#'                during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("news2"))
+#'
+#' # extract the min of each fsheet symbol during the hospital visit
+#' adm_data_example %>%
+#'  min_during(fsheet_news2_example,
+#'              datetime = measurement_datetime,
+#'              during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("news2"))
+#'
+#' # can pipe together two summaries
+#' adm_data_example %>%
+#'   max_during(fsheet_news2_example,
+#'              datetime = measurement_datetime,
+#'              during = "during_visit") %>%
+#'   min_during(fsheet_news2_example,
+#'              datetime = measurement_datetime,
+#'              during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("news2"))
 #' @rdname extremes_during
 #' @export
 max_during <- function(...){

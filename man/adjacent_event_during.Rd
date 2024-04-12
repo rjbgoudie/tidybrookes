@@ -3,11 +3,14 @@
 \name{first_during_after_event}
 \alias{first_during_after_event}
 \alias{nearest_to_event_during}
+\alias{last_during_before_event}
 \title{During, adjacent to, functions}
 \usage{
 first_during_after_event(..., event_datetime, names_suffix = "")
 
 nearest_to_event_during(..., event_datetime, names_suffix = "")
+
+last_during_before_event(..., event_datetime, names_suffix = "")
 }
 \description{
 During, adjacent to, functions

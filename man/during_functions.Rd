@@ -4,7 +4,6 @@
 \alias{first_during}
 \alias{last_during}
 \alias{nearest_visit_start_during}
-\alias{last_during_before_event}
 \title{During functions}
 \usage{
 first_during(...)
@@ -12,8 +11,6 @@ first_during(...)
 last_during(...)
 
 nearest_visit_start_during(...)
-
-last_during_before_event(..., event_datetime, names_suffix = "")
 }
 \description{
 During functions
@@ -22,41 +19,55 @@ During functions
 
 # raw data that we will combine
 adm_data_example
-fsheet_data_example
+fsheet_news2_example
 
 # extract the first of each fsheet symbol during the hospital visit
 adm_data_example \%>\%
-  first_during(fsheet_data_example,
+  first_during(fsheet_news2_example,
                datetime = measurement_datetime,
                during = "during_visit") \%>\%
   select(person_id,
          visit_id,
          visit_start_datetime,
          visit_end_datetime,
-         contains("weight"))
+         contains("news2"))
 
 # extract the last of each fsheet symbol during the hospital visit
 adm_data_example \%>\%
- last_during(fsheet_data_example,
+ last_during(fsheet_news2_example,
              datetime = measurement_datetime,
              during = "during_visit") \%>\%
   select(person_id,
          visit_id,
          visit_start_datetime,
          visit_end_datetime,
-         contains("weight"))
+         contains("news2"))
 
 # can pipe together two summaries
 adm_data_example \%>\%
-  first_during(fsheet_data_example,
+  first_during(fsheet_news2_example,
                datetime = measurement_datetime,
                during = "during_visit") \%>\%
- last_during(fsheet_data_example,
+ last_during(fsheet_news2_example,
              datetime = measurement_datetime,
              during = "during_visit") \%>\%
   select(person_id,
          visit_id,
          visit_start_datetime,
          visit_end_datetime,
-         contains("weight"))
+         contains("news2"))
+
+# example data with 3 fsheet data fields
+fsheet_example
+
+# summaries for all symbols can be calculated together
+adm_data_example \%>\%
+  first_during(fsheet_example,
+               datetime = measurement_datetime,
+               during = "during_visit") \%>\%
+  select(person_id,
+         visit_id,
+         visit_start_datetime,
+         visit_end_datetime,
+         contains("during"))
 }
