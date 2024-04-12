@@ -8,8 +8,19 @@
 #' @param x An `adm` data frame
 #' @param y A (tidy) data frame, with a `datetime` column
 #' @param datetime The column of `y` to use as the main datetime for matching
-#' @param during The time period to extract data for, one of: `"during_visit"`,
-#'   `"during_icu"`
+#' @param during The time period to extract data for, one of:
+#'
+#' * `"during_visit"`
+#' * `"during_visit_initial_24h"`
+#' * `"during_visit_initial_72h`
+#' * `"during_icu"`
+#' * `"before_visit_initial_24h`
+#' * `"14_days_before_visit_until_visit_end`
+#' * `"year_before_visit_until_visit_end`
+#' * `"before_visit_end`
+#' * `"30_days_before_visit_start`
+#' * `"year_before_initial_24h`
+#' * `"during_value`
 #' @param names_from A character vector containing the names of columns that
 #' should be used to filter by (in addition to those implied by `during`).
 #' @param join Either `"left"`, in which a left join is performed (so all `x`
@@ -67,7 +78,7 @@ all_during <- function(x,
                        datetime <= visit_end_datetime,
                     is.na(visit_end_datetime) ~
                       datetime >= visit_start_datetime)) %>%
-      mutate(days_since_visit_start = interval(visit_start_datetime, datetime)/days(1))
+      mutate(days_since_visit_start = interval(visit_start_datetime, datetime)/ddays(1))
   } else if (during == "during_visit_initial_24h"){
     out <- x %>%
       join_fn(

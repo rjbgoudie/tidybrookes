@@ -43,6 +43,7 @@
 #' @param range_discard_below,range_discard_above This pair set the lower and
 #'   upper range for the flowsheet item. Values outside this range are
 #'   EXCLUDED.
+#' @export
 #' @author R.J.B. Goudie
 fsheet_add <- function(fsheet_def,
                        symbol,
@@ -133,6 +134,7 @@ fsheet_info <- function(fsheet_def){
 #' `value_as_logical`, `censoring`, `comment`, `measurement_datetime`, `name`,
 #' `title`, `data_id`, `measurement_id`, `line_id`, `template`, `form`, `type`,
 #' `unit`
+#' @export
 #' @author R.J.B. Goudie
 fsheet_extract <- function(x,
                            fsheet_def,

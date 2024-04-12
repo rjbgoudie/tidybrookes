@@ -13,8 +13,20 @@ all_during(x, y, datetime, during, names_from = "symbol", join = "left")
 
 \item{datetime}{The column of \code{y} to use as the main datetime for matching}
 
-\item{during}{The time period to extract data for, one of: \code{"during_visit"},
-\code{"during_icu"}}
+\item{during}{The time period to extract data for, one of:
+\itemize{
+\item \code{"during_visit"}
+\item \code{"during_visit_initial_24h"}
+\item \verb{"during_visit_initial_72h}
+\item \code{"during_icu"}
+\item \verb{"before_visit_initial_24h}
+\item \verb{"14_days_before_visit_until_visit_end}
+\item \verb{"year_before_visit_until_visit_end}
+\item \verb{"before_visit_end}
+\item \verb{"30_days_before_visit_start}
+\item \verb{"year_before_initial_24h}
+\item \verb{"during_value}
+}}
 
 \item{names_from}{A character vector containing the names of columns that
 should be used to filter by (in addition to those implied by \code{during}).}

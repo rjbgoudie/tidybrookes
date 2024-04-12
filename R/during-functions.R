@@ -1,6 +1,49 @@
 #' During functions
 #'
 #' @rdname during_functions
+#'
+#' @examples
+#'
+#' # raw data that we will combine
+#' adm_data_example
+#' fsheet_data_example
+#'
+#' # extract the first of each fsheet symbol during the hospital visit
+#' adm_data_example %>%
+#'   first_during(fsheet_data_example,
+#'                datetime = measurement_datetime,
+#'                during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("weight"))
+#'
+#' # extract the last of each fsheet symbol during the hospital visit
+#' adm_data_example %>%
+#'  last_during(fsheet_data_example,
+#'              datetime = measurement_datetime,
+#'              during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("weight"))
+#'
+#' # can pipe together two summaries
+#' adm_data_example %>%
+#'   first_during(fsheet_data_example,
+#'                datetime = measurement_datetime,
+#'                during = "during_visit") %>%
+#'  last_during(fsheet_data_example,
+#'              datetime = measurement_datetime,
+#'              during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("weight"))
+#' @export
 first_during <- function(...){
   summarise_during(...,
                    type = "slice",
@@ -9,6 +52,7 @@ first_during <- function(...){
 }
 
 #' @rdname during_functions
+#' @export
 last_during <- function(...){
   summarise_during(...,
                    type = "slice",
@@ -17,6 +61,7 @@ last_during <- function(...){
 }
 
 #' @rdname during_functions
+#' @export
 nearest_visit_start_during <- function(...){
   summarise_during(
     ...,
@@ -32,6 +77,7 @@ nearest_visit_start_during <- function(...){
 #' During, adjacent to, functions
 #'
 #' @rdname adjacent_event_during
+#' @export
 first_during_after_event <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
   summarise_during(
@@ -46,6 +92,7 @@ first_during_after_event <- function(..., event_datetime, names_suffix = ""){
 }
 
 #' @rdname adjacent_event_during
+#' @export
 nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
   summarise_during(
@@ -60,6 +107,7 @@ nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
 }
 
 #' @rdname during_functions
+#' @export
 last_during_before_event <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
   summarise_during(
@@ -106,6 +154,7 @@ last_during_before_event <- function(..., event_datetime, names_suffix = ""){
 #' Extremes during
 #'
 #' @rdname extremes_during
+#' @export
 max_during <- function(...){
   summarise_during(...,
                    type = "slice",
@@ -114,6 +163,7 @@ max_during <- function(...){
 }
 
 #' @rdname extremes_during
+#' @export
 min_during <- function(...){
   summarise_during(...,
                    type = "slice",
@@ -122,6 +172,7 @@ min_during <- function(...){
 }
 
 
+#' @export
 ever_during <- function(...){
   summarise_during(...,
                    type = "summarise",

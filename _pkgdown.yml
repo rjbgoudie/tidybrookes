@@ -2,13 +2,14 @@ url: ~
 template:
   bootstrap: 5
 
-reference:
-- title: Loading raw data
+code:
+  width: 200
 
-- subtitle: Data loading
+reference:
+- title: Data loading
   desc: >
     Loading raw CSV files exported by clinical informatics into R or a
-    database
+    database, and basic renaming
   contents:
   - starts_with("read_")
   - starts_with("db_write")
@@ -16,7 +17,7 @@ reference:
   - contains("_unrename")
   - extract_col_types
 
-- subtitle: Joining data
+- title: Joining data
   desc: >
     Joining
   contents:
@@ -25,7 +26,7 @@ reference:
   - left_join_filter
   - pivot_value_wider
 
-- subtitle: Subsetting
+- title: Subsetting
   desc: >
     Extract longitudinal data in relation to other data, particularly
     admissions data
@@ -36,7 +37,7 @@ reference:
   - first_during
   - max_during
 
-- subtitle: Others
+- title: Others
   desc: >
     Blah
   contents:
@@ -49,13 +50,13 @@ reference:
   - starts_with("radiology_")
   - starts_with("tests_")
 
-- subtitle: Example
+- title: Example
   desc: >
     Blah
   contents:
   - tidybrookes_example
 
-- subtitle: Utilities
+- title: Utilities
   desc: >
     Blah
   contents:

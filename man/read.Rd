@@ -3,7 +3,7 @@
 \name{read_tidybrookes_csv}
 \alias{read_tidybrookes_csv}
 \alias{read_tidybrookes_delim}
-\title{Load data from Epic in CSV format}
+\title{Load data from Epic in delimited (including CSV) format}
 \usage{
 read_tidybrookes_csv(
   file,
@@ -27,7 +27,7 @@ read_tidybrookes_delim(
 }
 \arguments{
 \item{file}{Either a path to a file, a connection, or literal data (either
-a single string or a raw vector), as per \code{\link[readr:read_delim]{readr::read_delim()}}.}
+a single string or a raw vector), as per \code{\link[readr:read_delim]{readr::read_delim()}}}
 
 \item{col_types}{Either a string specifying the name of the table that the
 data comes from, for which a standard format can be used. Available
@@ -42,10 +42,45 @@ can be used where a nonstandard data format are supplied.}
 \item{na}{Character vector of strings to interpret as missing values.
 Set this option to \code{character()} to indicate no missing values.}
 
+\item{quote}{Single character used to quote strings}
+
+\item{tz}{A timezone name, such as \code{Europe/London}ss}
+
+\item{nonexistent}{\verb{[character / NULL]}
+
+One of the following nonexistent time resolution strategies, allowed to be
+either length 1, or the same length as the input:
+\itemize{
+\item \code{"roll-forward"}: The next valid instant in time.
+\item \code{"roll-backward"}: The previous valid instant in time.
+\item \code{"shift-forward"}: Shift the nonexistent time forward by the size of
+the daylight saving time gap.
+\item \verb{"shift-backward}: Shift the nonexistent time backward by the size of
+the daylight saving time gap.
+\item \code{"NA"}: Replace nonexistent times with \code{NA}.
+\item \code{"error"}: Error on nonexistent times.
+}
+
+Using either \code{"roll-forward"} or \code{"roll-backward"} is generally
+recommended over shifting, as these two strategies maintain the
+\emph{relative ordering} between elements of the input.
+
+If \code{NULL}, defaults to \code{"error"}.}
+
+\item{ambiguous}{\verb{[character / zoned_time / POSIXct / list(2) / NULL]}
+
+Passed to \link[clock:date-time-parse]{clock::date-time-parse}, with the usual values being
+one of the following ambiguous time resolution strategies, allowed to be
+either length 1, or the same length as the input:
+\itemize{
+\item \code{"earliest"}: Of the two possible times, choose the earliest one.
+\item \code{"latest"}: Of the two possible times, choose the latest one.
+\item \code{"NA"}: Replace ambiguous times with \code{NA}.
+\item \code{"error"}: Error on ambiguous times.
+}}
+
 \item{delim}{Single character used to separate fields within a record.}
 }
 \description{
-Load data from Epic in CSV format
-
-Load data from Epic in delimited format
+Load data from Epic in delimited (including CSV) format
 }

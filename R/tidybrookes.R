@@ -11,3 +11,11 @@
 #' @importFrom progress progress_bar
 #' @importFrom clock date_time_parse
 NULL
+
+#' @importFrom dplyr select
+#' @export
+dplyr::select
+
+#' @importFrom dplyr filter
+#' @export
+dplyr::filter

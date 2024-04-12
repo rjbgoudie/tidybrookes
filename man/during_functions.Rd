@@ -18,3 +18,45 @@ last_during_before_event(..., event_datetime, names_suffix = "")
 \description{
 During functions
 }
+\examples{
+
+# raw data that we will combine
+adm_data_example
+fsheet_data_example
+
+# extract the first of each fsheet symbol during the hospital visit
+adm_data_example \%>\%
+  first_during(fsheet_data_example,
+               datetime = measurement_datetime,
+               during = "during_visit") \%>\%
+  select(person_id,
+         visit_id,
+         visit_start_datetime,
+         visit_end_datetime,
+         contains("weight"))
+
+# extract the last of each fsheet symbol during the hospital visit
+adm_data_example \%>\%
+ last_during(fsheet_data_example,
+             datetime = measurement_datetime,
+             during = "during_visit") \%>\%
+  select(person_id,
+         visit_id,
+         visit_start_datetime,
+         visit_end_datetime,
+         contains("weight"))
+
+# can pipe together two summaries
+adm_data_example \%>\%
+  first_during(fsheet_data_example,
+               datetime = measurement_datetime,
+               during = "during_visit") \%>\%
+ last_during(fsheet_data_example,
+             datetime = measurement_datetime,
+             during = "during_visit") \%>\%
+  select(person_id,
+         visit_id,
+         visit_start_datetime,
+         visit_end_datetime,
+         contains("weight"))
+}

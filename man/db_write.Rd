@@ -3,7 +3,7 @@
 \name{db_write_tidybrookes_csv}
 \alias{db_write_tidybrookes_csv}
 \alias{db_write_tidybrookes_delim}
-\title{Load data from Epic in CSV format}
+\title{Load data from Epic in delimited format (including CSV) into a database}
 \usage{
 db_write_tidybrookes_csv(
   file,
@@ -29,6 +29,10 @@ db_write_tidybrookes_delim(
 \item{file}{Either a path to a file, a connection, or literal data (either
 a single string or a raw vector), as per \code{\link[readr:read_delim]{readr::read_delim()}}}
 
+\item{connection}{A \code{DBIConnection} object, as returned by \code{\link[DBI:dbConnect]{DBI::dbConnect()}}}
+
+\item{table_name}{A table name, passed to \code{\link[DBI:dbWriteTable]{DBI::dbWriteTable()}}}
+
 \item{col_types}{Either a string specifying the name of the table that the
 data comes from, for which a standard format can be used. Available
 value are \code{adm}, \code{adt}, \code{demogs}, \code{fsheet}, \code{fsheet_io}, \code{tests},
@@ -40,10 +44,9 @@ can be used where a nonstandard data format are supplied.}
 \item{na}{Character vector of strings to interpret as missing values.
 Set this option to \code{character()} to indicate no missing values.}
 
-\item{n_max}{Maximum number of lines to read.}
+\item{quote}{Single character used to quote strings}
 }
 \description{
-Load data from Epic in CSV format
-
-Load data from Epic in delim format
+Reads in data in a chunked manner, and writes it to a database using
+\link[DBI:dbWriteTable]{DBI::dbWriteTable}
 }

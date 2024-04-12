@@ -1,5 +1,29 @@
-#' Renaming of raw column names to standardised names
+#' Tidy raw colnames
 #'
+#' The standard data format from Clinical Informatics is handled by default. If
+#' variations from this format occur, custom renaming can be performed
+#' using the `names` argument
+#'
+#' @param x A data frame of raw adm data
+#' @param names A vector of new_name = old_name pairs
+#' @return The supplied data frame, with column names in tidy-column-name format
+#' @author R.J.B. Goudie
+#' @name rename
+NULL
+
+#' Untidy raw colnames
+#'
+#' The standard data format from Clinical Informatics is handled by default. If
+#' variations from this format occur, custom renaming can be performed
+#' using the `names` argument
+#'
+#' @param x A data frame of raw adm data with tidy names
+#' @param names A vector of new_name = old_name pairs
+#' @return The supplied data frame, with column names in tidy-column-name format
+#' @author R.J.B. Goudie
+#' @name unrename
+NULL
+
 #' @export
 #' @rdname rename
 default_rename <- function(x){
@@ -145,33 +169,16 @@ default_rename <- function(x){
   }
 }
 
-#' Tidy raw tests colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw adm data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+
 #' @rdname rename
+#' @export
 adm_rename <- function(x,
                        names = default_rename("adm")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Untidy raw adm colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw adm data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
 #' @rdname unrename
+#' @export
 adm_unrename <- function(x,
                          names =
                            c(STUDY_SUBJECT_DIGEST = "person_id",
@@ -190,48 +197,21 @@ adm_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw tests colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw adt data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 adt_rename <- function(x,
                        names = default_rename("adt")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw demogs colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw demogs data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 demogs_rename <- function(x,
                           names = default_rename("demogs")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Untidy raw demogs colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw demogs data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname unrename
 demogs_unrename <- function(x,
                             names =
@@ -240,16 +220,7 @@ demogs_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw diagnosis_pl colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw diagnosis_pl data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 diagnosis_pl_rename <- function(x,
                                 names = default_rename("diagnosis_pl")){
@@ -258,16 +229,7 @@ diagnosis_pl_rename <- function(x,
     mutate(source = "problem_list", .after = resolved_datetime)
 }
 
-#' Untidy raw diagnosis_pl colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw diagnosis_pl data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname unrename
 diagnosis_pl_unrename <- function(x,
                                   names =
@@ -288,32 +250,14 @@ diagnosis_pl_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw fsheet_io colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw fsheet_io data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 fsheet_io_rename <- function(x,
                              names = default_rename("fsheet_io")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Untidy raw fsheet_io colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw fsheet_io data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname unrename
 fsheet_io_unrename <- function(x,
                                names =
@@ -331,32 +275,14 @@ fsheet_io_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw fsheet colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw fsheet data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 fsheet_rename <- function(x,
                           names = default_rename("fsheet")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Untidy raw fsheet colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw fsheet data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname unrename
 fsheet_unrename <- function(x,
                             names =
@@ -373,32 +299,14 @@ fsheet_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw med_admin colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw med_admin data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 med_admin_rename <- function(x,
                              names = default_rename("med_admin")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Untidy raw med_admin colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw med_admin data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname unrename
 med_admin_unrename <- function(x,
                                names =
@@ -415,16 +323,7 @@ med_admin_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw diagnosis_pl colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw diagnosis_pl data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 med_hist_rename <- function(x,
                             names = default_rename("med_hist")){
@@ -433,32 +332,14 @@ med_hist_rename <- function(x,
     mutate(source = "past_medical_history", .after = entered_datetime)
 }
 
-#' Tidy raw med_prescr colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw med_prescr data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 med_prescr_rename <- function(x,
                               names = default_rename("med_prescr")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Untidy raw med_prescr colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw med_prescr data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname unrename
 med_prescr_unrename <- function(x,
                                 names =
@@ -483,32 +364,14 @@ med_prescr_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw radiology colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw radiology data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 radiology_rename <- function(x,
                              names = default_rename("radiology")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Untidy raw radiology colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw radiology data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname unrename
 radiology_unrename <- function(x,
                                names =
@@ -523,32 +386,14 @@ radiology_unrename <- function(x,
   relocate_ignoring_missing(x, names)
 }
 
-#' Tidy raw tests colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw test data
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname rename
 tests_rename <- function(x,
                          names = default_rename("tests")){
   relocate_ignoring_missing(x, names)
 }
 
-#' Untidy raw tests colnames
-#'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
-#'
-#' @param x A data frame of raw tests data with tidy names
-#' @param names A vector of new_name = old_name pairs
-#' @return The supplied data frame, with column names in tidy-column-name format
-#' @author R.J.B. Goudie
+#' @export
 #' @rdname unrename
 tests_unrename <- function(x,
                            names =
