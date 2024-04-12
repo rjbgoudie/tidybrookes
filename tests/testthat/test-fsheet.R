@@ -2,7 +2,7 @@
 test_that("Ignores irrelevant rows", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet") %>%
     fsheet_rename %>%
     filter(person_id == "AA")
@@ -31,7 +31,7 @@ test_that("Ignores irrelevant rows", {
 test_that("discard values below", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet") %>%
     fsheet_rename %>%
     filter(person_id == "BB")
@@ -56,7 +56,7 @@ test_that("discard values below", {
 test_that("missing measurement date", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet") %>%
     fsheet_rename %>%
     filter(person_id == "DD")

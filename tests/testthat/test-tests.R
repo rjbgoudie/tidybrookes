@@ -1,7 +1,7 @@
 test_that("Ignores irrelevant row", {
   tests_raw_demo <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("tests.csv"),
+      file = tidybrookes_example("test_tests.csv"),
       col_types = "tests") %>%
     tests_rename
 
@@ -38,7 +38,7 @@ test_that("Ignores irrelevant row", {
 test_that("Tests handle character values", {
   tests_raw_demo <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("tests.csv"),
+      file = tidybrookes_example("test_tests.csv"),
       col_types = "tests") %>%
     tests_rename %>%
     filter(person_id == "BB")
@@ -79,7 +79,7 @@ test_that("Tests handle unexpected character values", {
   # CC has unexpected value in BLOOD SPECIMEN TYPE
   tests_raw_demo <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("tests.csv"),
+      file = tidybrookes_example("test_tests.csv"),
       col_types = "tests") %>%
     tests_rename %>%
     filter(person_id %in% c("BB", "CC"))

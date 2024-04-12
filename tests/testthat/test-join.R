@@ -1,7 +1,7 @@
 test_that("chooses within visit", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet"
     ) %>%
     fsheet_rename %>%
@@ -21,7 +21,7 @@ test_that("chooses within visit", {
 
   demo_adm_raw <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("adm.csv"),
+      file = tidybrookes_example("test_adm.csv"),
       col_types = "adm"
     ) %>%
     adm_rename %>%
@@ -43,7 +43,7 @@ test_that("chooses within visit", {
 test_that("chooses first within visit", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet"
     ) %>%
     fsheet_rename %>%
@@ -71,7 +71,7 @@ test_that("chooses first within visit", {
 
   demo_adm_raw <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("adm.csv"),
+      file = tidybrookes_example("test_adm.csv"),
       col_types = "adm"
     ) %>%
     adm_rename %>%
@@ -95,7 +95,7 @@ test_that("chooses first within visit", {
 test_that("two person ", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet") %>%
     fsheet_rename %>%
     filter(person_id %in% c("AA", "BB"))
@@ -121,7 +121,7 @@ test_that("two person ", {
 
   demo_adm_raw <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("adm.csv"),
+      file = tidybrookes_example("test_adm.csv"),
       col_types = "adm"
     ) %>%
     adm_rename %>%
@@ -153,7 +153,7 @@ test_that("two person ", {
 test_that("median within visit", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet"
     ) %>%
     fsheet_rename %>%
@@ -173,7 +173,7 @@ test_that("median within visit", {
 
   demo_adm_raw <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("adm.csv"),
+      file = tidybrookes_example("test_adm.csv"),
       col_types = "adm"
     ) %>%
     adm_rename %>%
@@ -200,7 +200,7 @@ test_that("median within visit", {
 test_that("median and max within visit, with multiple results", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet"
     ) %>%
     fsheet_rename %>%
@@ -228,7 +228,7 @@ test_that("median and max within visit, with multiple results", {
 
   demo_adm_raw <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("adm.csv"),
+      file = tidybrookes_example("test_adm.csv"),
       col_types = "adm"
     ) %>%
     adm_rename %>%
@@ -284,7 +284,7 @@ test_that("fsheet_all_during retains patients without fsheet data", {
   # DD has no NEWS2 data
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet"
     ) %>%
     fsheet_rename %>%
@@ -312,7 +312,7 @@ test_that("fsheet_all_during retains patients without fsheet data", {
 
     demo_adm_raw <-
       read_tidybrookes_csv(
-        file = tidybrookes_example("adm.csv"),
+        file = tidybrookes_example("test_adm.csv"),
         col_types = "adm"
       ) %>%
       adm_rename %>%
@@ -340,7 +340,7 @@ test_that("fsheet_all_during retains patients without fsheet data", {
 test_that("character fsheet data handled", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet"
     ) %>%
     fsheet_rename %>%
@@ -361,7 +361,7 @@ test_that("character fsheet data handled", {
 
   demo_adm_raw <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("adm.csv"),
+      file = tidybrookes_example("test_adm.csv"),
       col_types = "adm"
     ) %>%
     adm_rename %>%
@@ -381,7 +381,7 @@ test_that("character fsheet data handled", {
 test_that("mixed numeric and character fsheet data handled", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("fsheet.csv"),
+      file = tidybrookes_example("test_fsheet.csv"),
       col_types = "fsheet"
     ) %>%
     fsheet_rename %>%
@@ -418,7 +418,7 @@ test_that("mixed numeric and character fsheet data handled", {
 
   demo_adm_raw <-
     read_tidybrookes_csv(
-      file = tidybrookes_example("adm.csv"),
+      file = tidybrookes_example("test_adm.csv"),
       col_types = "adm"
     ) %>%
     adm_rename %>%
