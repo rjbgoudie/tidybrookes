@@ -13,9 +13,9 @@ reference:
   contents:
   - starts_with("read_")
   - starts_with("db_write")
+  - default_col_types
   - contains("_rename")
   - contains("_unrename")
-  - default_col_types
 
 - title: Defining and extracting
   desc: >
