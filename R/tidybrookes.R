@@ -21,6 +21,14 @@ dplyr::select
 #' @export
 dplyr::filter
 
+#' @importFrom dplyr case_when
+#' @export
+dplyr::case_when
+
+#' @importFrom dplyr if_else
+#' @export
+dplyr::if_else
+
 #' @importFrom readr cols
 #' @export
 readr::cols
@@ -32,3 +40,4 @@ readr::col_character
 #' @importFrom readr col_datetime
 #' @export
 readr::col_datetime
+
