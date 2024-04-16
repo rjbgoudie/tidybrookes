@@ -31,8 +31,9 @@ a single string or a raw vector), as per \code{\link[readr:read_delim]{readr::re
 
 \item{col_types}{Either a string specifying the name of the table that the
 data comes from, for which a standard format can be used. Available
-value are \code{adm}, \code{adt}, \code{demogs}, \code{fsheet}, \code{fsheet_io}, \code{tests},
+values are \code{adm}, \code{adt}, \code{demogs}, \code{fsheet}, \code{fsheet_io}, \code{tests},
 \code{med_admin}, \code{med_prescr}, \code{diagnosis_pl}, \code{med_hist}, \code{radiology}.
+This is translated into column specification using \code{\link{default_col_types}}.
 
 Or a \code{\link[readr:cols]{readr::cols()}} format list of column names and types, which
 can be used where a nonstandard data format are supplied.}
@@ -85,15 +86,20 @@ either length 1, or the same length as the input:
 Convenience wrapper around \link[readr:read_delim]{readr::read_csv} and \link[readr:read_delim]{readr::read_csv} that makes
 it easier to set the \code{col_types} for standard data from Epic. Also makes
 handling untimezoned data more robust through use of functions from
-\link[clock:parse_date_time]{clock::parse_date_time}.
+\code{\link[clock:parse_date_time]{clock::parse_date_time}}.
 }
 \details{
+Named \code{col_types} are extracted using \code{\link[=default_col_types]{default_col_types()}}.
+
 At transitions to and from daylight savings times there are nonexistent
 and ambiguous times. Using the parameters \code{nonexistent} and \code{ambiguous}
 the handling of these can be made explicit and consistent.
 }
 \examples{
 adm_file_path <- tidybrookes_example("adm.csv")
+
+# the format when col_types = "adm"
+default_col_types("adm")
 
 read_tidybrookes_csv(
   file = adm_file_path,
@@ -131,4 +137,8 @@ read_tidybrookes_csv(
   nonexistent = "roll-forward",
   ambiguous = "latest"
 )
+}
+\seealso{
+Named column types are extracted using \code{\link[=default_col_types]{default_col_types()}}. Raw
+column names can be renamed using e.g. \code{\link[=fsheet_rename]{fsheet_rename()}}
 }

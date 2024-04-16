@@ -1,17 +1,41 @@
-#' Tidy raw colnames
+#' Rename to tidy column names
 #'
-#' The standard data format from Clinical Informatics is handled by default. If
-#' variations from this format occur, custom renaming can be performed
-#' using the `names` argument
+#' Rename columns from the default names in the standard data format from
+#' Clinical Informatics into standardised, shorter names (e.g. all lowercase,
+#' underscore-separated, with `_datetime` suffix etc).
+#'
+#' The default renaming map can be viewed using `default_rename()`.
+#'
+#' If variations from this format occur, custom renaming can be performed
+#' using the `names` argument.
 #'
 #' @param x A data frame of raw adm data
 #' @param names A vector of new_name = old_name pairs
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
+#' @seealso [unrename] to reverse this process
 #' @name rename
+#' @examples
+#' # The raw columns names are messy: long names, mixed capitalisation, etc!
+#' fsheet_imported_example <-
+#'   read_tidybrookes_csv(
+#'     file = tidybrookes_example("fsheet.csv"),
+#'     col_types = "fsheet"
+#'   )
+#' colnames(fsheet_imported_example)
+#'
+#' # Default renaming can be viewed with
+#' default_rename("fsheet")
+#'
+#' colnames(fsheet_rename(fsheet_imported_example))
+#'
+#' # A warning is issued if columns are missing
+#' fsheet_imported_example %>%
+#'   select(-MEASURE_TIME) %>%
+#'   fsheet_rename
 NULL
 
-#' Untidy raw colnames
+#' Rename from tidy to raw column names
 #'
 #' The standard data format from Clinical Informatics is handled by default. If
 #' variations from this format occur, custom renaming can be performed
@@ -21,7 +45,17 @@ NULL
 #' @param names A vector of new_name = old_name pairs
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
+#' @seealso [rename] to reverse this process
 #' @name unrename
+#' @examples
+#' fsheet_imported_example <-
+#'   read_tidybrookes_csv(
+#'     file = tidybrookes_example("fsheet.csv"),
+#'     col_types = "fsheet"
+#'   )
+#' colnames(fsheet_imported_example)
+#' colnames(fsheet_rename(fsheet_imported_example))
+#' colnames(fsheet_unrename(fsheet_rename(fsheet_imported_example)))
 NULL
 
 #' @export
@@ -181,19 +215,7 @@ adm_rename <- function(x,
 #' @export
 adm_unrename <- function(x,
                          names =
-                           c(STUDY_SUBJECT_DIGEST = "person_id",
-                             PAT_ENC_CSN = "visit_id",
-                             IN_DTTM = "visit_start_datetime",
-                             HOSP_DISCH_TIME = "visit_end_datetime",
-                             GENDER_DESC = "gender",
-                             ETHNIC_GROUP_GROUPED = "ethnicity",
-                             DATE_OF_DEATH = "death_date",
-                             AGE_AT_ADM = "age_at_visit_start",
-                             ADM_SERVICE = "adm_service",
-                             ADT_DEPARTMENT_NAME = "ward",
-                             DISCH_DEST = "discharge_destination",
-                             DISCH_DECEASED = "discharged_deceased",
-                             READMIT_WITHIN_30 = "readmitted_within_30_days")){
+                           flip_names_and_values(default_rename("adm"))){
   relocate_ignoring_missing(x, names)
 }
 
@@ -201,6 +223,14 @@ adm_unrename <- function(x,
 #' @rdname rename
 adt_rename <- function(x,
                        names = default_rename("adt")){
+  relocate_ignoring_missing(x, names)
+}
+
+#' @rdname unrename
+#' @export
+adt_unrename <- function(x,
+                         names =
+                           flip_names_and_values(default_rename("adt"))){
   relocate_ignoring_missing(x, names)
 }
 
@@ -215,8 +245,7 @@ demogs_rename <- function(x,
 #' @rdname unrename
 demogs_unrename <- function(x,
                             names =
-                              c(STUDY_SUBJECT_DIGEST = "person_id",
-                                GENDER_DESC = "gender")){
+                              flip_names_and_values(default_rename("demogs"))){
   relocate_ignoring_missing(x, names)
 }
 
@@ -231,22 +260,9 @@ diagnosis_pl_rename <- function(x,
 
 #' @export
 #' @rdname unrename
-diagnosis_pl_unrename <- function(x,
-                                  names =
-                                    c(STUDY_SUBJECT_DIGEST = "person_id",
-                                      DX_DESCRIPTION = "description",
-                                      DX_DESC_DISPLAYED = "description_displayed",
-                                      PROBLEM_CMT = "comment",
-                                      DIAGNOSIS_ENTERED_DATE = "entered_datetime",
-                                      DIAGNOSIS_DATE = "diagnosis_datetime",
-                                      RESOLVED_DATE = "resolved_datetime",
-                                      DIAGNOSIS_STATUS = "status",
-                                      ICD10_1 = "icd10_1",
-                                      ICD10_2 = "icd10_2",
-                                      ICD10_3 = "icd10_3",
-                                      ICD10_4 = "icd10_4",
-                                      ICD10_LIST = "icd10_list",
-                                      SNOMED_CONCEPTS = "snomed")){
+diagnosis_pl_unrename <-
+  function(x,
+           names = flip_names_and_values(default_rename("diagnosis_pl"))){
   relocate_ignoring_missing(x, names)
 }
 
@@ -259,19 +275,9 @@ fsheet_io_rename <- function(x,
 
 #' @export
 #' @rdname unrename
-fsheet_io_unrename <- function(x,
-                               names =
-                                 c(STUDY_SUBJECT_DIGEST = "person_id",
-                                   disp_name = "description",
-                                   FLO_MEAS_NAME = "name",
-                                   measured_value = "value",
-                                   meas_comment = "comment",
-                                   MEASURE_TIME = "measurement_datetime",
-                                   fsd_id = "data_id",
-                                   `flo-meas_id` = "measurement_id",
-                                   line = "line_id",
-                                   template = "template",
-                                   form = "form")){
+fsheet_io_unrename <-
+  function(x,
+           names = flip_names_and_values(default_rename("fsheet_io"))){
   relocate_ignoring_missing(x, names)
 }
 
@@ -284,18 +290,9 @@ fsheet_rename <- function(x,
 
 #' @export
 #' @rdname unrename
-fsheet_unrename <- function(x,
-                            names =
-                              c(STUDY_SUBJECT_DIGEST = "person_id",
-                                disp_name = "name",
-                                measured_value = "value",
-                                meas_comment = "comment",
-                                MEASURE_TIME = "measurement_datetime",
-                                fsd_id = "data_id",
-                                `flo-meas_id` = "measurement_id",
-                                line = "line_id",
-                                template = "template",
-                                form = "form")){
+fsheet_unrename <-
+  function(x,
+           names = flip_names_and_values(default_rename("fsheet"))){
   relocate_ignoring_missing(x, names)
 }
 
@@ -308,18 +305,9 @@ med_admin_rename <- function(x,
 
 #' @export
 #' @rdname unrename
-med_admin_unrename <- function(x,
-                               names =
-                                 c(STUDY_SUBJECT_DIGEST = "person_id",
-                                   TimeAdministered = "administered_datetime",
-                                   DrugName = "name",
-                                   DoseAsLabelled = "dose",
-                                   InfusionRate = "rate",
-                                   DoseUnitAbbreviated = "unit",
-                                   RouteOfMedicationAbbreviated = "route",
-                                   DepartmentName = "department",
-                                   MAR_ENC_CSN = "visit_id",
-                                   MARAction = "action")){
+med_admin_unrename <-
+  function(x,
+           names = flip_names_and_values(default_rename("med_admin"))){
   relocate_ignoring_missing(x, names)
 }
 
@@ -341,26 +329,9 @@ med_prescr_rename <- function(x,
 
 #' @export
 #' @rdname unrename
-med_prescr_unrename <- function(x,
-                                names =
-                                  c(STUDY_SUBJECT_DIGEST = "person_id",
-                                    DrugName = "name",
-                                    StartDate = "start_datetime",
-                                    EndDate = "end_datetime",
-                                    Dose = "dose",
-                                    Strength = "strength",
-                                    DoseUnit = "unit",
-                                    DoseFrequency = "dose_frequency",
-                                    RouteOfMedication = "route",
-                                    InOrOutPatient = "in_or_out_patient",
-                                    FormOfMedication = "form",
-                                    THERA_CLASS = "thera_class",
-                                    PHARM_CLASS = "pharm_class",
-                                    PHARM_SUBCLASS = "pharm_subclass",
-                                    PAT_ENC_CSN_ID = "visit_id",
-                                    OrderStatusCat = "status",
-                                    ProviderType = "provider_type",
-                                    Order_Class = "order_class")){
+med_prescr_unrename <-
+  function(x,
+           names = flip_names_and_values(default_rename("med_prescr"))){
   relocate_ignoring_missing(x, names)
 }
 
@@ -373,16 +344,9 @@ radiology_rename <- function(x,
 
 #' @export
 #' @rdname unrename
-radiology_unrename <- function(x,
-                               names =
-                                 c(STUDY_SUBJECT_DIGEST = "person_id",
-                                   Proc_Name = "name",
-                                   Proc_Date = "procedure_datetime",
-                                   Proc_Code = "code",
-                                   Proc_Narrative = "narrative",
-                                   Proc_Impression = "impression",
-                                   Proc_Addenda = "addenda",
-                                   Proc_Assessment = "assessment")){
+radiology_unrename <-
+  function(x,
+           names = flip_names_and_values(default_rename("radiology"))){
   relocate_ignoring_missing(x, names)
 }
 

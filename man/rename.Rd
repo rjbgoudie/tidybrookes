@@ -14,7 +14,7 @@
 \alias{med_prescr_rename}
 \alias{radiology_rename}
 \alias{tests_rename}
-\title{Tidy raw colnames}
+\title{Rename to tidy column names}
 \usage{
 default_rename(x)
 
@@ -49,9 +49,37 @@ tests_rename(x, names = default_rename("tests"))
 The supplied data frame, with column names in tidy-column-name format
 }
 \description{
-The standard data format from Clinical Informatics is handled by default. If
-variations from this format occur, custom renaming can be performed
-using the \code{names} argument
+Rename columns from the default names in the standard data format from
+Clinical Informatics into standardised, shorter names (e.g. all lowercase,
+underscore-separated, with \verb{_datetime} suffix etc).
+}
+\details{
+The default renaming map can be viewed using \code{default_rename()}.
+
+If variations from this format occur, custom renaming can be performed
+using the \code{names} argument.
+}
+\examples{
+# The raw columns names are messy: long names, mixed capitalisation, etc!
+fsheet_imported_example <-
+  read_tidybrookes_csv(
+    file = tidybrookes_example("fsheet.csv"),
+    col_types = "fsheet"
+  )
+colnames(fsheet_imported_example)
+
+# Default renaming can be viewed with
+default_rename("fsheet")
+
+colnames(fsheet_rename(fsheet_imported_example))
+
+# A warning is issued if columns are missing
+fsheet_imported_example \%>\%
+  select(-MEASURE_TIME) \%>\%
+  fsheet_rename
+}
+\seealso{
+\link{unrename} to reverse this process
 }
 \author{
 R.J.B. Goudie

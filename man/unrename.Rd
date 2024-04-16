@@ -3,6 +3,7 @@
 \name{unrename}
 \alias{unrename}
 \alias{adm_unrename}
+\alias{adt_unrename}
 \alias{demogs_unrename}
 \alias{diagnosis_pl_unrename}
 \alias{fsheet_io_unrename}
@@ -11,74 +12,39 @@
 \alias{med_prescr_unrename}
 \alias{radiology_unrename}
 \alias{tests_unrename}
-\title{Untidy raw colnames}
+\title{Rename from tidy to raw column names}
 \usage{
-adm_unrename(
-  x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", PAT_ENC_CSN = "visit_id", IN_DTTM =
-    "visit_start_datetime", HOSP_DISCH_TIME = "visit_end_datetime", GENDER_DESC =
-    "gender", ETHNIC_GROUP_GROUPED = "ethnicity", DATE_OF_DEATH = "death_date",
-    AGE_AT_ADM = "age_at_visit_start", ADM_SERVICE = "adm_service", ADT_DEPARTMENT_NAME =
-    "ward", DISCH_DEST = "discharge_destination", DISCH_DECEASED = "discharged_deceased",
-    READMIT_WITHIN_30 = "readmitted_within_30_days")
-)
+adm_unrename(x, names = flip_names_and_values(default_rename("adm")))
 
-demogs_unrename(
-  x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", GENDER_DESC = "gender")
-)
+adt_unrename(x, names = flip_names_and_values(default_rename("adt")))
+
+demogs_unrename(x, names = flip_names_and_values(default_rename("demogs")))
 
 diagnosis_pl_unrename(
   x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", DX_DESCRIPTION = "description",
-    DX_DESC_DISPLAYED = "description_displayed", PROBLEM_CMT = "comment",
-    DIAGNOSIS_ENTERED_DATE = "entered_datetime", DIAGNOSIS_DATE = "diagnosis_datetime",
-    RESOLVED_DATE = "resolved_datetime", DIAGNOSIS_STATUS = "status", ICD10_1 =
-    "icd10_1", ICD10_2 = "icd10_2", ICD10_3 = "icd10_3", ICD10_4 = "icd10_4", ICD10_LIST
-    = "icd10_list", SNOMED_CONCEPTS = "snomed")
+  names = flip_names_and_values(default_rename("diagnosis_pl"))
 )
 
 fsheet_io_unrename(
   x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", disp_name = "description", FLO_MEAS_NAME
-    = "name", measured_value = "value", meas_comment = "comment", MEASURE_TIME =
-    "measurement_datetime", fsd_id = "data_id", `flo-meas_id` = "measurement_id", line =
-    "line_id", template = "template", form = "form")
+  names = flip_names_and_values(default_rename("fsheet_io"))
 )
 
-fsheet_unrename(
-  x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", disp_name = "name", measured_value =
-    "value", meas_comment = "comment", MEASURE_TIME = "measurement_datetime", fsd_id =
-    "data_id", `flo-meas_id` = "measurement_id", line = "line_id", template = "template",
-    form = "form")
-)
+fsheet_unrename(x, names = flip_names_and_values(default_rename("fsheet")))
 
 med_admin_unrename(
   x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", TimeAdministered =
-    "administered_datetime", DrugName = "name", DoseAsLabelled = "dose", InfusionRate =
-    "rate", DoseUnitAbbreviated = "unit", RouteOfMedicationAbbreviated = "route",
-    DepartmentName = "department", MAR_ENC_CSN = "visit_id", MARAction = "action")
+  names = flip_names_and_values(default_rename("med_admin"))
 )
 
 med_prescr_unrename(
   x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", DrugName = "name", StartDate =
-    "start_datetime", EndDate = "end_datetime", Dose = "dose", Strength = "strength",
-    DoseUnit = "unit", DoseFrequency = "dose_frequency", RouteOfMedication = "route",
-    InOrOutPatient = "in_or_out_patient", FormOfMedication = "form", THERA_CLASS =
-    "thera_class", PHARM_CLASS = "pharm_class", PHARM_SUBCLASS = "pharm_subclass",
-    PAT_ENC_CSN_ID = "visit_id", OrderStatusCat = "status", ProviderType =
-    "provider_type", Order_Class = "order_class")
+  names = flip_names_and_values(default_rename("med_prescr"))
 )
 
 radiology_unrename(
   x,
-  names = c(STUDY_SUBJECT_DIGEST = "person_id", Proc_Name = "name", Proc_Date =
-    "procedure_datetime", Proc_Code = "code", Proc_Narrative = "narrative",
-    Proc_Impression = "impression", Proc_Addenda = "addenda", Proc_Assessment =
-    "assessment")
+  names = flip_names_and_values(default_rename("radiology"))
 )
 
 tests_unrename(
@@ -103,6 +69,19 @@ The supplied data frame, with column names in tidy-column-name format
 The standard data format from Clinical Informatics is handled by default. If
 variations from this format occur, custom renaming can be performed
 using the \code{names} argument
+}
+\examples{
+fsheet_imported_example <-
+  read_tidybrookes_csv(
+    file = tidybrookes_example("fsheet.csv"),
+    col_types = "fsheet"
+  )
+colnames(fsheet_imported_example)
+colnames(fsheet_rename(fsheet_imported_example))
+colnames(fsheet_unrename(fsheet_rename(fsheet_imported_example)))
+}
+\seealso{
+\link{rename} to reverse this process
 }
 \author{
 R.J.B. Goudie

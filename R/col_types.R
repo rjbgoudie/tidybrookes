@@ -1,12 +1,24 @@
-#' List of standard column types for Epic data
+#' Standard column specifications
+#'
+#' Maps table names to standard [`readr::cols()`] specifications that can be
+#' used for importing data using [`read_tidybrookes_csv()`] or
+#' [`read_tidybrookes_delim()`].
 #'
 #' @param col_types Either a string specifying the name of the table that the
 #'   data comes from, for which a standard format can be used. Available
-#'   value are `adm`, `adt`, `demogs`, `fsheet`, `fsheet_io`, `tests`,
-#'   `med_admin`, `med_prescr`, `diagnosis_pl`, `med_hist`, `radiology`.
+#'   value are `"adm"`, `"adt"`, `"demogs"`, `"fsheet"`, `"fsheet_io"`,
+#'   `"tests"`, `"med_admin"`, `"med_prescr"`, `"diagnosis_pl"`, `"med_hist"`,
+#\   `"radiology"`.
 #'
 #'   Or a [readr::cols()] format list of column names and types, which
 #'   can be used where a nonstandard data format are supplied.
+#' @returns A [`readr::cols()`] specification.
+#' @seealso [read_tidybrookes_csv()], [read_tidybrookes_csv()]
+#' @examples
+#' # the format when col_types = "adm"
+#' default_col_types("adm")
+#'
+#' default_col_types("tests")
 #' @export
 default_col_types <- function(col_types){
   if (inherits(col_types, "col_spec")){

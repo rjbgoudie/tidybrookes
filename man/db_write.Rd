@@ -35,8 +35,9 @@ a single string or a raw vector), as per \code{\link[readr:read_delim]{readr::re
 
 \item{col_types}{Either a string specifying the name of the table that the
 data comes from, for which a standard format can be used. Available
-value are \code{adm}, \code{adt}, \code{demogs}, \code{fsheet}, \code{fsheet_io}, \code{tests},
+values are \code{adm}, \code{adt}, \code{demogs}, \code{fsheet}, \code{fsheet_io}, \code{tests},
 \code{med_admin}, \code{med_prescr}, \code{diagnosis_pl}, \code{med_hist}, \code{radiology}.
+This is translated into column specification using \code{\link{default_col_types}}.
 
 Or a \code{\link[readr:cols]{readr::cols()}} format list of column names and types, which
 can be used where a nonstandard data format are supplied.}

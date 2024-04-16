@@ -3,7 +3,9 @@
 #' Convenience wrapper around [readr::read_csv] and [readr::read_csv] that makes
 #' it easier to set the `col_types` for standard data from Epic. Also makes
 #' handling untimezoned data more robust through use of functions from
-#' [clock::parse_date_time].
+#' [`clock::parse_date_time`].
+#'
+#' Named `col_types` are extracted using [`default_col_types()`].
 #'
 #' At transitions to and from daylight savings times there are nonexistent
 #' and ambiguous times. Using the parameters `nonexistent` and `ambiguous`
@@ -13,8 +15,9 @@
 #'   a single string or a raw vector), as per [readr::read_delim()]
 #' @param col_types Either a string specifying the name of the table that the
 #'   data comes from, for which a standard format can be used. Available
-#'   value are `adm`, `adt`, `demogs`, `fsheet`, `fsheet_io`, `tests`,
+#'   values are `adm`, `adt`, `demogs`, `fsheet`, `fsheet_io`, `tests`,
 #'   `med_admin`, `med_prescr`, `diagnosis_pl`, `med_hist`, `radiology`.
+#'   This is translated into column specification using [`default_col_types`].
 #'
 #'   Or a [readr::cols()] format list of column names and types, which
 #'   can be used where a nonstandard data format are supplied.
@@ -61,6 +64,9 @@
 #'   - `"NA"`: Replace ambiguous times with `NA`.
 #'
 #'   - `"error"`: Error on ambiguous times.
+#'
+#' @seealso Named column types are extracted using [default_col_types()]. Raw
+#' column names can be renamed using e.g. [fsheet_rename()]
 #' @importFrom readr read_csv cols col_character col_integer col_double
 #'   locale col_datetime
 #' @rdname read
@@ -68,6 +74,9 @@
 #'
 #' @examples
 #' adm_file_path <- tidybrookes_example("adm.csv")
+#'
+#' # the format when col_types = "adm"
+#' default_col_types("adm")
 #'
 #' read_tidybrookes_csv(
 #'   file = adm_file_path,

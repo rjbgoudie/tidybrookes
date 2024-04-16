@@ -224,3 +224,7 @@ person_id_shorten <- function(person_id){
   }
   person_id_short
 }
+
+flip_names_and_values <- function(x){
+  setNames(names(x), x)
+}

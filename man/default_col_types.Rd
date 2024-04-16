@@ -2,19 +2,33 @@
 % Please edit documentation in R/col_types.R
 \name{default_col_types}
 \alias{default_col_types}
-\title{List of standard column types for Epic data}
+\title{Standard column specifications}
 \usage{
 default_col_types(col_types)
 }
 \arguments{
 \item{col_types}{Either a string specifying the name of the table that the
 data comes from, for which a standard format can be used. Available
-value are \code{adm}, \code{adt}, \code{demogs}, \code{fsheet}, \code{fsheet_io}, \code{tests},
-\code{med_admin}, \code{med_prescr}, \code{diagnosis_pl}, \code{med_hist}, \code{radiology}.
+value are \code{"adm"}, \code{"adt"}, \code{"demogs"}, \code{"fsheet"}, \code{"fsheet_io"},
+\code{"tests"}, \code{"med_admin"}, \code{"med_prescr"}, \code{"diagnosis_pl"}, \code{"med_hist"},
 
 Or a \code{\link[readr:cols]{readr::cols()}} format list of column names and types, which
 can be used where a nonstandard data format are supplied.}
 }
+\value{
+A \code{\link[readr:cols]{readr::cols()}} specification.
+}
 \description{
-List of standard column types for Epic data
+Maps table names to standard \code{\link[readr:cols]{readr::cols()}} specifications that can be
+used for importing data using \code{\link[=read_tidybrookes_csv]{read_tidybrookes_csv()}} or
+\code{\link[=read_tidybrookes_delim]{read_tidybrookes_delim()}}.
+}
+\examples{
+# the format when col_types = "adm"
+default_col_types("adm")
+
+default_col_types("tests")
+}
+\seealso{
+\code{\link[=read_tidybrookes_csv]{read_tidybrookes_csv()}}, \code{\link[=read_tidybrookes_csv]{read_tidybrookes_csv()}}
 }
