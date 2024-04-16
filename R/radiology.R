@@ -56,8 +56,7 @@ radiology_extract <- function(x, radiology_def, errors = stop){
     radiology_extract_single(x, radiology_def)
   } else {
     out <- bind_rows(lapply(radiology_def, function(y){
-      inform(format_error_bullets(c(
-        glue("\nExtracting {y$title} ({y$symbol})"))))
+      cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
       radiology_extract_single(x, y, errors = errors)
     }))
     out %>% arrange(symbol, procedure_datetime)
@@ -69,10 +68,9 @@ radiology_extract_single <- function(x, radiology_def, errors = stop){
   ## possible_new <- radiology_check_for_new(x, radiology_def)
   ## if (nrow(possible_new) > 0){
   ##   possible_new_names <- str_flatten(possible_new$name, "; ")
-  ##   warning(format_error_bullets(c(
-  ##     i = glue("{nrow(possible_new)} possible new radiology names: ",
-  ##              "{possible_new_names}"))),
-  ##     immediate. = TRUE)
+  ##   cli::cli_alert_warning(
+  ##     c("{nrow(possible_new)} possible new radiology names: ",
+  ##     "{possible_new_names}"))
   ## }
 
   # Filter to only CUH radiology
@@ -96,7 +94,7 @@ radiology_extract_single <- function(x, radiology_def, errors = stop){
     ungroup
 
   # Return result
-  inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
+  cli::cli_alert_info("{nrow(out)} rows extracted")
   out %>%
     arrange(procedure_datetime)
 }

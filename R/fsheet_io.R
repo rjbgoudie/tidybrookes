@@ -143,9 +143,10 @@ fsheet_io_extract_single <- function(x, fsheet_io_def, errors = stop){
   out <- x %>%
     filter(name %in% fsheet_io_def$names)
 
-  inform(format_error_bullets(c(
-    glue("\nExtracting {fsheet_io_def$title} ({fsheet_io_def$symbol}) from ",
-         "{nrow(out)} raw rows"))))
+  cli::cli_alert_info(
+    c("Extracting {fsheet_io_def$title} ",
+      "({fsheet_io_def$symbol}) from ",
+      "{nrow(out)} raw rows"))
 
   # Add symbol and title
   out <- out %>%
@@ -241,7 +242,7 @@ fsheet_io_extract_single <- function(x, fsheet_io_def, errors = stop){
   check_that_all(out, !!fsheet_io_def$expect_after, "expect_after")
 
   # Return result
-  inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
+  cli::cli_alert_info("{nrow(out)} rows extracted")
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,
            -value_original, -is_too_high, -is_too_low) %>%

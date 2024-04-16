@@ -98,8 +98,7 @@ med_prescr_extract <- function(x, med_prescr_def, errors = stop){
     med_prescr_extract_single(x, med_prescr_def)
   } else {
     out <- bind_rows(lapply(med_prescr_def, function(y){
-      inform(format_error_bullets(c(
-        glue("\nExtracting {y$title} ({y$symbol})"))))
+      cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
       med_prescr_extract_single(x, y, errors = errors)
     }))
     out %>% arrange(symbol, start_date)
@@ -110,10 +109,9 @@ med_prescr_extract_single <- function(x, med_prescr_def, errors = stop){
   possible_new <- med_prescr_check_for_new_names(x, med_prescr_def)
   if (nrow(possible_new) > 0){
     possible_new_names <- format_as_argument(possible_new$name)
-    warning(format_error_bullets(c(
-      i = glue("{nrow(possible_new)} possible new medication names: ",
-               "{possible_new_names}"))),
-      immediate. = TRUE)
+    cli::cli_alert_warning(
+      c("{nrow(possible_new)} possible new medication names: ",
+        "{possible_new_names}"))
   }
 
   # Filter to only CUH med_prescr
@@ -122,10 +120,9 @@ med_prescr_extract_single <- function(x, med_prescr_def, errors = stop){
   possible_new_route <- med_prescr_check_for_new_route(out, med_prescr_def)
   if (nrow(possible_new_route) > 0){
     possible_new_routes <- format_as_argument(possible_new_route$route)
-    warning(format_error_bullets(c(
-      i = glue("{nrow(possible_new_route)} possible new medication routes: ",
-               "{possible_new_routes}"))),
-      immediate. = TRUE)
+    cli::cli_alert_warning(
+      c("{nrow(possible_new_route)} possible new medication routes: ",
+        "{possible_new_routes}"))
   }
 
   out <- out %>%
@@ -174,7 +171,7 @@ med_prescr_extract_single <- function(x, med_prescr_def, errors = stop){
   check_that_all(out, !!med_prescr_def$expect_after, "expect_after")
 
   # Return result
-  inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
+  cli::cli_alert_info("{nrow(out)} rows extracted")
   out %>%
     select(-will_silently_exclude_na_routes) %>%
     arrange(start_date)

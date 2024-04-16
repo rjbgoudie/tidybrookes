@@ -82,8 +82,7 @@ filter_inform <- function(x, ..., since = "for unknown reason"){
     sign <- if_else(current < previous, "removed", "added")
     change_abs <- abs(current - previous)
     row <- if_else(change_abs == 1, "row", "rows")
-    inform(format_error_bullets(c(
-      i = glue("{change_abs} {row} {sign} {since}"))))
+    cli::cli_alert_info("{change_abs} {row} {sign} {since}")
   }
   out
 }
@@ -101,8 +100,7 @@ distinct_inform <- function(x){
     sign <- if_else(current < previous, "removed", "added")
     change_abs <- abs(current - previous)
     row <- if_else(change_abs == 1, "row", "rows")
-    inform(format_error_bullets(c(
-      i = glue("{change_abs} {row} {sign} {since}"))))
+    cli::cli_alert_info("{change_abs} {row} {sign} {since}")
   }
   out
 }
@@ -115,8 +113,7 @@ fn_inform <- function(x, fn, ..., since = "for unknown reason"){
     sign <- if_else(current < previous, "removed", "added")
     change_abs <- abs(current - previous)
     row <- if_else(change_abs == 1, "row", "rows")
-    inform(format_error_bullets(c(
-      i = glue("{change_abs} {row} {sign} {since}"))))
+    cli::cli_alert_info("{change_abs} {row} {sign} {since}")
   }
   out
 }
@@ -139,11 +136,10 @@ check_that_all <- function(x,
     condition_str <- expr_print(condition)
     unexpected_nrow <- nrow(unexpected)
     row <- if_else(unexpected_nrow == 1, "row", "rows")
-    warning(format_error_bullets(c(
-      x = glue("{unexpected_nrow} {row} not satisfying ",
-               "{name} condition: ",
-               "{condition_str}"))),
-      immediate. = TRUE)
+    cli::cli_alert_warning(
+      c("{unexpected_nrow} {row} not satisfying ",
+        "{name} condition: ",
+        "{condition_str}"))
     print(summary(unexpected))
   }
 }
@@ -159,8 +155,9 @@ inform_if_all_times_are_midnight <- function(x){
     m <- lubridate:::minute(x)
     s <- lubridate:::second(x)
     if (all(h == 0L & m == 0L & s == 0)){
-      inform(format_error_bullets(c(
-        i = glue("Supplied datetime column is all midnight - did you mean to use _date?"))))
+      cli::cli_alert_danger(
+        c("Supplied datetime column is all midnight - ",
+          "did you mean to use _date?"))
     }
   }
 }
@@ -175,8 +172,9 @@ fn_ignoring_missing <- function(fn, x, ...){
   name_change <- c(...)
   missing_cols <- name_change[!name_change %in% colnames(x)]
   if (length(missing_cols) > 0){
-    inform(glue("Some columns were missing: ",
-                glue::glue_collapse(missing_cols, ",", last = " and ")))
+    cli::cli_alert_warning(
+      c("Some columns were missing: ",
+        glue::glue_collapse(missing_cols, ",", last = " and ")))
   }
   x %>%
     fn(any_of(name_change))

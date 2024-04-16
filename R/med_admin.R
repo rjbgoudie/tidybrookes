@@ -114,8 +114,7 @@ med_admin_extract <- function(x,
                              med_admin_units = med_admin_units)
   } else {
     out <- bind_rows(lapply(med_admin_def, function(y){
-      inform(format_error_bullets(c(
-        glue("\nExtracting {y$title} ({y$symbol})"))))
+      cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
       med_admin_extract_single(x,
                                y,
                                med_admin_units = med_admin_units,
@@ -137,10 +136,9 @@ med_admin_extract_single <- function(x,
   possible_new <- med_admin_check_for_new_names(x, med_admin_def)
   if (nrow(possible_new) > 0){
     possible_new_names <- format_as_argument(possible_new$name)
-    warning(format_error_bullets(c(
-      i = glue("{nrow(possible_new)} possible new medication names: ",
-               "{possible_new_names}"))),
-      immediate. = TRUE)
+    cli::cli_warn(
+      c("{nrow(possible_new)} possible new medication names: ",
+      "{possible_new_names}"))
   }
 
   # Filter to only CUH med_admin
@@ -151,10 +149,9 @@ med_admin_extract_single <- function(x,
   possible_new_route <- med_admin_check_for_new_route(out, med_admin_def)
   if (nrow(possible_new_route) > 0){
     possible_new_routes <- format_as_argument(possible_new_route$route)
-    warning(format_error_bullets(c(
-      i = glue("{nrow(possible_new_route)} possible new medication routes: ",
-               "{possible_new_routes}"))),
-      immediate. = TRUE)
+    cli::cli_alert_warning(
+      c("{nrow(possible_new_route)} possible new medication routes: ",
+               "{possible_new_routes}"))
   }
 
   # Exclude NAs when requested
@@ -188,10 +185,9 @@ med_admin_extract_single <- function(x,
                                                         med_admin_def)
   if (nrow(possible_new_action) > 0){
     possible_new_actions <- format_as_argument(possible_new_action$action)
-    warning(format_error_bullets(c(
-      i = glue("{nrow(possible_new_action)} possible new medication actions: ",
-               "{possible_new_actions}"))),
-      immediate. = TRUE)
+    cli::cli_alert_warning(
+      c("{nrow(possible_new_action)} possible new medication actions: ",
+        "{possible_new_actions}"))
   }
 
   med_admin_exclude <- map(med_admin_def$action_exclude,
@@ -277,10 +273,9 @@ med_admin_extract_single <- function(x,
   )
   if (nrow(possible_new_dose_unit) > 0){
     possible_new_dose_unit <- format_as_argument(possible_new_dose_unit$dose_unit_original)
-    warning(format_error_bullets(c(
-      i = glue("{nrow(possible_new_dose_unit)} possible new dose_unit: ",
-               "{possible_new_dose_unit}"))),
-      immediate. = TRUE)
+    cli::cli_alert_warning(
+      c("{nrow(possible_new_dose_unit)} possible new dose_unit: ",
+        "{possible_new_dose_unit}"))
   }
 
   # bolus/infusion inference from dose_unit
@@ -336,7 +331,7 @@ med_admin_extract_single <- function(x,
   check_that_all(out, !!med_admin_def$expect_after, "expect_after")
 
   # Return result
-  inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
+  cli::cli_alert_info("{nrow(out)} rows extracted")
   out %>%
     relocate(person_id,
              symbol,

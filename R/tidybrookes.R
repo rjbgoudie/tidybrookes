@@ -1,5 +1,5 @@
 #' @importFrom dplyr select filter mutate relocate distinct group_by ungroup if_else case_when bind_rows arrange left_join full_join first last rename_with slice summarise count pull lag lead n
-#' @importFrom rlang enquo as_label inform warn format_error_bullets expr_print
+#' @importFrom rlang enquo as_label expr_print
 #' @importFrom glue glue glue_collapse
 #' @importFrom lubridate ymd ymd_hms dhours dseconds dminutes ddays dweeks dyears dmonths interval int_length intersect
 #' @importFrom tidyr pivot_wider separate replace_na
@@ -10,6 +10,7 @@
 #' @importFrom readr read_delim cols col_character col_integer col_double locale col_datetime
 #' @importFrom progress progress_bar
 #' @importFrom clock date_time_parse
+#' @importFrom cli cli_alert_info cli_alert_danger cli_alert_warning cli_warn cli_abort
 NULL
 
 #' @importFrom dplyr select

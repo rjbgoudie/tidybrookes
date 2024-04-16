@@ -71,8 +71,7 @@ condition_extract <- function(x, condition_def, errors = stop){
     condition_extract_single(x, condition_def)
   } else {
     out <- bind_rows(lapply(condition_def, function(y){
-      inform(format_error_bullets(c(
-        glue("\nExtracting {y$title} ({y$symbol})"))))
+      cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
       condition_extract_single(x, y, errors = errors)
     }))
     out %>% arrange(symbol, diagnosis_datetime)
@@ -84,10 +83,9 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   #  possible_new <- condition_check_for_new(x, condition_def)
   # if (nrow(possible_new) > 0){
   #   possible_new_names <- str_flatten(possible_new$name, "; ")
-  #   warning(format_error_bullets(c(
-  #     i = glue("{nrow(possible_new)} possible new condition names: ",
-  #              "{possible_new_names}"))),
-  #     immediate. = TRUE)
+  #   cli::cli_alert_warning(
+  #   c("{nrow(possible_new)} possible new condition names: ",
+  #     "{possible_new_names}"))
   # }
 
   # Filter to only ICD-10s
@@ -137,7 +135,7 @@ condition_extract_single <- function(x, condition_def, errors = stop){
   # TODO possibly make datetime NA if all midnight?
 
   # Return result
-  inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
+  cli::cli_alert_info("{nrow(out)} rows extracted")
   out %>%
     select(-will_silently_exclude_deleted) %>%
     arrange(diagnosis_datetime)

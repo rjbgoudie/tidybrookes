@@ -171,17 +171,16 @@ tests_extract_single <- function(x, test_def, errors = stop){
   out <- x %>%
     filter(name %in% test_def$names_cuh)
 
-  inform(format_error_bullets(c(
-    glue("\nExtracting {test_def$title} ({test_def$symbol}) from ",
-         "{nrow(out)} raw rows"))))
+  cli::cli_alert_info(
+    c("\nExtracting {test_def$title} ({test_def$symbol}) from ",
+      "{nrow(out)} raw rows"))
 
   possible_new <- tests_check_for_new(x, test_def)
   if (nrow(possible_new) > 0){
     possible_new_names <- format_as_argument(possible_new$name)
-    warning(format_error_bullets(c(
-      i = glue("{nrow(possible_new)} possible new test names: ",
-               "{possible_new_names}"))),
-      immediate. = TRUE)
+    cli::cli_alert_warning(
+      c("{nrow(possible_new)} possible new test names: ",
+        "{possible_new_names}"))
   }
 
   # Add symbol and title
@@ -280,7 +279,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
     check_that_all(out, !!test_def$expect_after, "expect_after")
 
     # Return result
-    inform(format_error_bullets(c(i = glue("{nrow(out)} rows extracted"))))
+    cli::cli_alert_info("{nrow(out)} rows extracted")
     out %>%
       select(-will_silently_exclude, -will_silently_exclude_na,
              -value_original, -is_too_high, -is_too_low) %>%
