@@ -15,6 +15,8 @@
 #' @param value_as_character_fn A function specifying how to generate the
 #'   `value_as_character` column
 #' @author R.J.B. Goudie
+#' @rdname radiology_extract
+#' @export
 radiology_add <- function(radiology_def,
                           symbol,
                           title,
@@ -51,6 +53,8 @@ radiology_add <- function(radiology_def,
 #'
 #' The result will be sorted by administered_datetime
 #' @author R.J.B. Goudie
+#' @rdname radiology_extract
+#' @export
 radiology_extract <- function(x, radiology_def, errors = stop){
   if (length(radiology_def) == 1 & "symbol" %in% names(radiology_def)){
     radiology_extract_single(x, radiology_def)

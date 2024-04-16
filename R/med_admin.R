@@ -45,6 +45,8 @@
 #' @param expect_after An expression that returns a logical value,
 #'  specifying a condition that should be `TRUE` in the processed (output) data
 #' @author R.J.B. Goudie
+#' @rdname med_admin_extract
+#' @export
 med_admin_add <- function(med_admin_def,
                           note,
                           symbol,
@@ -104,6 +106,8 @@ med_admin_add <- function(med_admin_def,
 #'
 #' The result will be sorted by administered_datetime
 #' @author R.J.B. Goudie
+#' @rdname med_admin_extract
+#' @export
 med_admin_extract <- function(x,
                               med_admin_def,
                               med_admin_units,

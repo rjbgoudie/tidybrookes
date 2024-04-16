@@ -48,6 +48,8 @@
 #'   upper range for the flowsheet item. Values outside this range are
 #'   EXCLUDED.
 #' @author R.J.B. Goudie
+#' @rdname tests_extract
+#' @export
 tests_add <- function(test_def,
                       symbol,
                       title,
@@ -140,6 +142,8 @@ tests_remove <- function(test_def, symbol){
 #'
 #' The result will be sorted by collected_datetime
 #' @author R.J.B. Goudie
+#' @rdname tests_extract
+#' @export
 tests_extract <- function(x,
                           tests_def,
                           errors = stop,

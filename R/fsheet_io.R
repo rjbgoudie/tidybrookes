@@ -46,6 +46,8 @@
 #'   upper range for the flowsheet item. Values outside this range are
 #'   EXCLUDED.
 #' @author R.J.B. Goudie
+#' @rdname fsheet_io_extract
+#' @export
 fsheet_io_add <- function(fsheet_io_def,
                           symbol,
                           title,
@@ -127,6 +129,7 @@ fsheet_io_add <- function(fsheet_io_def,
 #' `title`, `data_id`, `measurement_id`, `line_id`, `template`, `form`, `type`,
 #' `unit`
 #' @author R.J.B. Goudie
+#' @rdname fsheet_io_extract
 fsheet_io_extract <- function(x, fsheet_io_def, errors = stop){
   if (length(fsheet_io_def) == 1 & "symbol" %in% names(fsheet_io_def)){
     fsheet_io_extract_single(x, fsheet_io_def)

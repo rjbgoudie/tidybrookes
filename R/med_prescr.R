@@ -42,6 +42,8 @@
 #'   upper range for the flowsheet item. Values outside this range are
 #'   EXCLUDED.
 #' @author R.J.B. Goudie
+#' @rdname med_prescr_extract
+#' @export
 med_prescr_add <- function(med_prescr_def,
                            symbol,
                            title,
@@ -93,6 +95,8 @@ med_prescr_add <- function(med_prescr_def,
 #'
 #' The result will be sorted by administered_datetime
 #' @author R.J.B. Goudie
+#' @rdname med_prescr_extract
+#' @export
 med_prescr_extract <- function(x, med_prescr_def, errors = stop){
   if (length(med_prescr_def) == 1 & "symbol" %in% names(med_prescr_def)){
     med_prescr_extract_single(x, med_prescr_def)

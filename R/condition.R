@@ -16,7 +16,9 @@ condition_raw <- function(x, y){
 #'   diagnoses made in error should be deleted, but in practice it is thought
 #'   that clinical staff often delete diagnoses that are resolved rather than
 #'   mark them as "Resolved".
+#' @rdname condition_extract
 #' @author R.J.B. Goudie
+#' @export
 condition_add <- function(condition_def,
                        symbol,
                        title,
@@ -66,6 +68,7 @@ condition_add <- function(condition_def,
 #'
 #' The result will be sorted by diagnosis_datetime
 #' @author R.J.B. Goudie
+#' @rdname condition_extract
 condition_extract <- function(x, condition_def, errors = stop){
   if (length(condition_def) == 1 & "symbol" %in% names(condition_def)){
     condition_extract_single(x, condition_def)
