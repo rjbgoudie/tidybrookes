@@ -5,11 +5,7 @@
 #' and filter to only those rows of `y` with `datetime` within the specified
 #' time period.
 #'
-#' @param x An `adm` data frame
-#' @param y A (tidy) data frame
-#' @param datetime The column of `y` to use as the main datetime for matching
-#' @param during The time period to extract data for, one of: `"during_visit"`,
-#'   `"during_icu"`
+#' @inheritParams all_during
 #' @param names_from,values_from A pair of arguments describing which column
 #' (or columns) to get the name of the output column (`group_by`), and which
 #' column (or columns) to get the cell values from (`values_from`).
@@ -20,6 +16,22 @@
 #' time period for each patient. Note that rows of the `adm` data will be
 #' repeated multiple times (one for each `y` measurement data point).
 #' @author R.J.B. Goudie
+#' @examples
+#' adm_data_example
+#' fsheet_news2_example
+#'
+#' # An alternative re-implemention a version of max_during()
+#' summarise_during(adm_data_example,
+#'                  fsheet_news2_example,
+#'                  datetime = measurement_datetime,
+#'                  during = "during_visit",
+#'                  type = "summarise",
+#'                  formula =
+#'                    tibble(value_as_number = max(value_as_number),
+#'                           type = "numeric"),
+#'                  names_suffix = "mymax") %>%
+#'   select(person_id, visit_id, contains("mymax"))
+#' @export
 summarise_during <- function(x,
                              y,
                              datetime,
@@ -53,7 +65,7 @@ summarise_during <- function(x,
       group_by = group_by)
 
   cli::cli_alert_info("Pivoting wider")
-  out <- out%>%
+  out <- out %>%
     pivot_value_wider(id_cols = setdiff(group_by, names_from),
                       names_from = names_from,
                       values_from = values_from,
@@ -84,6 +96,7 @@ summarise_during <- function(x,
 #' @return A data frame
 #'
 #' @author R.J.B. Goudie
+#' @noRd
 pivot_value_wider <- function(x,
                               id_cols = c("person_id", "visit_id"),
                               names_from = "symbol",

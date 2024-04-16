@@ -21,12 +21,24 @@ summarise_during(
 \arguments{
 \item{x}{An \code{adm} data frame}
 
-\item{y}{A (tidy) data frame}
+\item{y}{A (tidy) data frame, with a \code{datetime} column}
 
 \item{datetime}{The column of \code{y} to use as the main datetime for matching}
 
-\item{during}{The time period to extract data for, one of: \code{"during_visit"},
-\code{"during_icu"}}
+\item{during}{The time period to extract data for, one of:
+\itemize{
+\item \code{"during_visit"}
+\item \code{"during_visit_initial_24h"}
+\item \verb{"during_visit_initial_72h}
+\item \code{"during_icu"}
+\item \code{"before_visit_initial_24h"}
+\item \code{"14_days_before_visit_until_visit_end"}
+\item \code{"year_before_visit_until_visit_end"}
+\item \code{"before_visit_end"}
+\item \code{"30_days_before_visit_start"}
+\item \code{"year_before_initial_24h"}
+\item \code{"during_value"}
+}}
 
 \item{names_from, values_from}{A pair of arguments describing which column
 (or columns) to get the name of the output column (\code{group_by}), and which
@@ -44,6 +56,22 @@ Left joins an \code{adm} data frame with another data frame (with a
 \code{person_id} for linking and with the relevant datetime called \code{datetime}),
 and filter to only those rows of \code{y} with \code{datetime} within the specified
 time period.
+}
+\examples{
+adm_data_example
+fsheet_news2_example
+
+# An alternative re-implemention a version of max_during()
+summarise_during(adm_data_example,
+                 fsheet_news2_example,
+                 datetime = measurement_datetime,
+                 during = "during_visit",
+                 type = "summarise",
+                 formula =
+                   tibble(value_as_number = max(value_as_number),
+                          type = "numeric"),
+                 names_suffix = "mymax") \%>\%
+  select(person_id, visit_id, contains("mymax"))
 }
 \author{
 R.J.B. Goudie

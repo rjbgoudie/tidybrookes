@@ -3,6 +3,7 @@
 \docType{import}
 \name{reexports}
 \alias{reexports}
+\alias{tibble}
 \alias{select}
 \alias{filter}
 \alias{case_when}
@@ -20,5 +21,7 @@ below to see their documentation.
   \item{dplyr}{\code{\link[dplyr]{case_when}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{if_else}}, \code{\link[dplyr]{select}}}
 
   \item{readr}{\code{\link[readr:parse_atomic]{col_character}}, \code{\link[readr:parse_datetime]{col_datetime}}, \code{\link[readr]{cols}}}
+
+  \item{tibble}{\code{\link[tibble]{tibble}}}
 }}
 

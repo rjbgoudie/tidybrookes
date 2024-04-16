@@ -30,11 +30,10 @@ reference:
     admissions data
   contents:
   - all_during
-  - summarise_during
-  - first_during_after_event
   - first_during
   - max_during
-  - pivot_value_wider
+  - first_during_after_event
+  - summarise_during
 
 - title: Table-specific functions
 

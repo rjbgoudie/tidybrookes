@@ -14,13 +14,13 @@
 #' * `"during_visit_initial_24h"`
 #' * `"during_visit_initial_72h`
 #' * `"during_icu"`
-#' * `"before_visit_initial_24h`
-#' * `"14_days_before_visit_until_visit_end`
-#' * `"year_before_visit_until_visit_end`
-#' * `"before_visit_end`
-#' * `"30_days_before_visit_start`
-#' * `"year_before_initial_24h`
-#' * `"during_value`
+#' * `"before_visit_initial_24h"`
+#' * `"14_days_before_visit_until_visit_end"`
+#' * `"year_before_visit_until_visit_end"`
+#' * `"before_visit_end"`
+#' * `"30_days_before_visit_start"`
+#' * `"year_before_initial_24h"`
+#' * `"during_value"`
 #' @param names_from A character vector containing the names of columns that
 #' should be used to filter by (in addition to those implied by `during`).
 #' @param join Either `"left"`, in which a left join is performed (so all `x`
@@ -32,7 +32,21 @@
 #' A data frame, with a row for each `y` measurement during the relevant
 #' time period for each patient. Note that rows of the `adm` data will be
 #' repeated multiple times (one for each `y` measurement data point).
+#' @seealso If only a summary of the values during a timeperiod is needed,
+#'   then [`summarise_during()`] will be more convenient, or the more
+#'   specialised forms described at [`during_functions`], [`adjacent_event_during`],
+#'   [`extremes_during`].
+#' @examples
+#' adm_data_example
+#' fsheet_news2_example
+#'
+#' all_during(adm_data_example,
+#'            fsheet_news2_example,
+#'            datetime = measurement_datetime,
+#'            during = "during_visit") %>%
+#'   select(person_id, visit_id, symbol, datetime, value_as_number)
 #' @author R.J.B. Goudie
+#' @export
 all_during <- function(x,
                        y,
                        datetime,

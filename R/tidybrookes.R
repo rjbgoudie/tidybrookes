@@ -13,6 +13,10 @@
 #' @importFrom cli cli_alert_info cli_alert_danger cli_alert_warning cli_warn cli_abort
 NULL
 
+#' @importFrom tibble tibble
+#' @export
+tibble::tibble
+
 #' @importFrom dplyr select
 #' @export
 dplyr::select
