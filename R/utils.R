@@ -42,6 +42,7 @@ tidybrookes_example <- function(file = NULL) {
 #' @return The rows of the supplied data frame that are `NA` after conversion to
 #'   to numeric form
 #' @author R.J.B. Goudie
+#' @noRd
 nonnumeric <- function(x){
   value_as_number <- x$value_as_number
   value_as_number_numeric <- suppressWarnings({
@@ -55,6 +56,7 @@ nonnumeric <- function(x){
 #' in a R argument list - ie each element on a new line.
 #' @param x A vector
 #' @return A character string of `x`
+#' @noRd
 format_as_argument <- function(x){
   # x %>%
   #   dput() %>%
@@ -74,6 +76,7 @@ format_as_argument <- function(x){
 #' @param x A data frame
 #' @param ... Passed to filter
 #' @param since A character describing the reason for the filtering
+#' @noRd
 filter_inform <- function(x, ..., since = "for unknown reason"){
   previous <- nrow(x)
   out <- filter(x, ...)
@@ -91,6 +94,7 @@ filter_inform <- function(x, ..., since = "for unknown reason"){
 #'
 #' @param x A data frame
 #' @param since A character describing the reason for the filtering
+#' @noRd
 distinct_inform <- function(x){
   since <- "since rows were exact duplicates"
   previous <- nrow(x)
@@ -123,6 +127,7 @@ fn_inform <- function(x, fn, ..., since = "for unknown reason"){
 #' @param x A data frame
 #' @param condition A condition
 #' @param name Character string, a name for the condition
+#' @noRd
 check_that_all <- function(x,
                            condition,
                            name = "Unnamed",
@@ -149,6 +154,7 @@ check_that_all <- function(x,
 #' Does nothing if a `Date` is supplied
 #'
 #' @param x A `POSIXct` datetime
+#' @noRd
 inform_if_all_times_are_midnight <- function(x){
   if (inherits(x, "POSIXct")){
     h <- lubridate:::hour(x)
@@ -168,6 +174,7 @@ inform_if_all_times_are_midnight <- function(x){
 #' @param fn A function
 #' @param x A data frame
 #' @param ... Arguments to `fn`, which should be columns names of `x`
+#' @noRd
 fn_ignoring_missing <- function(fn, x, ...){
   name_change <- c(...)
   missing_cols <- name_change[!name_change %in% colnames(x)]
@@ -188,6 +195,7 @@ fn_ignoring_missing <- function(fn, x, ...){
 #' columns that exist without error.
 #' @param ... A data frame, and rename pairs
 #' @importFrom dplyr rename
+#' @noRd
 rename_ignoring_missing <- function(...){
   fn_ignoring_missing(rename, ...)
 }
@@ -200,6 +208,7 @@ rename_ignoring_missing <- function(...){
 #' columns that exist without error.
 #' @param ... A data frame, and rename pairs
 #' @importFrom dplyr relocate
+#' @noRd
 relocate_ignoring_missing <- function(...){
   fn_ignoring_missing(rename, ...)
 }

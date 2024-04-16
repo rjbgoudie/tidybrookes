@@ -250,6 +250,7 @@ all_during <- function(x,
 #' filtering using the `filter_condition`, under the `filter_by` grouping.
 #'
 #' @author R.J.B. Goudie
+#' @noRd
 left_join_filter <- function(x, y, ...){
   out <- inner_join_filter(x = x,
                            y = y,
@@ -279,6 +280,7 @@ left_join_filter <- function(x, y, ...){
 #' row, where the match is determined by joining by `join_by` and then
 #' filtering using the `filter_condition`, under the `filter_by` grouping.
 #' @author R.J.B. Goudie
+#' @noRd
 inner_join_filter <- function(x,
                               y,
                               join_by,

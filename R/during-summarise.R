@@ -178,6 +178,7 @@ pivot_value_wider <- function(x,
 #' @return
 #' A summarised (or sliced) data frame, usually with one row per group
 #' @author R.J.B. Goudie
+#' @noRd
 grouped_summarise_or_slice <- function(x,
                                        type = "summarise",
                                        formula,
@@ -224,6 +225,7 @@ grouped_summarise_or_slice <- function(x,
 #' - `numeric` A data frame containing numeric rows
 #' - `character` A data frame containing character rows
 #' - `logical` A data frame containing logical rows
+#' @noRd
 split_by_type <- function(x){
   has_value_as_number_col <- "value_as_number" %in% colnames(x)
   has_value_as_character_col <- "value_as_character" %in% colnames(x)
@@ -303,6 +305,7 @@ split_by_type <- function(x){
 #'   which columns are "new"
 #' @return
 #' The data frame `x`, which renamed and reorder columns
+#' @noRd
 relocate_and_clean_new_cols <- function(x, magic_prefix){
   colnames_strip_new <- function(colname){
     case_when(str_starts(colname, magic_prefix) ~

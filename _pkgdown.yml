@@ -17,16 +17,14 @@ reference:
   - contains("_unrename")
   - default_col_types
 
-- title: Joining data
+- title: Defining and extracting
   desc: >
-    Joining
+    Definitions are `_add` function
   contents:
-  - grouped_summarise_or_slice
-  - inner_join_filter
-  - left_join_filter
-  - pivot_value_wider
+  - ends_with("_add")
+  - ends_with("_extract")
 
-- title: Subsetting
+- title: Joining, subsetting and pivoting data
   desc: >
     Extract longitudinal data in relation to other data, particularly
     admissions data
@@ -36,13 +34,7 @@ reference:
   - first_during_after_event
   - first_during
   - max_during
-
-- title: Defining and extracting
-  desc: >
-    Definitions are `_add` function
-  contents:
-  - ends_with("_add")
-  - ends_with("_extract")
+  - pivot_value_wider
 
 - title: Table-specific functions
   desc: >
@@ -65,19 +57,3 @@ reference:
     Blah
   contents:
   - tidybrookes_example
-
-- title: Utilities
-  desc: >
-    Blah
-  contents:
-  - inform_if_all_times_are_midnight
-  - check_that_all
-  - distinct_inform
-  - filter_inform
-  - rename_ignoring_missing
-  - relocate_ignoring_missing
-  - fn_ignoring_missing
-  - format_as_argument
-  - nonnumeric
-  - relocate_and_clean_new_cols
-  - split_by_type
