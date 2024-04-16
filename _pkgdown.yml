@@ -37,19 +37,29 @@ reference:
   - pivot_value_wider
 
 - title: Table-specific functions
-  desc: >
-    Others
+
+- subtitle: Admissions (`adm`) and admissions-discharge-transfer (`adt`)
   contents:
   - adm_annotate
   - adt_annotate
   - adt_check_discharge_dates_consistent
   - adt_check_discharge_dates_identical
   - adt_department_summary
+
+- subtitle: Flowsheet (`fsheet`)
+  contents:
   - fsheet_info
   - fsheet_pivot_wider_datetime
   - fsheet_spo2_on_room_air
+
+- subtitle:
+    Medication administration (`med_admin`) and prescription (`med_prescr`)
+  contents:
   - med_admin_stub_def
   - med_prescr_stub_def
+
+- subtitle: Tests (`tests`)
+  contents:
   - tests_pivot_wider_order
 
 - title: Example
