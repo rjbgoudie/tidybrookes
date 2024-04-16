@@ -1,10 +1,9 @@
-fsheet_raw_test <-
+fsheet_raw_example <-
   read_tidybrookes_csv(
     file = tidybrookes_example("fsheet.csv"),
     col_types = "fsheet"
   ) %>%
   fsheet_rename
-
 
 fsheet_def <- list() %>%
   fsheet_add(
@@ -24,6 +23,7 @@ fsheet_def <- list() %>%
     expect_after =
       (value_as_number %in% 0:17))
 
-fsheet_news2_example <- fsheet_extract(fsheet_raw_test, fsheet_def)
+fsheet_news2_example <- fsheet_extract(fsheet_raw_example, fsheet_def)
 
+usethis::use_data(fsheet_raw_example, overwrite = TRUE)
 usethis::use_data(fsheet_news2_example, overwrite = TRUE)

@@ -1,16 +1,24 @@
-#' Add a new definition of a flowsheet item
+#' Add and extract flowsheet items
+#'
+#' `fsheet_add` creates a new "fsheet definition", which is a specification of
+#' how the raw flowsheet data should be extracted, filtered, cleaned and
+#' standardised. A list of such specifications can be used on raw `fsheet` data
+#' using `fsheet_extract`.
 #'
 #' @param fsheet_def A list of existing fsheet definitions to add this to
-#' @param symbol A short name for the flowsheet item. This should be a character vector that is suitable to use as an R object name
+#' @param symbol A short name for the flowsheet item. This should be a character
+#'   vector that is suitable to use as an R object name
 #' @param title The full name for the flowsheet item, suitable for using in
 #'   figure titles etc
-#' @param names The display names (`disp_name` in raw format) of the flowsheet
-#'   items to include
-#' @param search_pattern A charater vector of potential synonymns for this
+#' @param names A character vector of display names (`disp_name` in raw format)
+#'   of the flowsheet items to include
+#' @param search_pattern A character vector of potential synonymns for this
 #'   flowsheet item, in case new names (`disp_name` in raw format) for the
-#'   same item are added in future.
+#'   same item are added in future. These will be searched for in the raw data
+#'   and if any potential new names are identified, the user will be alerted to
+#'   the presence of potential new flowsheet names.
 #' @param search_exclude A character vector of flowsheet item names
-#'   (`disp_name` in raw format)  that are known NOT to be relevant to this
+#'   (`disp_name` in raw format) that are known NOT to be relevant to this
 #'   flowsheet item.
 #' @param type Whether flowsheet item is a number or a string. Either
 #'   `"numeric"` or `"character"`
@@ -43,7 +51,150 @@
 #' @param range_discard_below,range_discard_above This pair set the lower and
 #'   upper range for the flowsheet item. Values outside this range are
 #'   EXCLUDED.
+#'
+#' @param x Flowsheet data in renamed format (after applying `fsheet_rename`)
+#' @param fsheet_def A list of fsheet definitions
+#' @param errors A function indicating what to do when an error is found
+#'
+#' @return
+#' `fsheet_add` returns a list of fsheet definitions, with the new definition
+#' added to the end of the supplied fsheet_def
+#'
+#' `fsheet_extract` returns a data frame with the following columns:
+#' `person_id`, `symbol`, `value_as_character`, `value_as_number`,
+#' `value_as_logical`, `censoring`, `comment`, `measurement_datetime`, `name`,
+#' `title`, `data_id`, `measurement_id`, `line_id`, `template`, `form`, `type`,
+#' `unit`
+#'
+#' @details
+#' Flowsheet defintiions describe how the raw data should be extracted,
+#' filtered, cleaned and standardised as follows:
+#'
+#' 1. **Labelling the flowsheet item**. Two names/labels are required each
+#'   fsheet item:
+#'     - a `symbol`, which serves as the "R variable name" for the item. To make
+#'       the symbol quick and easy to type, and work with in R, it is
+#'       recommended that these are lowercase, ideally single words (e.g.
+#'       `"news2"` or "`spo2`)
+#'     - a `title`, which serves as the label the of the flowsheet item in
+#'       plots and figures. This should be capitalised as you would want the
+#'       item to be labelled in formal documents (e.g. `"NEWS2"` or `"SpO2`).
+#'
+#' 1. **Extracting relevant flowsheet items** The specification of which
+#'   rows should be extracted is via:
+#'     - `names`, a vector listing the labels of the fsheet items in the raw
+#'       data. This corresponds to column labelled as `name` by
+#'       [`fsheet_rename`], which is labelled as `disp_name` in the raw
+#'       extracts from Epic).
+#'
+#'    Additionally, to guard against the potential for new names for flowsheet
+#'    items being introduced through the evolution of the EHR data, search terms
+#'    for potential other names for this flowsheet items (and known exclusions)
+#'    can be provided using:
+#'
+#'     - `search_pattern`, a vector of search terms of potential synonyms for
+#'       the flowsheet item. This list of search terms will be searched
+#'       whenever the flowsheet item is extracted, and if a possible new data
+#'       field is identified, then this will be alerted to the user.
+#'     - `search_exclude`, a vector of names of flowsheet items that are known
+#'       _not_ to be relevant. This list of names will be removed prior to
+#'       searching the data for the search patterns in `search_pattern`.
+#'       This helps to avoid alerting the user about numerous flowsheet items
+#'       that are known to be irrelevant.
+#'
+#' 1. **Excluding rows**. Rows containing `NA` in the `value` column may be
+#'    always irrelevant, so it may be helpful to remove these by setting
+#'    `silently_exclude_na_when` to `TRUE`.
+#'
+#'    Alternatively, an expression that describes when row should be excluded
+#'    can be provided using `silently_exclude_when`. For example, setting this
+#'    to `(value_original == "Other (Comment)")` will exclude all rows where the
+#'    value is `"Other (Comment)"`.
+#'
+#'    For numerical flowsheet items,`range_discard_below` and
+#'    `range_discard_above` can be specified so that values outside this range
+#'    are excluded (see below for details).
+#'
+#' 1. **Converting values to numbers/characters/logicals**. Raw flowsheet data
+#'   are a complex mix of numerical data (sometimes containing censoring, and
+#'   other non-numerical data), categorical data (coded as characters) and
+#'   logical data (usually coded as characters). Standardising the raw data
+#'   into data of a single type makes downstream analysis easier, so several
+#'   aspects of the definition specify how this is done:
+#'     - `type`: one of `numeric`, `character` or `logical`. This is used to
+#'       set sensible defaults for other aspects of the specification, and is
+#'       added as a column to the output, so downstream handling of the data
+#'       can use this column to determine handling of the data (e.g. default
+#'       plots might be a barplot for `character` items and a lineplot for
+#'       `numeric` items)
+#'     - `value_as_number_fn`, `value_as_character_fn` and `value_as_logical_fn`
+#'       enable functions that handle conversion of the raw data.
+#'       **TODO add more details**
+#'     - `unit_rescale_fn` and `unit_relabel_fn` enable functions that standardise
+#'       the units to be provided
+#'     - `coalesce_fn` enables a function that combines together data to be
+#'       provided. For instance, this can be used to specify how simultaneous data
+#'       should be combined: e.g. how should two blood pressure records at
+#'       the exact same time be handled? The function can describe how to combine
+#'       the information by e.g. taking the mean or max, or arbitrarily choosing
+#'       one of the records.
+#'
+#' 1. **Validating that data conform to expectations**. Two parameters enable
+#'    checking that the data comply with known restrictions. For example, we
+#'    may know a finite range exists for a flowsheet item, and we want to check
+#'    that all data fall within this range.
+#'
+#'    Alternatively, we may need to map each value of the raw data to a smaller
+#'    range of values, and we need to be sure that our function for doing this
+#'    handles all the values that are present in the raw data (i.e. no new
+#'    values have been added).
+#'
+#'    Checks that should be performed on the raw data should be supplied as
+#'    `expect_before`, whereas checks that should be performed on the cleaned
+#'    data should be supplied as `expect_after`.
+#'
+#' 1. **Specification of ranges**. Two types of ranges can be specified:
+#'     - `range_discard_below` and `range_discard_above`: these are intended to
+#'       describe _hard_ limits: values outside this range will be _excluded_.
+#'     - `range_mainly_low` and `range_mainly_high`: these are intended to
+#'       describe the range of values we typically expect most of the data to
+#'       fall within, which can be useful for setting default ranges for e.g.
+#'       default plots. Values outside this range are _not excluded_.
+#'
+#'
+#' @examples
+#' # A definition for the NEWS2 score:
+#' # - Includes the value of the flowsheet called "NEWS 2 score"
+#' # - Excludes all NA values, and also " " and "E".
+#' # - The value_as_number_fn will convert "3mm" to 3, since this is probably
+#' #   a typo
+#' # - Checks that all output values are in integers between 0 and 17.
+#' fsheet_def <- list() %>%
+#'   fsheet_add(
+#'     symbol = "news2",
+#'     title = "NEWS2",
+#'     names = c("NEWS2 score"),
+#'     search_pattern = c("news2", "news"),
+#'     search_exclude = c(),
+#'     silently_exclude_na_when = TRUE,
+#'     silently_exclude_when =
+#'       (value_original == " " |
+#'          value_original == "E" # some kind of typo
+#'       ),
+#'     value_as_number_fn =
+#'       case_when(value_original == "3mm" ~ 3,
+#'                 TRUE ~ value_as_number),
+#'     expect_after =
+#'       (value_as_number %in% 0:17))
+#'
+#' # Note that person_id == "BB" has a NEWS2 with value="3mm", and that
+#' # person_id == "CC" has a NEWS2 with NA value
+#' fsheet_raw_example %>% print(n = Inf)
+#'
+#' # Note that the NA row is excluded, and that "3mm" is converted to 3
+#' fsheet_extract(fsheet_raw_example, fsheet_def)
 #' @export
+#' @rdname fsheet_extract
 #' @author R.J.B. Goudie
 fsheet_add <- function(fsheet_def,
                        symbol,
@@ -122,20 +273,8 @@ fsheet_info <- function(fsheet_def){
   map_dfr(fsheet_def2, ~as_tibble(.))
 }
 
-#' Extract fsheet data into tidy format
-#'
-#' @param x Flowsheet data in renamed format (after applying `fsheet_rename`)
-#' @param fsheet_def A fsheet definition
-#' @param errors A function indicating what to do when an error is found
-#'
-#' @return
-#' A data frame with the following columns:
-#' `person_id`, `symbol`, `value_as_character`, `value_as_number`,
-#' `value_as_logical`, `censoring`, `comment`, `measurement_datetime`, `name`,
-#' `title`, `data_id`, `measurement_id`, `line_id`, `template`, `form`, `type`,
-#' `unit`
+#' @rdname fsheet_extract
 #' @export
-#' @author R.J.B. Goudie
 fsheet_extract <- function(x,
                            fsheet_def,
                            errors = stop,
@@ -266,6 +405,18 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   out %>%
     select(-will_silently_exclude, -will_silently_exclude_na,
            -value_original, -is_too_high, -is_too_low) %>%
+    relocate(person_id,
+             symbol,
+             measurement_datetime,
+             value_as_number,
+             censoring,
+             value_as_logical,
+             value_as_character,
+             name,
+             unit,
+             type,
+             template,
+             form) %>%
     arrange(measurement_datetime)
 }
 
