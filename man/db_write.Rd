@@ -26,24 +26,24 @@ db_write_tidybrookes_delim(
 )
 }
 \arguments{
-\item{file}{Either a path to a file, a connection, or literal data (either
-a single string or a raw vector), as per \code{\link[readr:read_delim]{readr::read_delim()}}}
+\item{file}{Either a path to a file, a connection, or literal data (either a
+single string or a raw vector), as per \code{\link[readr:read_delim]{readr::read_delim()}}}
 
 \item{connection}{A \code{DBIConnection} object, as returned by \code{\link[DBI:dbConnect]{DBI::dbConnect()}}}
 
 \item{table_name}{A table name, passed to \code{\link[DBI:dbWriteTable]{DBI::dbWriteTable()}}}
 
 \item{col_types}{Either a string specifying the name of the table that the
-data comes from, for which a standard format can be used. Available
-values are \code{adm}, \code{adt}, \code{demogs}, \code{fsheet}, \code{fsheet_io}, \code{tests},
-\code{med_admin}, \code{med_prescr}, \code{diagnosis_pl}, \code{med_hist}, \code{radiology}.
-This is translated into column specification using \code{\link{default_col_types}}.
+data comes from, for which a standard format can be used. Available values
+are \code{adm}, \code{adt}, \code{demogs}, \code{fsheet}, \code{fsheet_io}, \code{tests}, \code{med_admin},
+\code{med_prescr}, \code{diagnosis_pl}, \code{med_hist}, \code{radiology}. This is translated
+into column specification using \code{\link{default_col_types}}.
 
-Or a \code{\link[readr:cols]{readr::cols()}} format list of column names and types, which
-can be used where a nonstandard data format are supplied.}
+Or a \code{\link[readr:cols]{readr::cols()}} format list of column names and types, which can be
+used where a nonstandard data format are supplied.}
 
-\item{na}{Character vector of strings to interpret as missing values.
-Set this option to \code{character()} to indicate no missing values.}
+\item{na}{Character vector of strings to interpret as missing values. Set
+this option to \code{character()} to indicate no missing values.}
 
 \item{quote}{Single character used to quote strings}
 }
