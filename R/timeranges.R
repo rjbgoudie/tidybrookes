@@ -1,3 +1,6 @@
+#' Intersect two timeranges
+#'
+#' @export
 intersect_timeranges <- function(timerange1, timerange2){
   stopifnot(all(!is.na(timerange1$start1_datetime),
                 !is.na(timerange2$start2_datetime),

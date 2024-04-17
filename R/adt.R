@@ -11,6 +11,7 @@
 #' @param x Tidy ADT data, as tidied by [adt_rename()]
 #' @return The supplied tidy ADT data `x`, with an additional columns
 #' @author R.J.B. Goudie
+#' @export
 adt_department_summary <- function(x){
   x %>%
     group_by(person_id, visit_id) %>%
@@ -33,6 +34,7 @@ adt_department_summary <- function(x){
 #'   `check_all_discharge_dates_identical`, with `FALSE` indicating
 #'   inconsistencies
 #' @author R.J.B. Goudie
+#' @export
 adt_check_discharge_dates_identical <- function(x){
   x %>%
     group_by(person_id, visit_id) %>%
@@ -46,6 +48,7 @@ adt_check_discharge_dates_identical <- function(x){
 #' @return The supplied tidy ADT data `x`, with an additional logical column
 #'   `check_discharge_data_consistent`, with `FALSE` indicating inconsistencies
 #' @author R.J.B. Goudie
+#' @export
 adt_check_discharge_dates_consistent <- function(x){
   x %>%
     group_by(person_id, visit_id) %>%
@@ -79,6 +82,7 @@ adt_check_discharge_dates_consistent <- function(x){
 #' @param annotate_fn A function that provides additional annotation
 #' @return The supplied tidy ADT data `x` with additional annotations
 #' @author R.J.B. Goudie
+#' @export
 adt_annotate <- function(x, fixed_labels, annotate_fn){
   # check numeric event type and text event type match
   stopifnot(x %>% count(event_type_c, event_type) %>% nrow == 3)

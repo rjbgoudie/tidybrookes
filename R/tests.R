@@ -324,6 +324,7 @@ tests_check_for_new <- function(x,
 #' @param include_censoring Logical, should censoring column be included?
 #' @return A data frame with the tests in columns
 #' @author R.J.B. Goudie
+#' @export
 tests_pivot_wider_order <- function(x,
                                     values_fn = NULL,
                                     include_censoring = FALSE){
@@ -375,6 +376,9 @@ tests_pivot_wider_order <- function(x,
   }
 }
 
+#' Pivot tests longer by order
+#'
+#' @export
 tests_pivot_longer_order <- function(x){
   x %>%
     tidyr:::pivot_longer(cols = !c(person_id,
@@ -386,6 +390,9 @@ tests_pivot_longer_order <- function(x){
                          names_to = "symbol")
 }
 
+#' Reshape arterial blood gas data
+#'
+#' @export
 tests_abg <- function(bg_data, bg_specimen_type){
   bg_specimen_type <- bg_specimen_type %>%
     select(person_id,
@@ -436,7 +443,10 @@ tests_abg <- function(bg_data, bg_specimen_type){
   abg_data
 }
 
-
+#' Info about tests definitions
+#'
+#' @rdname tests_info
+#' @export
 tests_info <- function(tests_def){
   if (length(tests_def) == 1 & "symbol" %in% names(tests_def)){
     tests_info_single(tests_def)

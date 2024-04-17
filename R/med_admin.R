@@ -514,6 +514,9 @@ med_admin_stub_def <- function(x,
        case_when(TRUE ~ NA_real_))")
 }
 
+#' Map units to canonical units
+#'
+#' @export
 med_admin_map_units_to_canonical <- function(x){
   x %>%
     mutate(mass_multiplier =
@@ -580,7 +583,10 @@ med_admin_map_units_to_canonical <- function(x){
 }
 
 
-
+#' Resolve simultaneous administration
+#'
+#' @rdname med_admin_simultaneous_administration
+#' @export
 resolve_simultaneous_administration_datetime <- function(x){
   x <- x %>%
     group_by(person_id, symbol, administered_datetime) %>%
@@ -608,11 +614,14 @@ resolve_simultaneous_administration_datetime <- function(x){
     arrange(administered_datetime)
 }
 
+#' @rdname med_admin_simultaneous_administration
+#' @export
 coalesce_simultaneous_administration_datetime <- function(x){
   # TODO this is very simplistic, and could probably be improved
   x %>%
     slice_min(order_by = rate_ml_per_hour)
 }
+
 
 med_admin_info_rate_weight <- function(x){
   x %>%
@@ -621,7 +630,9 @@ med_admin_info_rate_weight <- function(x){
     )
 }
 
-
+#' Rate rescaling
+#'
+#' @export
 med_admin_rate_rescale <- function(x,
                                    fsheet_weight){
 
@@ -678,9 +689,9 @@ med_admin_rate_rescale <- function(x,
              .after = rate_mg_per_hour)
 }
 
-
-
-
+#' Curtail infusions
+#'
+#' @export
 curtail_infusions <- function(x,
                                       infusion_bag_size){
   x %>%
@@ -751,10 +762,10 @@ curtail_infusions <- function(x,
            action = if_else(is_curtailed, "Stopped", action))
 }
 
-
-
-
-
+#' Route and actions defaults
+#'
+#' @rdname med_admin_route_action
+#' @export
 default_route_include <- function(route_class){
   med_admin_routes  %>%
     tidyr:::pivot_longer(-c(route, comment, classified),
@@ -765,6 +776,8 @@ default_route_include <- function(route_class){
     unstack(route ~ type)
 }
 
+#' @rdname med_admin_route_action
+#' @export
 default_route_exclude <- function(route_class){
   med_admin_routes %>%
     tidyr:::pivot_longer(-c(route, comment, classified),
@@ -775,6 +788,9 @@ default_route_exclude <- function(route_class){
     unstack(route ~ type)
 }
 
+
+#' @rdname med_admin_route_action
+#' @export
 default_action_include <- function(action_class){
   med_admin_action %>%
     tidyr:::pivot_longer(-c(action),
@@ -785,6 +801,8 @@ default_action_include <- function(action_class){
     unstack(action ~ type)
 }
 
+#' @rdname med_admin_route_action
+#' @export
 default_action_exclude <- function(action_class){
   med_admin_action %>%
     tidyr:::pivot_longer(-c(action),
@@ -796,8 +814,10 @@ default_action_exclude <- function(action_class){
 }
 
 
-
-# note uses rate!
+#' Infusion function calculation
+#'
+#' note uses rate!
+#' @export
 infusion_fn_by_visit <- function(x){
   x %>%
     filter(infusion) %>%
@@ -833,14 +853,18 @@ infusion_fn_by_visit <- function(x){
         )))
 }
 
+#' Integrate function by minute
+#'
+#' @export
 integrate_by_min <- function(f, lower, upper){
   s <- seq(from = lower, to = upper, by = 1/(60))
   ff <- f(s)
   list(value = sum(ff)/(60))
 }
 
-
-
+#' Form grid for infusions
+#'
+#' @export
 infusion_grid <- function(.x,
                           seq_unit,
                           time_unit,
@@ -862,6 +886,9 @@ infusion_grid <- function(.x,
               rate_mg_per_kg_per_hour_fn = rate_mg_per_kg_per_hour_fn)
 }
 
+#' Dose in grid
+#'
+#' @export
 dose_in_grid <- function(.x, .progress = NULL){
   if (!is.null(.progress)){
     .progress$tick()
@@ -887,8 +914,10 @@ dose_in_grid <- function(.x, .progress = NULL){
 }
 
 
-
-# "visit_id", "imv_index"
+#' Infusion dosing per time unit
+#'
+#' "visit_id", "imv_index"
+#' @export
 infusion_dose_per <- function(infusion_df,
                               time_unit = "day",
                               by){

@@ -265,6 +265,8 @@ fsheet_add <- function(fsheet_def,
 }
 
 #' Convert fsheet_def to data frame
+#'
+#' @export
 fsheet_info <- function(fsheet_def){
   fsheet_def2 <- map(fsheet_def, ~map_if(., ~inherits(., "quosure"), ~ list(.)))
   fsheet_def2 <- map(fsheet_def2, ~map_if(., ~inherits(., "function"), ~ list(.)))
@@ -420,6 +422,9 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     arrange(measurement_datetime)
 }
 
+#' Infer FiO2
+#'
+#' @export
 fsheet_infer_fio2 <- function(x){
   Cannula <- c("Nasal cannula")
   Mask <- c("Humidified mask (heated)", "Humidified mask(cold)", "Simple mask")
@@ -498,6 +503,7 @@ fsheet_infer_fio2 <- function(x){
 #' @return A data frame
 #'
 #' @author R.J.B. Goudie
+#' @export
 fsheet_pivot_wider_datetime <-
   function(x,
            id_cols = c("person_id", "measurement_datetime"),
@@ -505,6 +511,9 @@ fsheet_pivot_wider_datetime <-
   pivot_value_wider(x, id_cols, ...)
 }
 
+#' Pivot fsheet data longer
+#'
+#' @export
 fsheet_pivot_longer <- function(x){
   x %>%
     tidyr::pivot_longer(cols = !c(person_id, measurement_datetime) & where(is.numeric),
@@ -512,6 +521,10 @@ fsheet_pivot_longer <- function(x){
                          values_to = "value_as_number")
 }
 
+
+#' Calculate SpO2/FiO2 ratio
+#'
+#' @export
 fsheet_sf_ratio <- function(x, shape = "long"){
   out <- x %>%
     filter(symbol %in% c("fio2", "o2_device", "o2_flow_rate", "spo2")) %>%
@@ -546,6 +559,7 @@ fsheet_sf_ratio <- function(x, shape = "long"){
 #' Excludes SpO2 measurements that are not from the same time as room air
 #' @param x A fsheet_raw dataframe
 #' @param shape Either "long" or "wide" format dataframe output
+#' @export
 fsheet_spo2_on_room_air <- function(x, shape = "long"){
   out <- x %>%
     filter(symbol %in% c("room_air", "spo2")) %>%
@@ -567,6 +581,9 @@ fsheet_spo2_on_room_air <- function(x, shape = "long"){
   }
 }
 
+#' Timepoints within timeranges
+#'
+#' @export
 fsheet_timepoints_within_timeranges <-function(timepoints, timeranges){
   timepoints <- timepoints %>%
     select(person_id,
@@ -599,6 +616,9 @@ fsheet_timepoints_within_timeranges <-function(timepoints, timeranges){
              measurement_datetime <= end_datetime)
 }
 
+#' Label timepoints before timepoint
+#'
+#' @export
 fsheet_label_timepoints_before_timepoint <- function(timepoints,
                                                before_timepoints){
   timepoints <- timepoints %>%

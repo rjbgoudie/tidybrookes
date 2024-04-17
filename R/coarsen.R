@@ -1,3 +1,6 @@
+#' Coarsen by day
+#'
+#' @export
 coarsen_by_day <- function(x){
   x_numeric <- filter_type_numeric(x)
   if (nrow(x_numeric) > 0){

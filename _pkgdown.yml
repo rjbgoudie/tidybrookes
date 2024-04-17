@@ -24,6 +24,10 @@ reference:
   - ends_with("_add")
   - ends_with("_extract")
 
+- title: Quality checking
+  contents:
+  - qc_report
+
 - title: Joining, subsetting and pivoting data
   desc: >
     Extract longitudinal data in relation to other data, particularly
@@ -34,6 +38,21 @@ reference:
   - max_during
   - first_during_after_event
   - summarise_during
+
+- title: Filtering and utils
+  contents:
+  - filter_person
+  - coarsen_by_day
+  - intersect_timeranges
+  - n_person
+
+- title: Plotting
+  contents:
+  - geom_numeric_point_lines_logical_point
+  - geom_numeric_point_logical_point
+  - geom_numeric_point_logical_tile
+  - plot_adt_department_col
+  - tests_plot_numeric
 
 - title: Table-specific functions
 
@@ -50,16 +69,34 @@ reference:
   - fsheet_info
   - fsheet_pivot_wider_datetime
   - fsheet_spo2_on_room_air
+  - fsheet_infer_fio2
+  - fsheet_pivot_longer
+  - fsheet_sf_ratio
+  - fsheet_label_timepoints_before_timepoint
+  - fsheet_timepoints_within_timeranges
 
 - subtitle:
     Medication administration (`med_admin`) and prescription (`med_prescr`)
   contents:
   - med_admin_stub_def
   - med_prescr_stub_def
+  - curtail_infusions
+  - dose_in_grid
+  - infusion_dose_per
+  - infusion_fn_by_visit
+  - infusion_grid
+  - integrate_by_min
+  - med_admin_map_units_to_canonical
+  - med_admin_rate_rescale
+  - default_route_include
+  - resolve_simultaneous_administration_datetime
 
 - subtitle: Tests (`tests`)
   contents:
   - tests_pivot_wider_order
+  - tests_abg
+  - tests_info
+  - tests_pivot_longer_order
 
 - title: Example
   desc: >

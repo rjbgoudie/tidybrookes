@@ -1,3 +1,6 @@
+#' QC report
+#'
+#' @export
 qc_report <- function(adm_data,
                       adt_data,
                       tests_data,

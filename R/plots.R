@@ -22,8 +22,6 @@ facet_grid_symbol_person <- function(){
     theme(strip.placement = "outside"))
 }
 
-
-
 remove_all_but_last_x_axis <- function(x){
   purrr::map_at(x, -length(x),
                 function(a){
@@ -41,7 +39,6 @@ remove_all_but_first_y_axis <- function(x){
                     ylab(NULL)
                 } )
 }
-
 
 x_since_visit_start_days <- function(limits = function(.x) c(0 , max(.x))){
   list(aes(x = days_since_visit_start),
@@ -63,6 +60,9 @@ x_datetime <- function(limits = NULL){
        geom_vline(aes(xintercept = visit_end_datetime), colour = "red"))
 }
 
+#' geom_numeric_point_logical_tile
+#'
+#' @export
 geom_numeric_point_logical_tile <- function(){
   list(
     geom_point(aes(y = value_as_number),
@@ -76,6 +76,9 @@ geom_numeric_point_logical_tile <- function(){
   )
 }
 
+#' geom_numeric_point_logical_point
+#'
+#' @export
 geom_numeric_point_logical_point <- function(){
   list(
     geom_point(aes(y = value_as_number),
@@ -89,6 +92,9 @@ geom_numeric_point_logical_point <- function(){
   )
 }
 
+#' geom_numeric_point_lines_logical_point
+#'
+#' @export
 geom_numeric_point_lines_logical_point <- function(){
   list(
     geom_point(aes(y = value_as_number),
@@ -113,15 +119,18 @@ common_x_scale <- function(p){
   purrr:::map(p, ~layer_scales(.x)$x$get_limits()) %>%
     unlist %>% range
 }
+
 common_y_scale <- function(p){
   purrr:::map(p, ~layer_scales(.x)$y$get_limits()) %>%
     unlist %>% range
 }
 
+
 scale_x_datetime_clean <- function(...){
   scale_x_datetime(...,
                    labels = scales::label_date_short())
 }
+
 
 gg_replace_data <- function(p, data){
   p$data <- data
@@ -162,6 +171,10 @@ beside_by_type <- function(p){
   split_plot_by_type(p, stack = "horizontal")
 }
 
+#' Tests plots
+#'
+#' @rdname plots_tests
+#' @export
 tests_plot_numeric <- function(x, range_mainly_low, range_mainly_high, range_discard_below, range_discard_above){
   ggplot(x, aes(x = value_as_number)) +
     geom_histogram(bins = 30, boundary = 0) +
@@ -173,6 +186,8 @@ tests_plot_numeric <- function(x, range_mainly_low, range_mainly_high, range_dis
     ylab("Count")
 }
 
+#' @rdname plots_tests
+#' @export
 tests_histogram_time_of_day <- function(x){
   if (any(!is.na(x$value_as_logical))){
     plot_time_of_day <- ggplot(x, aes(x = as_hms(datetime),
@@ -189,6 +204,8 @@ tests_histogram_time_of_day <- function(x){
     theme(legend.position = "bottom")
 }
 
+#' @rdname plots_tests
+#' @export
 tests_histogram_time_of_day <- function(x){
   if (any(!is.na(x$value_as_logical))){
     plot_time_of_day <- ggplot(x, aes(x = as_hms(datetime),
@@ -205,6 +222,8 @@ tests_histogram_time_of_day <- function(x){
     theme(legend.position = "bottom")
 }
 
+#' @rdname plots_tests
+#' @export
 tests_histogram_by_date <- function(x){
   ndays <- interval(min(x$datetime), max(x$datetime))/days(1)
 
@@ -222,6 +241,8 @@ tests_histogram_by_date <- function(x){
     scale_x_datetime(labels = scales::label_date_short())
 }
 
+#' @rdname plots_tests
+#' @export
 tests_histogram_by_weekday <- function(x){
   if (any(!is.na(x$value_as_logical))){
     plot_by_weekday <- ggplot(x, aes(x = wday(datetime, label = TRUE),
@@ -236,6 +257,10 @@ tests_histogram_by_weekday <- function(x){
     theme(legend.position = "bottom")
 }
 
+#' Plot ADT department
+#'
+#' @rdname plots_adt
+#' @export
 plot_adt_department_col <- function(x, facet = TRUE){
   x <- x %>%
     filter(department_just_moved)
@@ -281,6 +306,8 @@ plot_adt_department_col <- function(x, facet = TRUE){
   }
 }
 
+#' @rdname plots_adt
+#' @export
 plot_adt_department_timeline <- function(x){
   x <- x %>%
     filter(department_just_moved)
@@ -304,7 +331,8 @@ plot_adt_department_timeline <- function(x){
           axis.text.x = element_blank())
 }
 
-#
+#' @rdname plots_tests
+#' @export
 tests_plot_point <- function(x){
   if (any(!is.na(x$value_as_logical))){
     plot_time_of_day <- ggplot(x, aes(x = datetime,
@@ -324,6 +352,8 @@ tests_plot_point <- function(x){
     scale_x_datetime_clean()
 }
 
+#' @rdname plots_tests
+#' @export
 tests_plot_tile <- function(x){
   if (any(!is.na(x$value_as_logical))){
     plot_time_of_day <- ggplot(x, aes(x = datetime,
@@ -344,6 +374,8 @@ tests_plot_tile <- function(x){
     scale_x_datetime_clean()
 }
 
+#' @rdname plots_condition
+#' @export
 plot_condition_gantt <- function(x, facet = TRUE){
 
   x <- x %>%

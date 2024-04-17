@@ -6,6 +6,7 @@
 #' @param x A tidied adm data frame, as tidied by [adm_rename()]
 #' @return The supplied data frame `x` with additional annotations
 #' @author R.J.B. Goudie
+#' @export
 adm_annotate <- function(x){
   check_that_all(x,
                  gender %in% c("Female", "Male", "Unknown"),
