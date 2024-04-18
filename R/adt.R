@@ -11,6 +11,7 @@
 #' @param x Tidy ADT data, as tidied by [adt_rename()]
 #' @return The supplied tidy ADT data `x`, with an additional columns
 #' @author R.J.B. Goudie
+#' @importFrom lubridate days
 #' @export
 adt_department_summary <- function(x){
   x %>%
@@ -82,6 +83,33 @@ adt_check_discharge_dates_consistent <- function(x){
 #' @param annotate_fn A function that provides additional annotation
 #' @return The supplied tidy ADT data `x` with additional annotations
 #' @author R.J.B. Goudie
+#' @examples
+#' fixed_labels <-
+#'   tibble::tribble(
+#'     ~department, ~is_ed,
+#'     "ADD EMERGENCY DEPT", TRUE,
+#'     "ADD C2 WARD", FALSE,
+#'     "ADD D2 WARD", FALSE,
+#'     "DIALYSIS CENTRE", FALSE,
+#'     "ADD A1 WARD", FALSE,
+#'     "ADD A2 WARD", FALSE,
+#'     "ADD A3 WARD", FALSE,
+#'     "ADD A4 WARD", FALSE,
+#'     "ADD X WARD", FALSE,
+#'     "ADD Y WARD", FALSE,
+#'     "ADD Z WARD", FALSE)
+#'
+#' adt_data_example <-
+#'   read_tidybrookes_csv(
+#'     file = tidybrookes_example("adt.csv"),
+#'     col_types = "adt"
+#'   ) %>%
+#'   adt_rename
+#'
+#' adt_data_example %>%
+#'   adt_annotate(annotate_fn = identity,
+#'                fixed_labels = fixed_labels)
+#'
 #' @export
 adt_annotate <- function(x, fixed_labels, annotate_fn){
   # check numeric event type and text event type match
