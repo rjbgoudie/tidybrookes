@@ -21,7 +21,7 @@ test_that("Ignores irrelevant row", {
       silently_exclude_na_when = FALSE,
       censoring_fn = case_when(value_original == "<0.29" ~ "left", # very low
                                TRUE ~ NA_character_),
-      value_as_number_fn = case_when(value_as_number == "<0.29" ~ 0.29,
+      value_as_number_fn = case_when(value_original == "<0.29" ~ 0.29,
                                      TRUE ~ value_as_number),
       expect_before = (unit == "mmol/L"),
       range_mainly_low = 0.4,
