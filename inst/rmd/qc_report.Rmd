@@ -16,6 +16,10 @@ params:
 ---
 
 ```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(hms)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -74,7 +78,7 @@ ggplot(adt_total_time_department(adt_data),
   geom_segment(aes(xend = 0, yend = department))
 
 adm_adt_data <- adm_data %>%
-  select(-event_type) %>%
+  #select(-event_type) %>%
   left_join(adt_data) %>%
     mutate(start_since_presentation = interval(visit_start_datetime, start_datetime)/days(1),
            end_since_presentation = interval(visit_start_datetime,end_datetime)/days(1))
