@@ -92,6 +92,7 @@ default_rename <- function(x){
       visit_id = "PAT_ENC_CSN",
       event_type = "EVENT_TYPE",
       start_datetime = "IN_DTTM",
+      end_datetime = "OUT_DTTM",
       discharge_datetime = "HOSP_DISCH_TIME",
       department  = "ADT_DEPARTMENT_NAME",
       room = "ROOM_NAME",
