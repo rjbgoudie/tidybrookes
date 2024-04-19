@@ -8,11 +8,11 @@
 \alias{filter_numeric}
 \alias{filter_logical}
 \alias{filter_character}
-\title{Filtering functions}
+\title{General convenience functions for filtering}
 \usage{
-filter_person(x, ...)
+filter_person(x, pattern)
 
-filter_visit(x, visit_id)
+filter_visit(x, id)
 
 filter_tests(x, pattern)
 
@@ -24,6 +24,27 @@ filter_logical(x)
 
 filter_character(x)
 }
+\arguments{
+\item{x}{A data frame with the relevant column (e.g. \code{person_id} or
+\code{visit_id})}
+
+\item{pattern}{A pattern to search for in a case insensitive manner (it is
+passed to \code{\link[stringr:modifiers]{stringr::coll()}} with \code{ignore_case = TRUE}.}
+
+\item{id}{A visit id (either numeric or character)}
+}
 \description{
-Filtering functions
+Convenience functions for filter any data by \code{person_id} (using
+\code{filter_person()}), \code{visit_id} (using \code{filter_visit()}), test name (using
+\code{filter_tests()}), drug name (using \code{filter_med_prescr()}); or by type of
+data (numerical, logical or character).
+}
+\examples{
+# Filtering is case insensitive
+filter_person(adm_data_example, "A")
+filter_person(adm_data_example, "a")
+
+# can filter visits by visit_id
+filter_visit(adm_data_example, 4)
+filter_visit(adm_data_example, "4")
 }
