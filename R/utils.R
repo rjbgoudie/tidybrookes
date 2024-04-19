@@ -213,6 +213,23 @@ relocate_ignoring_missing <- function(...){
   fn_ignoring_missing(rename, ...)
 }
 
+
+#' Find shortest possible unique person_id
+#'
+#' Finds the shortest substring of `person_id` that retains uniqueness. All
+#' substrings are the first few characters of the `person_id`s.
+#'
+#' Shortened person_ids are added by [`adm_annotate()`] using this function.
+#'
+#' @param person_id A character vector of person IDs to be shorten
+#' @returns A character vector of the shortened person IDs
+#' @seealso [adm_annotate()]
+#' @examples
+#'
+#' person_id_shorten(c("AAA", "ABC", "ACD", "ADE"))
+#'
+#' person_id_shorten(c("XAAA", "XABC", "XACD", "XADE"))
+#' @export
 person_id_shorten <- function(person_id){
   original_unique <- length(unique(person_id))
   shorten_unique <- 0

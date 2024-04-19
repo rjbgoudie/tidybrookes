@@ -45,6 +45,7 @@ reference:
   - coarsen_by_day
   - intersect_timeranges
   - n_person
+  - person_id_shorten
 
 - title: Plotting
   contents:

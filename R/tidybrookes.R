@@ -21,6 +21,10 @@ tibble::tibble
 #' @export
 dplyr::select
 
+#' @importFrom dplyr relocate
+#' @export
+dplyr::relocate
+
 #' @importFrom dplyr filter
 #' @export
 dplyr::filter

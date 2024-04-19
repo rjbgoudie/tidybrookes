@@ -2,7 +2,7 @@
 % Please edit documentation in R/adm.R
 \name{adm_annotate}
 \alias{adm_annotate}
-\title{Annotate ADM data}
+\title{Basic checks and annotation of ADM data}
 \usage{
 adm_annotate(x)
 }
@@ -13,8 +13,27 @@ adm_annotate(x)
 The supplied data frame \code{x} with additional annotations
 }
 \description{
-Checks that all the gender data are in known values.
-Adds \code{visit_length_days}, \code{person_id_short}.
+Performs basic checks and annotation of ADM data.
+}
+\details{
+Checks that
+\itemize{
+\item all gender data are in known values (Female, Male or Unknown)
+}
+
+Annotates each row with
+\itemize{
+\item \code{visit_length_days}: length of stay (in days)
+\item \code{person_id_short}: shortened \code{person_id} created using \code{\link[=person_id_shorten]{person_id_shorten()}}
+}
+}
+\examples{
+adm_data_example
+adm_annotate(adm_data_example) \%>\%
+  relocate(visit_length_days, person_id_short)
+}
+\seealso{
+\code{\link[=adt_annotate]{adt_annotate()}} annotates ADT data
 }
 \author{
 R.J.B. Goudie

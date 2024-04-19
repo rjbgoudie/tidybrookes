@@ -5,6 +5,7 @@
 \alias{reexports}
 \alias{tibble}
 \alias{select}
+\alias{relocate}
 \alias{filter}
 \alias{case_when}
 \alias{if_else}
@@ -18,7 +19,7 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{dplyr}{\code{\link[dplyr]{case_when}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{if_else}}, \code{\link[dplyr]{select}}}
+  \item{dplyr}{\code{\link[dplyr]{case_when}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{if_else}}, \code{\link[dplyr]{relocate}}, \code{\link[dplyr]{select}}}
 
   \item{readr}{\code{\link[readr:parse_atomic]{col_character}}, \code{\link[readr:parse_datetime]{col_datetime}}, \code{\link[readr]{cols}}}
 
