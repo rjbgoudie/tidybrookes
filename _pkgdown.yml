@@ -64,8 +64,6 @@ reference:
 - subtitle: Admissions-discharge-transfer (`adt`)
   contents:
   - adt_annotate
-  - adt_check_discharge_dates_consistent
-  - adt_check_discharge_dates_identical
 
 - subtitle: Flowsheet (`fsheet`)
   contents:
