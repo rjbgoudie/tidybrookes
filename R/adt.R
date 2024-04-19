@@ -1,5 +1,3 @@
-
-
 #' Summarise department visits data in ADT data
 #'
 #' Annotates department visits with `department_visit_index`, which indexes
@@ -12,7 +10,7 @@
 #' @return The supplied tidy ADT data `x`, with an additional columns
 #' @author R.J.B. Goudie
 #' @importFrom lubridate days
-#' @export
+#' @noRd
 adt_department_summary <- function(x){
   x %>%
     group_by(person_id, visit_id) %>%
@@ -65,17 +63,29 @@ adt_check_discharge_dates_consistent <- function(x){
     )
 }
 
-#' Annotate ADT data
+#' Basic cleanup, checks, and annotation of ADT data
 #'
-#' Removes duplicate rows
+#' Performs basic cleanup, checks and annotation of ADT data with indexes for the
+#' hospital visit (`visit_index`) and the visit to each departments
+#' (`department_visit_index`), and basic labels for each `department`.
 #'
-#' Preforms the following checks
-#' * Checks discharge dates are identical within a visit
-#" * Checks discharge date matches the final datetime for the visit
+#' The clean and checks performed are:
+#' 1. Removes duplicate rows
+#' 1. Checks discharge dates are identical within a visit
+#" 1. Checks discharge date matches the final datetime for the visit
 #'
-#' Annotates the ADT data with
-#' * `visit_index`
-#' * `end_datetime`
+#' The annotations added are:
+#' 1. Labels hospital visits via `visit_index`
+#' 1. Adds the `end_datetime` for each row of ADT (which is not always included
+#'    in the raw data)
+#' 1. Labels visits to specific departments. A visit to a single department
+#'    may involve multiple rows of ADT data, since a patient may move beds
+#'    within a department one or more times. The visits are labelled with
+#'    `department_visit_index`, and the corresponding times recorded in
+#'    `department_start_datetime` and `department_end_datetime`, and
+#'    `department_length_days`.
+#' 1. (Left) joins in `fixed_labels`
+#' 1. Runs the user-supplied annotation function `annotate_fn`
 #'
 #' @param x Tidy ADT data, as tidied by [adt_rename()]
 #' @param fixed_labels A data frame with a colum `department`, which will be
@@ -83,6 +93,7 @@ adt_check_discharge_dates_consistent <- function(x){
 #' @param annotate_fn A function that provides additional annotation
 #' @return The supplied tidy ADT data `x` with additional annotations
 #' @author R.J.B. Goudie
+#' @seealso [adm_annotate()] annotates ADM data
 #' @examples
 #' fixed_labels <-
 #'   tibble::tribble(

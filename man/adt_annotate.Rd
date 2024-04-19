@@ -2,7 +2,7 @@
 % Please edit documentation in R/adt.R
 \name{adt_annotate}
 \alias{adt_annotate}
-\title{Annotate ADT data}
+\title{Basic cleanup, checks, and annotation of ADT data}
 \usage{
 adt_annotate(x, fixed_labels, annotate_fn)
 }
@@ -18,18 +18,30 @@ joined to the ADT data}
 The supplied tidy ADT data \code{x} with additional annotations
 }
 \description{
-Removes duplicate rows
+Performs basic cleanup, checks and annotation of ADT data with indexes for the
+hospital visit (\code{visit_index}) and the visit to each departments
+(\code{department_visit_index}), and basic labels for each \code{department}.
 }
 \details{
-Preforms the following checks
-\itemize{
+The clean and checks performed are:
+\enumerate{
+\item Removes duplicate rows
 \item Checks discharge dates are identical within a visit
 }
 
-Annotates the ADT data with
-\itemize{
-\item \code{visit_index}
-\item \code{end_datetime}
+The annotations added are:
+\enumerate{
+\item Labels hospital visits via \code{visit_index}
+\item Adds the \code{end_datetime} for each row of ADT (which is not always included
+in the raw data)
+\item Labels visits to specific departments. A visit to a single department
+may involve multiple rows of ADT data, since a patient may move beds
+within a department one or more times. The visits are labelled with
+\code{department_visit_index}, and the corresponding times recorded in
+\code{department_start_datetime} and \code{department_end_datetime}, and
+\code{department_length_days}.
+\item (Left) joins in \code{fixed_labels}
+\item Runs the user-supplied annotation function \code{annotate_fn}
 }
 }
 \examples{
@@ -59,6 +71,9 @@ adt_data_example \%>\%
   adt_annotate(annotate_fn = identity,
                fixed_labels = fixed_labels)
 
+}
+\seealso{
+\code{\link[=adm_annotate]{adm_annotate()}} annotates ADM data
 }
 \author{
 R.J.B. Goudie

@@ -56,13 +56,15 @@ reference:
 
 - title: Table-specific functions
 
-- subtitle: Admissions (`adm`) and admissions-discharge-transfer (`adt`)
+- subtitle: Admissions (`adm`)
   contents:
   - adm_annotate
+
+- subtitle: Admissions-discharge-transfer (`adt`)
+  contents:
   - adt_annotate
   - adt_check_discharge_dates_consistent
   - adt_check_discharge_dates_identical
-  - adt_department_summary
 
 - subtitle: Flowsheet (`fsheet`)
   contents:
