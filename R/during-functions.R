@@ -1,9 +1,10 @@
 #' During functions
 #'
+#' Extract the first
+#'
+#' @inheritDotParams summarise_during x y datetime during
 #' @rdname during_functions
-#'
 #' @examples
-#'
 #' # raw data that we will combine
 #' adm_data_example
 #' fsheet_news2_example
@@ -35,9 +36,9 @@
 #'   first_during(fsheet_news2_example,
 #'                datetime = measurement_datetime,
 #'                during = "during_visit") %>%
-#'  last_during(fsheet_news2_example,
-#'              datetime = measurement_datetime,
-#'              during = "during_visit") %>%
+#'   last_during(fsheet_news2_example,
+#'               datetime = measurement_datetime,
+#'               during = "during_visit") %>%
 #'   select(person_id,
 #'          visit_id,
 #'          visit_start_datetime,
@@ -167,6 +168,8 @@ last_during_before_event <- function(..., event_datetime, names_suffix = ""){
 
 #' Extremes during
 #'
+#' @inheritDotParams summarise_during x y datetime during
+#' @examples
 #' # raw data that we will combine
 #' adm_data_example
 #' fsheet_news2_example
@@ -174,8 +177,8 @@ last_during_before_event <- function(..., event_datetime, names_suffix = ""){
 #' # extract the max of each fsheet symbol during the hospital visit
 #' adm_data_example %>%
 #'   max_during(fsheet_news2_example,
-#'                datetime = measurement_datetime,
-#'                during = "during_visit") %>%
+#'              datetime = measurement_datetime,
+#'              during = "during_visit") %>%
 #'   select(person_id,
 #'          visit_id,
 #'          visit_start_datetime,
@@ -185,8 +188,8 @@ last_during_before_event <- function(..., event_datetime, names_suffix = ""){
 #' # extract the min of each fsheet symbol during the hospital visit
 #' adm_data_example %>%
 #'  min_during(fsheet_news2_example,
-#'              datetime = measurement_datetime,
-#'              during = "during_visit") %>%
+#'             datetime = measurement_datetime,
+#'             during = "during_visit") %>%
 #'   select(person_id,
 #'          visit_id,
 #'          visit_start_datetime,

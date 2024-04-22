@@ -60,8 +60,8 @@ all_during(adm_data_example,
 \seealso{
 If only a summary of the values during a timeperiod is needed,
 then \code{\link[=summarise_during]{summarise_during()}} will be more convenient, or the more
-specialised forms described at \code{\link{during_functions}}, \code{\link{adjacent_event_during}},
-\code{\link{extremes_during}}.
+specialised forms described at \link{during_functions}, \link{adjacent_event_during},
+\link{extremes_during}.
 }
 \author{
 R.J.B. Goudie

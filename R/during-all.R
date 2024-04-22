@@ -34,8 +34,8 @@
 #' repeated multiple times (one for each `y` measurement data point).
 #' @seealso If only a summary of the values during a timeperiod is needed,
 #'   then [`summarise_during()`] will be more convenient, or the more
-#'   specialised forms described at [`during_functions`], [`adjacent_event_during`],
-#'   [`extremes_during`].
+#'   specialised forms described at [during_functions], [adjacent_event_during],
+#'   [extremes_during].
 #' @examples
 #' adm_data_example
 #' fsheet_news2_example

@@ -9,50 +9,70 @@ max_during(...)
 
 min_during(...)
 }
+\arguments{
+\item{...}{
+  Arguments passed on to \code{\link[=summarise_during]{summarise_during}}
+  \describe{
+    \item{\code{x}}{An \code{adm} data frame}
+    \item{\code{y}}{A (tidy) data frame, with a \code{datetime} column}
+    \item{\code{datetime}}{The column of \code{y} to use as the main datetime for matching}
+    \item{\code{during}}{The time period to extract data for, one of:
+\itemize{
+\item \code{"during_visit"}
+\item \code{"during_visit_initial_24h"}
+\item \verb{"during_visit_initial_72h}
+\item \code{"during_icu"}
+\item \code{"before_visit_initial_24h"}
+\item \code{"14_days_before_visit_until_visit_end"}
+\item \code{"year_before_visit_until_visit_end"}
+\item \code{"before_visit_end"}
+\item \code{"30_days_before_visit_start"}
+\item \code{"year_before_initial_24h"}
+\item \code{"during_value"}
+}}
+  }}
+}
 \description{
 Extremes during
 }
-\section{raw data that we will combine}{
+\examples{
+# raw data that we will combine
 adm_data_example
 fsheet_news2_example
-}
 
-\section{extract the max of each fsheet symbol during the hospital visit}{
+# extract the max of each fsheet symbol during the hospital visit
 adm_data_example \%>\%
-max_during(fsheet_news2_example,
-datetime = measurement_datetime,
-during = "during_visit") \%>\%
-select(person_id,
-visit_id,
-visit_start_datetime,
-visit_end_datetime,
-contains("news2"))
-}
+  max_during(fsheet_news2_example,
+             datetime = measurement_datetime,
+             during = "during_visit") \%>\%
+  select(person_id,
+         visit_id,
+         visit_start_datetime,
+         visit_end_datetime,
+         contains("news2"))
 
-\section{extract the min of each fsheet symbol during the hospital visit}{
+# extract the min of each fsheet symbol during the hospital visit
 adm_data_example \%>\%
-min_during(fsheet_news2_example,
-datetime = measurement_datetime,
-during = "during_visit") \%>\%
-select(person_id,
-visit_id,
-visit_start_datetime,
-visit_end_datetime,
-contains("news2"))
-}
+ min_during(fsheet_news2_example,
+            datetime = measurement_datetime,
+            during = "during_visit") \%>\%
+  select(person_id,
+         visit_id,
+         visit_start_datetime,
+         visit_end_datetime,
+         contains("news2"))
 
-\section{can pipe together two summaries}{
+# can pipe together two summaries
 adm_data_example \%>\%
-max_during(fsheet_news2_example,
-datetime = measurement_datetime,
-during = "during_visit") \%>\%
-min_during(fsheet_news2_example,
-datetime = measurement_datetime,
-during = "during_visit") \%>\%
-select(person_id,
-visit_id,
-visit_start_datetime,
-visit_end_datetime,
-contains("news2"))
+  max_during(fsheet_news2_example,
+             datetime = measurement_datetime,
+             during = "during_visit") \%>\%
+  min_during(fsheet_news2_example,
+             datetime = measurement_datetime,
+             during = "during_visit") \%>\%
+  select(person_id,
+         visit_id,
+         visit_start_datetime,
+         visit_end_datetime,
+         contains("news2"))
 }
-
