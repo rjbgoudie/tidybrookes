@@ -257,11 +257,41 @@ tests_histogram_by_weekday <- function(x){
     theme(legend.position = "bottom")
 }
 
-#' Plot ADT department
+#' Plot departments (wards) visited by patients
 #'
+#' Simple plots of showing the history of departments that a patient visits
+#' using data from ADT.
+#'
+#' @param x An ADT data frame that has been joined with annotated ADM data.
+#' @param facet Whether to facet by `person_id_short` or not. Only a sensible
+#'   plot only one patient's data is in the provided data frame
+#' @param ... Passed to [aes()], enabling e.g. colouring according to a
+#'   user-specified colour of `x`
+#' @examples
+#' adm_annotated <- adm_annotate(adm_data_example)
+#' adt_adm_joined <- adt_data_example %>%
+#'   dplyr::left_join(adm_annotated)
+#'
+#' if (require("ggplot2")){
+#'  plot_adt_department_col(adt_adm_joined,
+#'                          colour = is_ed)
+#' }
+#'
+#' if (require("ggplot2")){
+#'  plot_adt_department_col(filter(adt_adm_joined, person_id == "AA"),
+#'                          facet = FALSE)
+#' }
+#'
+#'  adm_annotated <- adm_annotate(adm_data_example)
+#'  adt_adm_joined <- adt_data_example %>%
+#'    dplyr::left_join(adm_annotated)
+#'
+#' if (require("ggplot2")){
+#'  plot_adt_department_timeline(adt_adm_joined)
+#' }
 #' @rdname plots_adt
 #' @export
-plot_adt_department_col <- function(x, facet = TRUE){
+plot_adt_department_col <- function(x, facet = TRUE, ...){
   x <- x %>%
     filter(department_just_moved)
   f <- function(x){
@@ -275,14 +305,14 @@ plot_adt_department_col <- function(x, facet = TRUE){
   out <- ggplot(x,
          aes(y = forcats::fct_rev(factor(department_visit_index)),
              yend = forcats::fct_rev(factor(department_visit_index)),
-             colour = type_covid,
              x = department_start_datetime,
-             xend = department_end_datetime)) +
+             xend = department_end_datetime,
+             ...)) +
     geom_segment(alpha = 0.5, size = 10) +
     geom_text(aes(label = department,
-                   colour = type_covid,
                    x = department_start_datetime,
-                   y = forcats::fct_rev(factor(department_visit_index))),
+                   y = forcats::fct_rev(factor(department_visit_index)),
+                  ...),
               hjust = -0.05,
               # vjust = 1,
               size = 3
@@ -308,14 +338,14 @@ plot_adt_department_col <- function(x, facet = TRUE){
 
 #' @rdname plots_adt
 #' @export
-plot_adt_department_timeline <- function(x){
+plot_adt_department_timeline <- function(x, ...){
   x <- x %>%
     filter(department_just_moved)
   ggplot(x,
          aes(ymax = interval(visit_start_datetime, end_datetime)/ddays(1),
              ymin = interval(visit_start_datetime, start_datetime)/ddays(1),
-             colour = type_covid,
-             x = 0)) +
+             x = 0,
+             ...)) +
     geom_linerange() +
     geom_point(aes(y = interval(visit_start_datetime, start_datetime)/ddays(1))) +
     geom_text(aes(label = department, y = interval(visit_start_datetime, start_datetime)/ddays(1)),

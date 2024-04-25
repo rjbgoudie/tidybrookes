@@ -3,12 +3,45 @@
 \name{plot_adt_department_col}
 \alias{plot_adt_department_col}
 \alias{plot_adt_department_timeline}
-\title{Plot ADT department}
+\title{Plot departments (wards) visited by patients}
 \usage{
-plot_adt_department_col(x, facet = TRUE)
+plot_adt_department_col(x, facet = TRUE, ...)
 
-plot_adt_department_timeline(x)
+plot_adt_department_timeline(x, ...)
+}
+\arguments{
+\item{x}{An ADT data frame that has been joined with annotated ADM data.}
+
+\item{facet}{Whether to facet by \code{person_id_short} or not. Only a sensible
+plot only one patient's data is in the provided data frame}
+
+\item{...}{Passed to \code{\link[=aes]{aes()}}, enabling e.g. colouring according to a
+user-specified colour of \code{x}}
 }
 \description{
-Plot ADT department
+Simple plots of showing the history of departments that a patient visits
+using data from ADT.
+}
+\examples{
+adm_annotated <- adm_annotate(adm_data_example)
+adt_adm_joined <- adt_data_example \%>\%
+  dplyr::left_join(adm_annotated)
+
+if (require("ggplot2")){
+ plot_adt_department_col(adt_adm_joined,
+                         colour = is_ed)
+}
+
+if (require("ggplot2")){
+ plot_adt_department_col(filter(adt_adm_joined, person_id == "AA"),
+                         facet = FALSE)
+}
+
+ adm_annotated <- adm_annotate(adm_data_example)
+ adt_adm_joined <- adt_data_example \%>\%
+   dplyr::left_join(adm_annotated)
+
+if (require("ggplot2")){
+ plot_adt_department_timeline(adt_adm_joined)
+}
 }

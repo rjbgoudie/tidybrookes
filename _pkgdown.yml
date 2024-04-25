@@ -53,14 +53,13 @@ reference:
   - geom_numeric_point_lines_logical_point
   - geom_numeric_point_logical_point
   - geom_numeric_point_logical_tile
-  - plot_adt_department_col
-  - tests_plot_numeric
 
 - title: Table-specific functions
 
 - subtitle: Admissions (`adm`)
   contents:
   - adm_annotate
+  - plot_adt_department_col
 
 - subtitle: Admissions-discharge-transfer (`adt`)
   contents:
@@ -99,6 +98,7 @@ reference:
   - tests_abg
   - tests_info
   - tests_pivot_longer_order
+  - tests_plot_numeric
 
 - title: Example
   desc: >
