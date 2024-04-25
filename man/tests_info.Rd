@@ -2,10 +2,16 @@
 % Please edit documentation in R/tests.R
 \name{tests_info}
 \alias{tests_info}
-\title{Info about tests definitions}
+\title{Convert tests defintion list to a dataframe}
 \usage{
 tests_info(tests_def)
 }
+\arguments{
+\item{tests_def}{A test definition list}
+}
 \description{
-Info about tests definitions
+Convert tests defintion list to a dataframe
+}
+\examples{
+tests_info(tests_def_example)
 }

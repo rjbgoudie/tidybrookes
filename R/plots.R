@@ -173,6 +173,21 @@ beside_by_type <- function(p){
 
 #' Tests plots
 #'
+#' @examples
+#' tests <- dplyr::left_join(
+#'   tests_magnesium_example,
+#'   tests_info(tests_def_example))
+#'
+#' tests_plot_numeric(tests,
+#'                    tests$range_mainly_low,
+#'                    tests$range_mainly_high,
+#'                    tests$range_discard_below,
+#'                    tests$range_discard_above)
+#'
+#' tests_histogram_time_of_day(tests)
+#' tests_histogram_by_date(tests)
+#' tests_histogram_by_weekday(tests)
+#'
 #' @rdname plots_tests
 #' @export
 tests_plot_numeric <- function(x, range_mainly_low, range_mainly_high, range_discard_below, range_discard_above){
@@ -187,14 +202,16 @@ tests_plot_numeric <- function(x, range_mainly_low, range_mainly_high, range_dis
 }
 
 #' @rdname plots_tests
+#' @importFrom hms as_hms
 #' @export
-tests_histogram_time_of_day <- function(x){
+tests_histogram_time_of_day <- function(x, datetime = collected_datetime){
+  datetime <- enquo(datetime)
   if (any(!is.na(x$value_as_logical))){
-    plot_time_of_day <- ggplot(x, aes(x = as_hms(datetime),
+    plot_time_of_day <- ggplot(x, aes(x = hms::as_hms(!! datetime),
                                       fill = value_as_logical))
     cat("yes")
   } else {
-    plot_time_of_day <- ggplot(x, aes(x = as_hms(datetime)))
+    plot_time_of_day <- ggplot(x, aes(x = hms::as_hms(!! datetime)))
   }
 
   plot_time_of_day +
@@ -206,32 +223,16 @@ tests_histogram_time_of_day <- function(x){
 
 #' @rdname plots_tests
 #' @export
-tests_histogram_time_of_day <- function(x){
-  if (any(!is.na(x$value_as_logical))){
-    plot_time_of_day <- ggplot(x, aes(x = as_hms(datetime),
-                                      fill = value_as_logical))
-    cat("yes")
-  } else {
-    plot_time_of_day <- ggplot(x, aes(x = as_hms(datetime)))
-  }
-
-  plot_time_of_day +
-    geom_histogram(bins = 48) +
-    ggtitle("Time of day") +
-    labs(x = NULL, y = "Count") +
-    theme(legend.position = "bottom")
-}
-
-#' @rdname plots_tests
-#' @export
-tests_histogram_by_date <- function(x){
-  ndays <- interval(min(x$datetime), max(x$datetime))/days(1)
+tests_histogram_by_date <- function(x, datetime = collected_datetime){
+  datetime <- enquo(datetime)
+  ndays <- interval(min(x %>% pull(!! datetime)),
+                        max(x %>% pull(!! datetime)))/days(1)
 
   if (any(!is.na(x$value_as_logical))){
-    plot_by_date <- ggplot(x, aes(x = datetime,
+    plot_by_date <- ggplot(x, aes(x = !! datetime,
                                   fill = value_as_logical))
   } else {
-    plot_by_date <- ggplot(x, aes(x = datetime))
+    plot_by_date <- ggplot(x, aes(x = !! datetime))
   }
 
   plot_by_date +
@@ -242,13 +243,15 @@ tests_histogram_by_date <- function(x){
 }
 
 #' @rdname plots_tests
+#' @importFrom lubridate wday
 #' @export
-tests_histogram_by_weekday <- function(x){
+tests_histogram_by_weekday <- function(x, datetime = collected_datetime){
+  datetime <- enquo(datetime)
   if (any(!is.na(x$value_as_logical))){
-    plot_by_weekday <- ggplot(x, aes(x = wday(datetime, label = TRUE),
+    plot_by_weekday <- ggplot(x, aes(x = lubridate::wday(!! datetime, label = TRUE),
                                      fill = value_as_logical))
   } else {
-    plot_by_weekday <- ggplot(x, aes(x = wday(datetime, label = TRUE)))
+    plot_by_weekday <- ggplot(x, aes(x = lubridate::wday(datetime, label = TRUE)))
   }
 
   plot_by_weekday +

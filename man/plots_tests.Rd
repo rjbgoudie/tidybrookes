@@ -17,13 +17,11 @@ tests_plot_numeric(
   range_discard_above
 )
 
-tests_histogram_time_of_day(x)
+tests_histogram_time_of_day(x, datetime = collected_datetime)
 
-tests_histogram_time_of_day(x)
+tests_histogram_by_date(x, datetime = collected_datetime)
 
-tests_histogram_by_date(x)
-
-tests_histogram_by_weekday(x)
+tests_histogram_by_weekday(x, datetime = collected_datetime)
 
 tests_plot_point(x)
 
@@ -31,4 +29,20 @@ tests_plot_tile(x)
 }
 \description{
 Tests plots
+}
+\examples{
+tests <- dplyr::left_join(
+  tests_magnesium_example,
+  tests_info(tests_def_example))
+
+tests_plot_numeric(tests,
+                   tests$range_mainly_low,
+                   tests$range_mainly_high,
+                   tests$range_discard_below,
+                   tests$range_discard_above)
+
+tests_histogram_time_of_day(tests)
+tests_histogram_by_date(tests)
+tests_histogram_by_weekday(tests)
+
 }

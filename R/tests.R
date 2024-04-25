@@ -481,8 +481,11 @@ tests_abg <- function(bg_data, bg_specimen_type){
   abg_data
 }
 
-#' Info about tests definitions
+#' Convert tests defintion list to a dataframe
 #'
+#' @param tests_def A test definition list
+#' @examples
+#' tests_info(tests_def_example)
 #' @rdname tests_info
 #' @export
 tests_info <- function(tests_def){

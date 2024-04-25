@@ -4,7 +4,7 @@ tests_raw_example <-
     col_types = "tests") %>%
   tests_rename
 
-tests_def <- list() %>%
+tests_def_example <- list() %>%
   tests_add(
     symbol = "magnesium",
     title = "Magnesium",
@@ -28,7 +28,8 @@ tests_def <- list() %>%
     range_discard_below = 0.32,
     range_discard_above = 1.8)
 
-tests_magnesium_example <- tests_extract(tests_raw_example, tests_def)
+tests_magnesium_example <- tests_extract(tests_raw_example, tests_def_example)
 
+usethis::use_data(tests_def_example, overwrite = TRUE)
 usethis::use_data(tests_raw_example, overwrite = TRUE)
 usethis::use_data(tests_magnesium_example, overwrite = TRUE)
