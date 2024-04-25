@@ -3,14 +3,11 @@
 \name{first_during}
 \alias{first_during}
 \alias{last_during}
-\alias{nearest_visit_start_during}
-\title{During functions}
+\title{Extract first or last measurement during a timeperiod}
 \usage{
 first_during(...)
 
 last_during(...)
-
-nearest_visit_start_during(...)
 }
 \arguments{
 \item{...}{
@@ -36,7 +33,7 @@ nearest_visit_start_during(...)
   }}
 }
 \description{
-Extract the first
+Extract the first measurement or the last measurement during a timeperiod.
 }
 \examples{
 # raw data that we will combine

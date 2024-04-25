@@ -1,6 +1,6 @@
-#' During functions
+#' Extract first or last measurement during a timeperiod
 #'
-#' Extract the first
+#' Extract the first measurement or the last measurement during a timeperiod.
 #'
 #' @inheritDotParams summarise_during x y datetime during
 #' @rdname during_functions
@@ -75,23 +75,59 @@ last_during <- function(...){
                    names_suffix = "last")
 }
 
-#' @rdname during_functions
-#' @export
-nearest_visit_start_during <- function(...){
-  summarise_during(
-    ...,
-    type = "slice",
-    formula =
-      interval(visit_start_datetime, datetime) %>%
-      int_length() %>%
-      abs() %>%
-      which.min(),
-    names_suffix = "nearest_visit_start")
-}
-
-#' During, adjacent to, functions
+#' Extract first measurement after/last measurement before a specific event,
+#' during a timeperiod
 #'
+#' Extract the last measurement before or the first measurement after a
+#' specific other event, during a timepoint.
+#'
+#' @inheritDotParams summarise_during x y datetime during
+#' @param event_datetime The datetime that the extraction should be relative
+#'   to.
+#' @param names_suffix A text label to use as the end of the column name
+#'   created.
 #' @rdname adjacent_event_during
+#' @examples
+#' #' # raw data that we will combine
+#' adm_data_example
+#' fsheet_news2_example
+#'
+#' # extract the first NEWS2 record during each hospital visit
+#' first_news2 <- adm_data_example %>%
+#'   first_during(fsheet_news2_example,
+#'              datetime = measurement_datetime,
+#'              during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("news2"))
+#'
+#' # extract the first SpO2 measurement that FOLLOW the first NEWS2 record
+#' # during each hospital visit
+#' first_news2 %>%
+#'  first_during_after_event(fsheet_spo2_example,
+#'                           datetime = measurement_datetime,
+#'                           during = "during_visit",
+#'                           event_datetime = news2_first_during_visit_datetime,
+#'                           names_suffix = "first_news2") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          contains("spo2"),
+#'          contains("news2"))
+#'
+#' # extract the LAST SpO2 measurement that is before (or the same time as)
+#' # the first NEWS2 record during each hospital visit
+#' first_news2 %>%
+#'  last_during_before_event(fsheet_spo2_example,
+#'                           datetime = measurement_datetime,
+#'                           during = "during_visit",
+#'                           event_datetime = news2_first_during_visit_datetime,
+#'                           names_suffix = "first_news2") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          contains("spo2"),
+#'          contains("news2"))
 #' @export
 first_during_after_event <- function(..., event_datetime, names_suffix = ""){
   event_datetime <- enquo(event_datetime)
@@ -101,24 +137,10 @@ first_during_after_event <- function(..., event_datetime, names_suffix = ""){
     formula =
       interval(!! event_datetime, datetime) %>%
       int_length() %>%
-      purrr:::keep(~ .x > 0) %>%
+      purrr:::map(~ case_when(.x < 0 ~ NA,
+                              TRUE ~ .x)) %>%
       which.min(),
     names_suffix = glue("first_after_{names_suffix}"))
-}
-
-#' @rdname adjacent_event_during
-#' @export
-nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
-  event_datetime <- enquo(event_datetime)
-  summarise_during(
-    ...,
-    type = "slice",
-    formula =
-      interval(!! event_datetime, datetime) %>%
-      int_length() %>%
-      abs() %>%
-      which.min(),
-    names_suffix = glue("nearest_to_{names_suffix}"))
 }
 
 #' @rdname adjacent_event_during
@@ -131,9 +153,89 @@ last_during_before_event <- function(..., event_datetime, names_suffix = ""){
     formula =
       interval(!! event_datetime, datetime) %>%
       int_length() %>%
-      purrr:::keep(~ .x < 0) %>%
+      purrr:::map(~ case_when(.x > 0 ~ NA,
+                              TRUE ~ .x)) %>%
       which.max(),
     names_suffix = glue("last_before_{names_suffix}"))
+}
+
+#' Extract measurements during a timeperiod nearest to a specific event
+#'
+#' Extract the nearest measurement to a specific other event.
+#'
+#' @inheritDotParams summarise_during x y datetime during
+#' @param event_datetime The datetime that the extraction should be relative
+#'   to.
+#' @param names_suffix A text label to use as the end of the column name
+#'   created.
+#' @examples
+#' #' # raw data that we will combine
+#' #' # raw data that we will combine
+#' adm_data_example
+#' fsheet_news2_example
+#'
+#' # extract the first NEWS2 record during each hospital visit
+#' first_news2 <- adm_data_example %>%
+#'   first_during(fsheet_news2_example,
+#'              datetime = measurement_datetime,
+#'              during = "during_visit") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          visit_start_datetime,
+#'          visit_end_datetime,
+#'          contains("news2"))
+#'
+#' # extract the NEAREST (either before or after) SpO2 measurement that to
+#' # the first NEWS2 record during each hospital visit
+#' first_news2 %>%
+#'  nearest_to_event_during(fsheet_spo2_example,
+#'                          datetime = measurement_datetime,
+#'                          during = "during_visit",
+#'                          event_datetime = news2_first_during_visit_datetime,
+#'                          names_suffix = "first_news2") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          contains("spo2"),
+#'          contains("news2"))
+#'
+#' # extract the NEAREST (either before or after) SpO2 measurement that to
+#' # the first NEWS2 record during each hospital visit
+#' first_news2 %>%
+#'  nearest_visit_start_during(
+#'    fsheet_spo2_example,
+#'    datetime = measurement_datetime,
+#'    during = "14_days_before_visit_until_visit_end") %>%
+#'   select(person_id,
+#'          visit_id,
+#'          contains("spo2"),
+#'          contains("news2"))
+#' @rdname nearest_to_event_during
+#' @export
+nearest_to_event_during <- function(..., event_datetime, names_suffix = ""){
+  event_datetime <- enquo(event_datetime)
+  summarise_during(
+    ...,
+    type = "slice",
+    formula =
+      interval(!! event_datetime, datetime) %>%
+      int_length() %>%
+      map(~abs(.x)) %>%
+      which.min(),
+    names_suffix = glue("nearest_to_{names_suffix}"))
+}
+
+#' @rdname nearest_to_event_during
+#' @export
+nearest_visit_start_during <- function(...){
+  summarise_during(
+    ...,
+    type = "slice",
+    formula =
+      interval(visit_start_datetime, datetime) %>%
+      int_length() %>%
+      abs() %>%
+      which.min(),
+    names_suffix = "nearest_visit_start")
 }
 
 # nearest_to_event_during <- function(...,

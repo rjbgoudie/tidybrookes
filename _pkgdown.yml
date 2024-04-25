@@ -37,6 +37,7 @@ reference:
   - first_during
   - max_during
   - first_during_after_event
+  - nearest_to_event_during
   - summarise_during
 
 - title: Filtering and utils
