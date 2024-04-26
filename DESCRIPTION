@@ -1,10 +1,14 @@
 Package: tidybrookes
-Title: What the Package Does (One Line, Title Case)
+Title: CUH clinical informatic data extraction and analysis tools
 Version: 0.1
 Authors@R:
     person("R.J.B", "Goudie", , "rjbgoudie@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-9554-1499"))
-Description: What the package does (one paragraph).
+Description:
+  tidybrookes provides functions for loading, cleaning, quality checking,
+  joining, summarising and plotting clinical informatics data from CUH. It aims
+  to make simple analyses easy, and more complicated analyses faster and more
+  robust.
 License: GPL (>= 2)
 Imports:
     clock,
