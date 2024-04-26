@@ -1,0 +1,118 @@
+---
+title: "Introduction to tidybrookes"
+description: >
+  Introduction to tidybrookes
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to tidybrookes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(collapse = T, comment = "#>")
+options(tibble.print_min = 4L, tibble.print_max = 4L)
+library(tidybrookes)
+```
+
+# Importing data from CSV or delimited data
+
+The standard data format exported from by CUH clinical informatics can be 
+imported into R using `read_tidybrookes_csv()` or `read_tidybrookes_delim()`,
+which are wrappers around `readr:read_csv()` with defaults set to suit the
+formats usually used by CUH.
+
+```{r}
+adm_file_path <- tidybrookes_example("adm.csv")
+adm_raw <- read_tidybrookes_csv(file = adm_file_path, col_types = "adm")
+```
+
+The column names in the raw data are inconsistent, making them difficult to
+remember. The collection of `*_rename` functions (`adm_rename()`, 
+`fsheet_rename()` etc) can rename these columns to more consistent and
+standardised names. All other functions in tidybrookes assume that these
+column names have been used.
+```{r}
+adm_raw <- adm_rename(adm_raw)
+```
+
+Similar functions are available for each of the clinical tables, e.g. for
+flowsheet data:
+```{r}
+fsheet_file_path <- tidybrookes_example("fsheet.csv")
+fsheet_raw <- read_tidybrookes_csv(file = fsheet_file_path,
+                                   col_types = "fsheet") %>%
+  fsheet_rename()
+```
+
+# Defining and extracting clinical fields
+
+A key aspect of `tidybrookes` is a standardised way of defining how clinical 
+fields should be extracted and cleaned. The approach taken in `tidybrookes` is
+closer to a 'declarative' approach rather than a 'procedural' approach:
+
+- A 'procedural' approach would involve
+describing explicit sequence of steps that should be used to extract and clean
+each clinical field. This is the usual way that code is written in `R`, but 
+it makes it easier to forget steps, and encourages 'copy-paste' style coding,
+which can be more error prone.
+- A 'declarative' approach instead involves 'describing' each clinical field. 
+
+The tidybrookes approach is to describe each clinical field, along with
+a standard set of fields or small functions that describe how the field
+should be extracted or cleaned.
+
+Descriptions are created using `*_add` functions, such as `fsheet_add()`.
+For example, a flowsheet description for the National Early Warning Score 2
+(NEWS2) using:
+```{r}
+fsheet_def <- list() %>%
+  fsheet_add(
+    symbol = "news2",
+    title = "NEWS2",
+    names = c("NEWS2 score"),
+    search_pattern = c("news2", "news"),
+    search_exclude = c(),
+    silently_exclude_na_when = TRUE,
+    silently_exclude_when =
+      (value_original == " " |
+         value_original == "E" # some kind of typo
+      ),
+    value_as_number_fn =
+      case_when(value_original == "3mm" ~ 3,
+                TRUE ~ value_as_number),
+    expect_after =
+      (value_as_number %in% 0:17))
+```
+Once a list of descriptions has been created, the definitions are then applied
+to the raw data to extract and clean the data:
+```{r}
+fsheet_data <- fsheet_extract(fsheet_raw_example, fsheet_def)
+```
+
+# Annotation of admission (`adm`) and admission-discharge-transfer (`adt`) data
+
+Admission data can be annotated using `adm_annotate()`:
+```{r}
+adm_data_example <- adm_annotate(adm_raw)
+```
+
+# Summarising and joining data from separate clinical data tables
+
+We may wish to extract, for example, all NEWS2 measurements during a hospital
+visit; or we may wish to extract the _first_ NEWS2 measurement during a
+hospital visit. This requires linking admission data and clinical field tables.
+This can be done using functions such as `first_during()` and `all_during()`.
+
+For example, to extract the first NEWS2 measurement during each hospital visit:
+```{r}
+adm_data_example %>%
+  first_during(fsheet_data,
+             datetime = measurement_datetime,
+             during = "during_visit") %>%
+  select(person_id,
+         visit_id,
+         visit_start_datetime,
+         visit_end_datetime,
+         contains("news2"))
+```
