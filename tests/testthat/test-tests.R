@@ -29,7 +29,9 @@ test_that("Ignores irrelevant row", {
       range_discard_below = 0.32,
       range_discard_above = 1.8)
 
-  tests_data_demo <- tests_extract(tests_raw_demo, tests_def)
+  suppressMessages({
+    tests_data_demo <- tests_extract(tests_raw_demo, tests_def)
+  })
 
   expect_identical(tests_data_demo$unit, "mmol/L")
   expect_equal(tests_data_demo$value_as_number, 1.0)
@@ -70,7 +72,9 @@ test_that("Tests handle character values", {
         (value_as_character %in% c("Arterial blood", "Venous blood", "Blood",
                                    "Mixed blood", "Capillary blood")))
 
-  tests_data_demo <- tests_extract(tests_raw_demo, tests_def)
+  suppressMessages({
+    tests_data_demo <- tests_extract(tests_raw_demo, tests_def)
+  })
 
   expect_identical(tests_data_demo$value_as_character, "Arterial blood")
 })

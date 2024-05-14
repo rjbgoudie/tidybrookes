@@ -17,7 +17,9 @@ test_that("Ignores irrelevant rows", {
       unit_rescale_fn = case_when(TRUE ~ value_as_number * 28.35 / 1000),
       unit_relabel_fn = case_when(TRUE ~ "kg"))
 
-  fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+  suppressMessages({
+    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+  })
 
   expect_equal(fsheet_data_test$unit, c("kg", "kg", "kg"))
   expect_equal(
@@ -45,7 +47,9 @@ test_that("discard values below", {
       search_exclude = c(),
       range_discard_below = 50)
 
-  fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+  suppressMessages({
+    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+  })
 
   expect_identical(fsheet_data_test$unit, NA_character_)
   expect_identical(fsheet_data_test$censoring, NA_character_)
@@ -70,7 +74,9 @@ test_that("missing measurement date", {
       search_exclude = c(),
       range_discard_below = 50)
 
-  fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+  suppressMessages({
+    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def)
+  })
 
   expect_identical(fsheet_data_test$value_as_character, NA_character_)
   expect_identical(fsheet_data_test$value_as_number, 93)
