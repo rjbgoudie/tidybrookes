@@ -19,7 +19,7 @@ library(tidybrookes)
 
 The standard data format exported from by CUH clinical informatics can be 
 imported into R using `read_tidybrookes_csv()` or `read_tidybrookes_delim()`,
-which are wrappers around `readr:read_csv()` with defaults set to suit the
+which are wrappers around `readr::read_delim()` with defaults set to suit the
 formats usually used by CUH.
 
 ```{r}
@@ -27,9 +27,9 @@ adm_file_path <- tidybrookes_example("adm.csv")
 adm_raw <- read_tidybrookes_csv(file = adm_file_path, col_types = "adm")
 ```
 
-The column names in the raw data are inconsistent, making them difficult to
+In the raw data, the column names are inconsistent, making them difficult to
 remember. The collection of `*_rename` functions (`adm_rename()`, 
-`fsheet_rename()` etc) can rename these columns to more consistent and
+`fsheet_rename()` etc) rename these columns to more consistent and
 standardised names. All other functions in tidybrookes assume that these
 column names have been used.
 ```{r}
@@ -64,7 +64,7 @@ should be extracted or cleaned.
 
 Descriptions are created using `*_add` functions, such as `fsheet_add()`.
 For example, a flowsheet description for the National Early Warning Score 2
-(NEWS2) using:
+(NEWS2) could be as follows:
 ```{r}
 fsheet_def <- list() %>%
   fsheet_add(
