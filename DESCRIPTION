@@ -4,18 +4,26 @@ Version: 0.1
 Authors@R:
     person("R.J.B", "Goudie", , "rjbgoudie@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-9554-1499"))
-Description:
-  tidybrookes provides functions for loading, cleaning, quality checking,
-  joining, summarising and plotting clinical informatics data from CUH. It aims
-  to make simple analyses easy, and more complicated analyses faster and more
-  robust.
+Description: tidybrookes provides functions for loading, cleaning, quality
+    checking, joining, summarising and plotting clinical informatics data
+    from CUH. It aims to make simple analyses easy, and more complicated
+    analyses faster and more robust.
 License: GPL (>= 2)
+Depends: 
+    R (>= 2.10)
 Imports:
+    cli,
     clock,
+    DBI,
     dplyr,
     glue,
+    hms,
     lubridate,
     magrittr,
+    patchwork,
+    progress,
+    purrr,
+    readr,
     rlang,
     stringr,
     tibble,
@@ -27,5 +35,3 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
-Depends: 
-    R (>= 2.10)
