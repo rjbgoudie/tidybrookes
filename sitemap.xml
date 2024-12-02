@@ -1,198 +1,68 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/tidybrookes.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/adjacent_event_during.html</loc>
-  </url>
-  <url>
-    <loc>/reference/adm_annotate.html</loc>
-  </url>
-  <url>
-    <loc>/reference/adt_annotate.html</loc>
-  </url>
-  <url>
-    <loc>/reference/all_during.html</loc>
-  </url>
-  <url>
-    <loc>/reference/coarsen_by_day.html</loc>
-  </url>
-  <url>
-    <loc>/reference/condition_extract.html</loc>
-  </url>
-  <url>
-    <loc>/reference/count.html</loc>
-  </url>
-  <url>
-    <loc>/reference/curtail_infusions.html</loc>
-  </url>
-  <url>
-    <loc>/reference/db_write.html</loc>
-  </url>
-  <url>
-    <loc>/reference/default_col_types.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dose_in_grid.html</loc>
-  </url>
-  <url>
-    <loc>/reference/during_functions.html</loc>
-  </url>
-  <url>
-    <loc>/reference/extremes_during.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filter.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_extract.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_infer_fio2.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_info.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_io_extract.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_label_timepoints_before_timepoint.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_pivot_longer.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_pivot_wider_datetime.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_sf_ratio.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_spo2_on_room_air.html</loc>
-  </url>
-  <url>
-    <loc>/reference/fsheet_timepoints_within_timeranges.html</loc>
-  </url>
-  <url>
-    <loc>/reference/geom_numeric_point_lines_logical_point.html</loc>
-  </url>
-  <url>
-    <loc>/reference/geom_numeric_point_logical_point.html</loc>
-  </url>
-  <url>
-    <loc>/reference/geom_numeric_point_logical_tile.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/infusion_dose_per.html</loc>
-  </url>
-  <url>
-    <loc>/reference/infusion_fn_by_visit.html</loc>
-  </url>
-  <url>
-    <loc>/reference/infusion_grid.html</loc>
-  </url>
-  <url>
-    <loc>/reference/integrate_by_min.html</loc>
-  </url>
-  <url>
-    <loc>/reference/intersect_timeranges.html</loc>
-  </url>
-  <url>
-    <loc>/reference/med_admin_extract.html</loc>
-  </url>
-  <url>
-    <loc>/reference/med_admin_map_units_to_canonical.html</loc>
-  </url>
-  <url>
-    <loc>/reference/med_admin_rate_rescale.html</loc>
-  </url>
-  <url>
-    <loc>/reference/med_admin_route_action.html</loc>
-  </url>
-  <url>
-    <loc>/reference/med_admin_simultaneous_administration.html</loc>
-  </url>
-  <url>
-    <loc>/reference/med_admin_stub_def.html</loc>
-  </url>
-  <url>
-    <loc>/reference/med_prescr_extract.html</loc>
-  </url>
-  <url>
-    <loc>/reference/med_prescr_stub_def.html</loc>
-  </url>
-  <url>
-    <loc>/reference/nearest_to_event_during.html</loc>
-  </url>
-  <url>
-    <loc>/reference/person_id_shorten.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plots_adt.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plots_tests.html</loc>
-  </url>
-  <url>
-    <loc>/reference/qc_report.html</loc>
-  </url>
-  <url>
-    <loc>/reference/radiology_extract.html</loc>
-  </url>
-  <url>
-    <loc>/reference/read.html</loc>
-  </url>
-  <url>
-    <loc>/reference/reexports.html</loc>
-  </url>
-  <url>
-    <loc>/reference/rename.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summarise_during.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tests_abg.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tests_extract.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tests_info.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tests_pivot_longer_order.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tests_pivot_wider_order.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tidybrookes_example.html</loc>
-  </url>
-  <url>
-    <loc>/reference/unrename.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/tidybrookes.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/adjacent_event_during.html</loc></url>
+<url><loc>/reference/adm_annotate.html</loc></url>
+<url><loc>/reference/adt_annotate.html</loc></url>
+<url><loc>/reference/all_during.html</loc></url>
+<url><loc>/reference/coarsen_by_day.html</loc></url>
+<url><loc>/reference/condition_extract.html</loc></url>
+<url><loc>/reference/count.html</loc></url>
+<url><loc>/reference/curtail_infusions.html</loc></url>
+<url><loc>/reference/db_write.html</loc></url>
+<url><loc>/reference/default_col_types.html</loc></url>
+<url><loc>/reference/dose_in_grid.html</loc></url>
+<url><loc>/reference/during_functions.html</loc></url>
+<url><loc>/reference/extremes_during.html</loc></url>
+<url><loc>/reference/filter.html</loc></url>
+<url><loc>/reference/fsheet_extract.html</loc></url>
+<url><loc>/reference/fsheet_infer_fio2.html</loc></url>
+<url><loc>/reference/fsheet_info.html</loc></url>
+<url><loc>/reference/fsheet_io_extract.html</loc></url>
+<url><loc>/reference/fsheet_label_timepoints_before_timepoint.html</loc></url>
+<url><loc>/reference/fsheet_pivot_longer.html</loc></url>
+<url><loc>/reference/fsheet_pivot_wider_datetime.html</loc></url>
+<url><loc>/reference/fsheet_sf_ratio.html</loc></url>
+<url><loc>/reference/fsheet_spo2_on_room_air.html</loc></url>
+<url><loc>/reference/fsheet_timepoints_within_timeranges.html</loc></url>
+<url><loc>/reference/geom_numeric_point_lines_logical_point.html</loc></url>
+<url><loc>/reference/geom_numeric_point_logical_point.html</loc></url>
+<url><loc>/reference/geom_numeric_point_logical_tile.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/infusion_dose_per.html</loc></url>
+<url><loc>/reference/infusion_fn_by_visit.html</loc></url>
+<url><loc>/reference/infusion_grid.html</loc></url>
+<url><loc>/reference/integrate_by_min.html</loc></url>
+<url><loc>/reference/intersect_timeranges.html</loc></url>
+<url><loc>/reference/med_admin_extract.html</loc></url>
+<url><loc>/reference/med_admin_map_units_to_canonical.html</loc></url>
+<url><loc>/reference/med_admin_rate_rescale.html</loc></url>
+<url><loc>/reference/med_admin_route_action.html</loc></url>
+<url><loc>/reference/med_admin_simultaneous_administration.html</loc></url>
+<url><loc>/reference/med_admin_stub_def.html</loc></url>
+<url><loc>/reference/med_prescr_extract.html</loc></url>
+<url><loc>/reference/med_prescr_stub_def.html</loc></url>
+<url><loc>/reference/nearest_to_event_during.html</loc></url>
+<url><loc>/reference/person_id_shorten.html</loc></url>
+<url><loc>/reference/pipe.html</loc></url>
+<url><loc>/reference/plots_adt.html</loc></url>
+<url><loc>/reference/plots_tests.html</loc></url>
+<url><loc>/reference/qc_report.html</loc></url>
+<url><loc>/reference/radiology_extract.html</loc></url>
+<url><loc>/reference/read.html</loc></url>
+<url><loc>/reference/reexports.html</loc></url>
+<url><loc>/reference/rename.html</loc></url>
+<url><loc>/reference/summarise_during.html</loc></url>
+<url><loc>/reference/tests_abg.html</loc></url>
+<url><loc>/reference/tests_extract.html</loc></url>
+<url><loc>/reference/tests_info.html</loc></url>
+<url><loc>/reference/tests_pivot_longer_order.html</loc></url>
+<url><loc>/reference/tests_pivot_wider_order.html</loc></url>
+<url><loc>/reference/tidybrookes_example.html</loc></url>
+<url><loc>/reference/unrename.html</loc></url>
 </urlset>
+
