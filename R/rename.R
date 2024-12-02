@@ -201,6 +201,11 @@ default_rename <- function(x){
       addenda = "Proc_Addenda",
       assessment = "Proc_Assessment",
       code = "Proc_Code")
+  } else if (x == "procedures"){
+    c(person_id = "STUDY_SUBJECT_DIGEST",
+      procedure_datetime = "PROCEDUREDATE",
+      description = "PROCEDUREDESC",
+      opcs = "OPCSCODE")
   }
 }
 
@@ -348,6 +353,24 @@ radiology_rename <- function(x,
 radiology_unrename <-
   function(x,
            names = flip_names_and_values(default_rename("radiology"))){
+  relocate_ignoring_missing(x, names)
+}
+
+#' @export
+#' @rdname rename
+procedures_rename <- function(x,
+                             names = default_rename("procedures")){
+  relocate_ignoring_missing(x, names)
+}
+
+#' @export
+#' @rdname unrename
+procedures_unrename <- function(x,
+                               names =
+                                 c(STUDY_SUBJECT_DIGEST = "person_id",
+                                   PROCEDUREDATE = "procedure_datetime",
+                                   PROCEDUREDESC = "description",
+                                   OPCSCODE = "opcs")){
   relocate_ignoring_missing(x, names)
 }
 

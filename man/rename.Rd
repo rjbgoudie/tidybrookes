@@ -13,6 +13,7 @@
 \alias{med_hist_rename}
 \alias{med_prescr_rename}
 \alias{radiology_rename}
+\alias{procedures_rename}
 \alias{tests_rename}
 \title{Rename to tidy column names}
 \usage{
@@ -37,6 +38,8 @@ med_hist_rename(x, names = default_rename("med_hist"))
 med_prescr_rename(x, names = default_rename("med_prescr"))
 
 radiology_rename(x, names = default_rename("radiology"))
+
+procedures_rename(x, names = default_rename("procedures"))
 
 tests_rename(x, names = default_rename("tests"))
 }

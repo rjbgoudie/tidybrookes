@@ -11,6 +11,7 @@
 \alias{med_admin_unrename}
 \alias{med_prescr_unrename}
 \alias{radiology_unrename}
+\alias{procedures_unrename}
 \alias{tests_unrename}
 \title{Rename from tidy to raw column names}
 \usage{
@@ -45,6 +46,12 @@ med_prescr_unrename(
 radiology_unrename(
   x,
   names = flip_names_and_values(default_rename("radiology"))
+)
+
+procedures_unrename(
+  x,
+  names = c(STUDY_SUBJECT_DIGEST = "person_id", PROCEDUREDATE = "procedure_datetime",
+    PROCEDUREDESC = "description", OPCSCODE = "opcs")
 )
 
 tests_unrename(
