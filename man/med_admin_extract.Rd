@@ -26,7 +26,14 @@ med_admin_add(
   expect_after = TRUE
 )
 
-med_admin_extract(x, med_admin_def, med_admin_units, errors = stop)
+med_admin_extract(
+  x,
+  med_admin_def,
+  med_admin_units,
+  errors = stop,
+  rds_only = FALSE,
+  rds_filepath_fn = NULL
+)
 }
 \arguments{
 \item{med_admin_def}{A med_admin definition}
