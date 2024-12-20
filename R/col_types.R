@@ -58,7 +58,7 @@ default_col_types <- function(col_types){
   } else if (col_types == "fsheet"){
     col_types <- cols(
       STUDY_SUBJECT_DIGEST = col_character(),
-      fsd_id = col_integer(),
+      fsd_id = col_character(),
       line = col_integer(),
       `flo-meas_id` = col_character(),
       MEASURE_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
