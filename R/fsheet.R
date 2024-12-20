@@ -41,6 +41,8 @@
 #'   the flowsheet values. By default, does not rescale
 #' @param coalesce_fn A function specifying how to combine measurements from
 #'   exactly the same time
+#' @param coalesce_fn0 A function specifying how to combine measurements from
+#'   exactly the same time
 #' @param expect_before An expression that returns a logical value,
 #'  specifying a condition that should be `TRUE` in the raw data
 #' @param expect_after An expression that returns a logical value,
@@ -221,6 +223,7 @@ fsheet_add <- function(fsheet_def,
                        unit_rescale_fn = case_when(TRUE ~ value_as_number),
                        unit_relabel_fn = case_when(TRUE ~ NA_character_),
                        coalesce_fn = identity,
+                       coalesce_fn0 = identity,
                        expect_before = TRUE,
                        expect_after = TRUE,
                        range_mainly_low = NA,
@@ -252,6 +255,7 @@ fsheet_add <- function(fsheet_def,
               value_as_logical_fn = value_as_logical_fn,
               unit_rescale_fn = unit_rescale_fn,
               unit_relabel_fn = unit_relabel_fn,
+              coalesce_fn0 = coalesce_fn0,
               coalesce_fn = coalesce_fn,
               expect_before = expect_before,
               expect_after = expect_after,
@@ -265,14 +269,30 @@ fsheet_add <- function(fsheet_def,
 }
 
 #' Convert fsheet_def to data frame
-#'
-#' @export
-fsheet_info <- function(fsheet_def){
-  fsheet_def2 <- map(fsheet_def, ~map_if(., ~inherits(., "quosure"), ~ list(.)))
-  fsheet_def2 <- map(fsheet_def2, ~map_if(., ~inherits(., "function"), ~ list(.)))
-  fsheet_def2 <- map(fsheet_def2, ~map_if(., ~is.null(.), ~ list(.)))
-  fsheet_def2 <- map(fsheet_def2, ~map_at(., c("search_exclude", "search_pattern"), ~ list(.)))
-  map_dfr(fsheet_def2, ~as_tibble(.))
+fsheet_info <- function(fsheet_def, exclude_lists = FALSE){
+  needs_wrapping_in_list <- function(x){
+    inherits(x, "quosure") |
+      inherits(x, "function") |
+      is.null(x) |
+      length(x) > 1
+  }
+
+  # need to wrap anything of length 2 etc in a list before
+  # converting into a tibble. which items are length 2 etc
+  # may differ between defs, so need to take union of all such
+  # so the types are constant in columns of the tibble
+  needs_wrapping_by_symbol <- map(fsheet_def, ~names(keep(., needs_wrapping_in_list)))
+  needs_wrapping <- unique(unlist(needs_wrapping_by_symbol))
+  fsheet_def2 <- map(fsheet_def, ~map_at(., needs_wrapping, ~list(.)))
+
+  out <- map_dfr(fsheet_def2, ~as_tibble(.))
+
+  if (exclude_lists){
+    out %>%
+      select(where(\(x) !is_list(x) & length(x) == 1))
+  } else{
+    out
+  }
 }
 
 #' @rdname fsheet_extract
@@ -293,7 +313,8 @@ fsheet_extract <- function(x,
     } else if (rds_only){
       lapply(fsheet_def, function(y){
         symbol <- y$symbol
-        out <- fsheet_extract_single(x, y, errors = errors)
+        out <- fsheet_extract_single(x, y, errors = errors) %>%
+          arrange(symbol, measurement_datetime)
         saveRDS(out,
                 file = rds_filepath_fn(symbol))
       })
@@ -302,8 +323,27 @@ fsheet_extract <- function(x,
 }
 
 fsheet_extract_single <- function(x, fsheet_def, errors = stop){
-  out <- x %>%
-    filter(name %in% fsheet_def$names)
+  out <- tribble(~person_id, ~symbol, ~name, ~measurement_datetime, ~value)
+
+  if (inherits(x, "data.frame")){
+    out <- x %>%
+      filter(name %in% fsheet_def$names)
+  } else if (inherits(x, "character")){
+    symbol <- fsheet_def$symbol
+    path <- x[symbol]
+    if (!file.exists(path)){
+    } else {
+    if (str_ends(x,".csv") || str_ends(x,".csv.gz")){
+      out <- read_csv(path, show_col_types = FALSE)
+    } else {
+      out <- readRDS(path)
+    }
+    }
+  } else if (inherits(x, "tbl_sql")){
+    out <- x %>%
+      filter(name %in% fsheet_def$names) %>%
+      collect()
+  }
 
   cli::cli_alert_info(
     c("Extracting {fsheet_def$title} ",
@@ -318,7 +358,12 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     mutate(type = fsheet_def$type)
 
   # Check expect_before condition
-  check_that_all(out, !!fsheet_def$expect_before, "expect_before")
+  check_that_all(out,
+                 !!fsheet_def$expect_before,
+                 "expect_before",
+                 summary = function(x){
+                   x %>% count(value_original)
+                 })
 
   # Remove duplicate rows
   out <- out %>%
@@ -393,7 +438,7 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
   coalesce_out <- function(x){
     x %>%
       group_by(person_id, measurement_datetime) %>%
-      (fsheet_def$coalesce_fn)() %>%
+      (fsheet_def$coalesce_fn0)() %>%
       ungroup()
   }
   # Handle coalesce
@@ -419,6 +464,229 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
              type,
              template,
              form) %>%
+    arrange(measurement_datetime)
+}
+
+#' Extract fsheet data into tidy format
+#'
+#' @param x Flowsheet data in renamed format (after applying `fsheet_rename`)
+#' @param fsheet_def A fsheet definition
+#' @param errors A function indicating what to do when an error is found
+#'
+#' @return
+#' A data frame with the following columns:
+#' `person_id`, `symbol`, `value_as_character`, `value_as_number`,
+#' `value_as_logical`, `censoring`, `comment`, `measurement_datetime`, `name`,
+#' `title`, `data_id`, `measurement_id`, `line_id`, `template`, `form`, `type`,
+#' `unit`
+#' @author R.J.B. Goudie
+fsheet_label <- function(x,
+                         fsheet_def,
+                         fsheet_annotate){
+  if (length(fsheet_def) == 1 & "symbol" %in% names(fsheet_def)){
+    out <- fsheet_label_single(x, fsheet_def)
+    keep_cols <- c("fsheet_id", setdiff(colnames(out), colnames(x)))
+
+    dbAppendTable(fsheet_annotate$src$con,
+                  db_fsheet$lazy_query$x,
+                  out[, keep_cols])
+  } else {
+    lapply(fsheet_def, function(y){
+      symbol <- y$symbol
+      out <- fsheet_label_single(x, y, errors = errors) %>%
+        arrange(symbol, measurement_datetime)
+      keep_cols <- c("fsheet_id", setdiff(colnames(out), colnames(x)))
+
+      dbAppendTable(fsheet_annotate$src$con,
+                    fsheet_annotate$lazy_query$x,
+                    out[, keep_cols])
+    })
+  }
+}
+
+
+schema_fsheet <- function(){
+  tibble(
+    fsheet_id = integer(0),
+    person_id = character(0),
+    symbol = character(0),
+    measurement_id = character(0),
+    measurement_datetime = lubridate::POSIXct(0),
+    name = character(0),
+    title = character(0),
+    value_as_character = character(0),
+    value_as_number = numeric(0),
+    censoring = character(0),
+    value_as_logical = logical(0),
+    template = character(0),
+    form = character(0),
+    unit = character(0),
+    visit_id = numeric(0),
+    visit_start_datetime = lubridate::POSIXct(0),
+    visit_end_datetime = lubridate::POSIXct(0),
+    measurement_year = numeric(0),
+    measurement_month = numeric(0),
+    visit_end_year = numeric(0),
+    visit_end_month = numeric(0),
+    visit_start_year = numeric(0),
+    visit_start_month = numeric(0),
+    type = character(0),
+    satisfies_expect_before = logical(0),
+    satisfies_all_numeric = logical(0),
+    satisfies_expect_after = logical(0),
+    exclude = logical(0),
+    exclude_is_duplicate = logical(0),
+    exclude_is_duplicate_of_row_number = integer(0),
+    exclude_is_silently_exclude_na = logical(0),
+    exclude_is_silently_exclude = logical(0),
+    exclude_is_coalesced = logical(0),
+    exclude_is_too_high = logical(0),
+    exclude_is_too_low = logical(0),
+    range_mainly_low = numeric(0),
+    range_mainly_high = numeric(0),
+    range_discard_below = numeric(0),
+    range_discard_above = numeric(0),
+    )
+}
+
+#' @export
+fsheet_label_single <- function(x, fsheet_def, errors = stop){
+  out <- x %>%
+    filter(name %in% fsheet_def$names)
+
+  if (inherits(x, "tbl_sql")){
+    out <- collect(out)
+  }
+  out <- out %>%
+    bind_rows(schema_fsheet())
+
+  cli::cli_alert_info(
+    c("Extracting {fsheet_def$title} ",
+      "({fsheet_def$symbol}) from {nrow(out)} raw rows"))
+
+  info <- fsheet_info(list(fsheet_def), exclude_lists = TRUE) |>
+    select(symbol,
+           title,
+           type,
+           range_mainly_low,
+           range_mainly_high, range_discard_below, range_discard_above)
+  # Add symbol and title
+  out <- out %>%
+    mutate(symbol = fsheet_def$symbol, .after = person_id) %>%
+    rows_update(info, by = "symbol") %>%
+    relocate(title, .after = measurement_datetime) %>%
+    relocate(name, .after = measurement_datetime) %>%
+    rename(value_original = value)
+
+  # Check expect_before condition
+  out <- label_check_that_all(out,
+                 !!fsheet_def$expect_before,
+                 label = "expect_before",
+                 summary = function(x){
+                   x %>% count(value_original)
+                 })
+
+  # Remove duplicate rows
+  out <- out %>%
+    exclusion_label_duplicates_inform(exclude = fsheet_id)
+
+  # Exclude NAs when requested
+  out <- out %>%
+    exclusion_label_condition_inform(
+      exclude_is_silently_exclude_na,
+      (is.na(value_original) & !!fsheet_def$silently_exclude_na_when),
+      since = "since value was NA")
+
+  # Exclude other rows when requested
+  out <- out %>%
+    exclusion_label_condition_inform(
+      exclude_is_silently_exclude,
+      (!!fsheet_def$silently_exclude_when),
+      since = "due to exclude_when condition")
+
+  # Convert values to numeric, and handle censoring
+  out <- out %>%
+    group_by(name) %>%
+    mutate(
+      value_as_character = suppressWarnings({
+        as.character(value_original)
+      }),
+      value_as_number = suppressWarnings({
+        as.numeric(value_original)
+      }),
+      value_as_logical = suppressWarnings({
+        as.logical(value_original)
+      }),
+      value_as_character = !!fsheet_def$value_as_character_fn,
+      value_as_number = !!fsheet_def$value_as_number_fn,
+      value_as_logical = !!fsheet_def$value_as_logical_fn,
+      censoring = !!fsheet_def$censoring_fn,
+      .after = value_original) %>%
+    relocate(censoring, .after = value_as_number) %>%
+    ungroup
+
+  if (fsheet_def$type == "numeric"){
+    out <- out <- label_check_that_all(out,
+                   suppressWarnings({!is.na(as.numeric(value_as_number))}),
+                   label = "all_numeric")
+  }
+
+  # Rescale units
+  out <- out %>%
+    mutate(value_as_number = !!fsheet_def$unit_rescale_fn,
+           unit = !!fsheet_def$unit_relabel_fn)
+
+  # Discard too high values
+  if (!is.na(fsheet_def$range_discard_above)){
+    out <- out %>%
+      exclusion_label_condition_inform(
+        exclude_is_too_high,
+        value_as_number > fsheet_def$range_discard_above,
+        since = glue("since >{fsheet_def$range_discard_above}"))
+  } else {
+    out <- out %>%
+      mutate(exclude_is_too_high = FALSE)
+  }
+
+  # Discard too low values
+  if (!is.na(fsheet_def$range_discard_below)){
+    out <- out %>%
+      exclusion_label_condition_inform(
+        exclude_is_too_low,
+        value_as_number < fsheet_def$range_discard_below,
+        since = glue("since <{fsheet_def$range_discard_below}"))
+  } else {
+    out <- out %>%
+      mutate(exclude_is_too_low = FALSE)
+  }
+
+  coalesce_out <- function(x){
+    x %>%
+      mutate(exclude_is_coalesced = FALSE) %>%
+      group_by(person_id, visit_id, measurement_datetime) %>%
+      (fsheet_def$coalesce_fn)() %>%
+      ungroup()
+  }
+  # Handle coalesce
+  out <- label_fn_inform(out,
+                         coalesce_out,
+                         inform_col = exclude_is_coalesced,
+                         since = "due to coalescing")
+
+  out <- out %>%
+    mutate(exclude = if_any(starts_with("exclude") & where(is_logical)))
+
+  # Check expect_after condition
+  out <- label_check_that_all(out,
+                              exclude | (!!fsheet_def$expect_after),
+                              label = "expect_after")
+
+  # Return result
+
+  cli::cli_alert_info("{nrow(out)} rows extracted")
+  # Return result
+  out %>%
+    select(-value_original) %>%
     arrange(measurement_datetime)
 }
 

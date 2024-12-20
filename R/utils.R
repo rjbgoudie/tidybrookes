@@ -90,6 +90,35 @@ filter_inform <- function(x, ..., since = "for unknown reason"){
   out
 }
 
+#' Filter, but report the filtering that occurs
+#' #'
+#' #' @param x A data frame
+#' #' @param ... Passed to filter
+#' #' @param since A character describing the reason for the filtering
+#' #' @noRd
+label_condition_inform <- function(x,
+                                   inform_col,
+                                   condition,
+                                   since = "for unknown reason"){
+  x <- x |>
+    mutate("{{ inform_col }}" := {{ condition }})
+  n_labelled <- x %>%
+    pull({{ inform_col }}) %>%
+    sum()
+
+  if (n_labelled > 0){
+    sign <- "labelled"
+    change_abs <- n_labelled
+    s <- if_else(change_abs == 1, "", "s")
+    cli::cli_alert_info("{change_abs} row{s} {sign} {since}")
+  }
+  x
+}
+
+exclusion_label_condition_inform <- function(...){
+  label_condition_inform(...)
+}
+
 #' Distinct, but report the filtering that occurs
 #'
 #' @param x A data frame
@@ -109,6 +138,31 @@ distinct_inform <- function(x){
   out
 }
 
+label_duplicates_inform <- function(x, exclude){
+  x <- x |>
+    mutate(is_duplicate_of = vctrs::vec_duplicate_id(pick(-{{ exclude }}))) |>
+    mutate(is_duplicate = is_duplicate_of != row_number(),
+           .before = is_duplicate_of)
+
+  n_duplicates <- sum(x$is_duplicate)
+  if (n_duplicates > 0){
+    since <- "as exact duplicate"
+    sign <- "labelled"
+    change_abs <- n_duplicates
+    s <- if_else(change_abs == 1, "", "s")
+    cli::cli_alert_info("{change_abs} row{s} {sign} {since}{s}")
+  }
+  x
+}
+
+exclusion_label_duplicates_inform <- function(x, exclude){
+  label_duplicates_inform(x, exclude = {{ exclude }}) %>%
+    mutate(exclude_is_duplicate = is_duplicate,
+           exclude_is_duplicate_of_row_number = is_duplicate_of) %>%
+    select(-is_duplicate,
+           -is_duplicate_of)
+}
+
 fn_inform <- function(x, fn, ..., since = "for unknown reason"){
   previous <- nrow(x)
   out <- fn(x, ...)
@@ -121,6 +175,26 @@ fn_inform <- function(x, fn, ..., since = "for unknown reason"){
   }
   out
 }
+
+label_fn_inform <- function(x,
+                            fn,
+                            ...,
+                            inform_col,
+                            since = "for unknown reason"){
+  inform_col <- enquo(inform_col)
+  x <- fn(x, ...)
+  n_labelled <- x %>%
+    pull(!! inform_col) %>%
+    sum()
+  if (n_labelled > 0){
+    sign <- "labelled"
+    change_abs <- n_labelled
+    s <- if_else(change_abs == 1, "", "s")
+    cli::cli_alert_info("{change_abs} row{s} {sign} {since}")
+  }
+  x
+}
+
 
 #' Check all rows of a data frame satisfy a condition
 #'
@@ -147,6 +221,29 @@ check_that_all <- function(x,
         "{condition_str}"))
     print(summary(unexpected))
   }
+}
+
+label_check_that_all <- function(x,
+                           condition,
+                           label,
+                           summary = identity){
+  condition <- enquo(condition)
+  col <- rlang::englue("satisfies_{label}")
+  x <- x %>%
+    mutate("satisfies_{label}" := !!condition)
+  unexpected_nrow <- x %>%
+    filter(!if_any(all_of(col))) %>%
+    nrow
+
+  if (unexpected_nrow > 0){
+    condition_str <- expr_print(condition)
+    row <- if_else(unexpected_nrow == 1, "row", "rows")
+    cli::cli_alert_warning(
+      c("{unexpected_nrow} {row} not satisfying ",
+        "{name} condition: ",
+        "{condition_str}"))
+  }
+  x
 }
 
 #' Alert user if all datetime are midnight

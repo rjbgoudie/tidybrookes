@@ -4,7 +4,7 @@
 \alias{fsheet_info}
 \title{Convert fsheet_def to data frame}
 \usage{
-fsheet_info(fsheet_def)
+fsheet_info(fsheet_def, exclude_lists = FALSE)
 }
 \description{
 Convert fsheet_def to data frame

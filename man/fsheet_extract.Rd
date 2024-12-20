@@ -25,6 +25,7 @@ fsheet_add(
   unit_rescale_fn = case_when(TRUE ~ value_as_number),
   unit_relabel_fn = case_when(TRUE ~ NA_character_),
   coalesce_fn = identity,
+  coalesce_fn0 = identity,
   expect_before = TRUE,
   expect_after = TRUE,
   range_mainly_low = NA,
@@ -92,6 +93,9 @@ values. By default, does not rescale}
 the flowsheet values. By default, does not rescale}
 
 \item{coalesce_fn}{A function specifying how to combine measurements from
+exactly the same time}
+
+\item{coalesce_fn0}{A function specifying how to combine measurements from
 exactly the same time}
 
 \item{expect_before}{An expression that returns a logical value,
