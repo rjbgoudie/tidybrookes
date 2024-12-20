@@ -3,7 +3,7 @@
 #' Convenience wrapper around [readr::read_csv] and [readr::read_csv] that makes
 #' it easier to set the `col_types` for standard data from Epic. Also makes
 #' handling untimezoned data more robust through use of functions from
-#' [`clock::parse_date_time`].
+#' [`clock::date_time_parse`].
 #'
 #' Named `col_types` are extracted using [`default_col_types()`].
 #'

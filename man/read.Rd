@@ -82,7 +82,7 @@ be either length 1, or the same length as the input:
 Convenience wrapper around \link[readr:read_delim]{readr::read_csv} and \link[readr:read_delim]{readr::read_csv} that makes
 it easier to set the \code{col_types} for standard data from Epic. Also makes
 handling untimezoned data more robust through use of functions from
-\code{\link[clock:parse_date_time]{clock::parse_date_time}}.
+\code{\link[clock:date-time-parse]{clock::date_time_parse}}.
 }
 \details{
 Named \code{col_types} are extracted using \code{\link[=default_col_types]{default_col_types()}}.
