@@ -91,11 +91,11 @@
 tests_add <- function(test_def,
                       symbol,
                       title,
-                      names_cuh = NA,
-                      names_external = NA,
+                      names_cuh = NULL,
+                      names_external = NULL,
                       search_pattern,
-                      search_exclude = NA,
-                      search_exclude_group = NA,
+                      search_exclude = NULL,
+                      search_exclude_group = NULL,
                       type = "numeric",
                       silently_exclude_na_when = FALSE,
                       silently_exclude_when = FALSE,
@@ -116,10 +116,10 @@ tests_add <- function(test_def,
                       unit_relabel_fn = case_when(TRUE ~ unit),
                       expect_before = TRUE,
                       expect_after = TRUE,
-                      range_mainly_low = NA,
-                      range_mainly_high = NA,
-                      range_discard_below = NA,
-                      range_discard_above = NA){
+                      range_mainly_low = NULL,
+                      range_mainly_high = NULL,
+                      range_discard_below = NULL,
+                      range_discard_above = NULL){
   censoring_fn <- enquo(censoring_fn)
   value_as_number_fn <- enquo(value_as_number_fn)
   value_as_character_fn <- enquo(value_as_character_fn)
@@ -208,22 +208,41 @@ tests_extract <- function(x,
   }
 }
 
+
 tests_extract_single <- function(x, test_def, errors = stop){
-  # Filter to only CUH tests
-  out <- x %>%
-    filter(name %in% test_def$names_cuh)
 
-  cli::cli_alert_info(
-    c("\nExtracting {test_def$title} ({test_def$symbol}) from ",
-      "{nrow(out)} raw rows"))
 
-  possible_new <- tests_check_for_new(x, test_def)
-  if (nrow(possible_new) > 0){
-    possible_new_names <- format_as_argument(possible_new$name)
-    cli::cli_alert_warning(
-      c("{nrow(possible_new)} possible new test names: ",
-        "{possible_new_names}"))
+
+    out <- tribble(~person_id, ~symbol, ~name, ~collected_datetime, ~value_as_number)
+
+  if (inherits(x, "data.frame")){
+    out <- x %>%
+      filter(name %in% test_def$names_cuh)
+  } else if (inherits(x, "character")){
+    symbol <- test_def$symbol
+    path <- x[symbol]
+    if (!file.exists(path)){
+    } else {
+      if (str_ends(x,".csv") || str_ends(x,".csv.gz")){
+        out <- read_csv(path, show_col_types = FALSE)
+      } else {
+        out <- readRDS(path)
+      }
+    }
   }
+
+    cli::cli_alert_info(
+      c("Extracting {test_def$title} ",
+        "({test_def$symbol}) from {nrow(out)} raw rows"))
+
+  # possible_new <- tests_check_for_new(x, test_def)
+  # if (nrow(possible_new) > 0){
+  #   possible_new_names <- format_as_argument(possible_new$name)
+  #   warning(format_error_bullets(c(
+  #     i = glue("{nrow(possible_new)} possible new test names: ",
+  #              "{possible_new_names}"))),
+  #     immediate. = TRUE)
+  # }
 
   # Add symbol and title
   out <- out %>%
@@ -234,7 +253,13 @@ tests_extract_single <- function(x, test_def, errors = stop){
     mutate(type = test_def$type)
 
   # Check expect_before condition
-  check_that_all(out, !!test_def$expect_before, "expect_before")
+  check_that_all(out,
+                 !!test_def$expect_before,
+                 "expect_before",
+                 summary = function(x){
+                   x %>%
+                     count(name, unit, value_original)
+                 })
 
   # Remove duplicate rows
   out <- out %>%
@@ -261,6 +286,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
     out <- out %>%
       group_by(name) %>%
       mutate(
+        censoring = !!test_def$censoring_fn,
         value_as_character = suppressWarnings({
           as.character(value_original)
         }),
@@ -273,7 +299,6 @@ tests_extract_single <- function(x, test_def, errors = stop){
         value_as_character = !!test_def$value_as_character_fn,
         value_as_number = !!test_def$value_as_number_fn,
         value_as_logical = !!test_def$value_as_logical_fn,
-        censoring = !!test_def$censoring_fn,
         .after = value_original) %>%
       relocate(censoring, .after = value_as_number) %>%
       ungroup
@@ -285,9 +310,8 @@ tests_extract_single <- function(x, test_def, errors = stop){
                      suppressWarnings({!is.na(as.numeric(value_as_number))}),
                      name = "all values being numeric",
                      summary = function(x){
-                       list(x %>% count(value_original),
-                            x %>% count(value_original) %>% pull(value_original) %>% dput)
-                       })
+                       x %>% count(value_original)
+                     })
     }
 
     # Rescale units
@@ -296,7 +320,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
              unit = !!test_def$unit_relabel_fn)
 
     # Discard too high values
-    if (!is.na(test_def$range_discard_above)){
+    if (!is.null(test_def$range_discard_above)){
       out <- out %>%
         mutate(is_too_high = value_as_number > test_def$range_discard_above) %>%
         filter_inform(!is_too_high,
@@ -307,7 +331,7 @@ tests_extract_single <- function(x, test_def, errors = stop){
     }
 
     # Discard too low values
-    if (!is.na(test_def$range_discard_below)){
+    if (!is.null(test_def$range_discard_below)){
       out <- out %>%
         mutate(is_too_low = value_as_number < test_def$range_discard_below) %>%
         filter_inform(!is_too_low,
@@ -318,7 +342,12 @@ tests_extract_single <- function(x, test_def, errors = stop){
     }
 
     # Check expect_after condition
-    check_that_all(out, !!test_def$expect_after, "expect_after")
+    check_that_all(out,
+                   !!test_def$expect_after,
+                   "expect_after",
+                   summary = function(x){
+                     x %>% count(value_as_number, value_as_character, unit)
+                   })
 
     # Return result
     cli::cli_alert_info("{nrow(out)} rows extracted")
@@ -331,16 +360,16 @@ tests_extract_single <- function(x, test_def, errors = stop){
 
 tests_check_for_new <- function(x,
                                 test_def){
-  if (!all(is.na(test_def$search_exclude))){
+  if (!all(is.null(test_def$search_exclude))){
     test_def$search_exclude <- c(test_def$names_cuh, test_def$search_exclude)
   } else {
     test_def$search_exclude <- test_def$names_cuh
   }
-  if (!all(is.na(test_def$names_external))){
+  if (!all(is.null(test_def$names_external))){
     test_def$search_exclude <- c(test_def$search_exclude,
                                  test_def$names_external)
   }
-  if (all(is.na(test_def$search_exclude_group))){
+  if (all(is.null(test_def$search_exclude_group))){
     test_def$search_exclude_group <- c()
   }
   test_def$search_pattern <- paste0(test_def$search_pattern, collapse = "|")
@@ -350,6 +379,9 @@ tests_check_for_new <- function(x,
              (!group %in% test_def$search_exclude_group)) %>%
     count(name)
 }
+
+
+
 
 #' Widen test data
 #'
@@ -502,10 +534,13 @@ tests_info <- function(tests_def){
 tests_info_single <- function(test_def){
   tibble(symbol = test_def$symbol,
          title = test_def$title,
-         names_cuh = list(test_def$names_cuh),
-         #names_external = test_def$names_external,
+         names_cuh = list(test_def$names_cuh %||% character(0)),
+         names_external = list(test_def$names_external %||% character(0)),
          range_mainly_low = test_def$range_mainly_low,
          range_mainly_high = test_def$range_mainly_high,
          range_discard_below = test_def$range_discard_below,
-         range_discard_above = test_def$range_discard_above)
+         range_discard_above = test_def$range_discard_above,
+         search_pattern = list(test_def$search_pattern),
+         search_exclude = list(test_def$search_exclude %||% character(0)),
+         search_exclude_group = list(test_def$search_exclude_group %||% character(0)))
 }

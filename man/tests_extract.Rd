@@ -9,11 +9,11 @@ tests_add(
   test_def,
   symbol,
   title,
-  names_cuh = NA,
-  names_external = NA,
+  names_cuh = NULL,
+  names_external = NULL,
   search_pattern,
-  search_exclude = NA,
-  search_exclude_group = NA,
+  search_exclude = NULL,
+  search_exclude_group = NULL,
   type = "numeric",
   silently_exclude_na_when = FALSE,
   silently_exclude_when = FALSE,
@@ -28,10 +28,10 @@ tests_add(
   unit_relabel_fn = case_when(TRUE ~ unit),
   expect_before = TRUE,
   expect_after = TRUE,
-  range_mainly_low = NA,
-  range_mainly_high = NA,
-  range_discard_below = NA,
-  range_discard_above = NA
+  range_mainly_low = NULL,
+  range_mainly_high = NULL,
+  range_discard_below = NULL,
+  range_discard_above = NULL
 )
 
 tests_extract(
