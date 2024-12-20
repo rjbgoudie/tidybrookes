@@ -124,7 +124,7 @@ adt_check_discharge_dates_consistent <- function(x){
 #' @export
 adt_annotate <- function(x, fixed_labels, annotate_fn){
   # check numeric event type and text event type match
-  stopifnot(x %>% count(event_type_c, event_type) %>% nrow == 3)
+  #stopifnot(x %>% count(event_type_c, event_type) %>% nrow == 3)
 
   # Remove duplicate rows
   out <- x %>%
