@@ -111,7 +111,9 @@ med_admin_add <- function(med_admin_def,
 med_admin_extract <- function(x,
                               med_admin_def,
                               med_admin_units,
-                              errors = stop){
+                              errors = stop,
+                              rds_only = FALSE,
+                              rds_filepath_fn = NULL){
   if (length(med_admin_def) == 1 & "symbol" %in% names(med_admin_def)){
     med_admin_extract_single(x,
                              med_admin_def,
@@ -132,6 +134,35 @@ med_admin_extract_single <- function(x,
                                      med_admin_def,
                                      med_admin_units = med_admin_units,
                                      errors = stop){
+  out <- tribble(~person_id, ~sybol, ~name, ~administered_date)
+
+  if (inherits(x, "data.frame")){
+    # Filter to only CUH med_admin
+    out <- x %>%
+      filter(name %in% med_admin_def$names)
+
+    # Check for possible new med_admin names
+    possible_new <- med_admin_check_for_new_names(x, med_admin_def)
+    if (nrow(possible_new) > 0){
+      possible_new_names <- format_as_argument(possible_new$name)
+      warning(format_error_bullets(c(
+        i = glue("{nrow(possible_new)} possible new medication names: ",
+                 "{possible_new_names}"))),
+        immediate. = TRUE)
+    }
+  } else if (inherits(x, "character")){
+    # TODO check for possible new med_admin names
+    symbol <- med_admin_def$symbol
+    path <- x[symbol]
+    if (!file.exists(path)){
+    } else {
+      if (str_ends(x,".csv") || str_ends(x,".csv.gz")){
+        out <- read_csv(path, show_col_types = FALSE)
+      } else {
+        out <- readRDS(path)
+      }
+    }
+  }
 
   # med_admin name
   ################
