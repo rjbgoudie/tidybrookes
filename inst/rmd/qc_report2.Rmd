@@ -7,93 +7,16 @@ output:
     toc_depth: 2
     toc_float: true
 params:
-  adm_data: adm_data
-  adt_data: adt_data
-  tests_data: tests_data
-  tests_def: tests_def
-  fsheet_data: fsheet_data
+  db: db
   fsheet_def: fsheet_def
 ---
 
 ```{r setup, include=FALSE}
-library(ggplot2)
-library(dplyr)
-library(lubridate)
-library(hms)
 knitr::opts_chunk$set(echo = TRUE)
+library(hms)
 ```
 
-# Adm {.tabset}
 
-## By person (first visit)
-
-```{r}
-if (!is.null(adm_data)){
-  adm_person_age_at_visit_start <- adm_data %>%
-    group_by(person_id) %>%
-    filter(visit_id == min(visit_id)) %>%
-    summarise(age_at_visit_start = first(age_at_visit_start))
-  
-  ggplot(adm_person_age_at_visit_start, aes(x = age_at_visit_start)) +
-    geom_bar()
-}
-```
-
-## By visit
-
-```{r}
-if (!is.null(adm_data)){
-  adm_visit_age_at_visit_start <- adm_data %>%
-    group_by(visit_id) %>%
-    summarise(age_at_visit_start = first(age_at_visit_start))
-  
-  ggplot(adm_visit_age_at_visit_start, aes(x = age_at_visit_start)) +
-    geom_bar()
-}
-
-#ggplot(adm_data, aes(y = discharge_destination)) +
-#  geom_bar()
-```
-
-# Other
-
-
-```{r}
-if (!is.null(adt_data)){
-  adt_data %>%
-    group_by(department) %>%
-    mutate(total_time = interval(start_datetime,end_datetime)/ddays(1)) %>%
-    summarise(total_time = sum(total_time)) %>%
-    arrange(desc(total_time)) %>%
-    ungroup %>%
-    mutate(department = forcats::fct_reorder(department, total_time))
-}
-
-ggplot(adt_total_time_department(adt_data),
-       aes(y = department,
-           x = total_time)) +
-  geom_segment(aes(xend = 0, yend = department))
-
-adm_adt_data <- adm_data %>%
-  #select(-event_type) %>%
-  left_join(adt_data) %>%
-    mutate(start_since_presentation = interval(visit_start_datetime, start_datetime)/days(1),
-           end_since_presentation = interval(visit_start_datetime,end_datetime)/days(1))
-}
-```
-```{r, fig.height=100}
-# ggplot(adm_adt_data, aes(x = start_since_presentation,
-#                          xend = end_since_presentation,
-#                          y = person_id,
-#                          yend = person_id,
-#                          colour = department)) +
-#   geom_segment() +
-#   geom_text(aes(label = department)) +
-#   theme(legend.position = "bottom",
-#         axis.text.y = element_blank())
-```
-
-# Laboratory tests
 
 ```{r, results='asis'}
 categorical_table <- function(x){
@@ -149,22 +72,14 @@ tests_plot <- function(x, group, tests_def){
     print(time_plot)
   }
 }
-
-if (!is.null(tests_data)){
-  tests_data %>%
-    group_by(symbol) %>%
-    group_walk(~ tests_plot(.x, .y, tests_def))
-}
-
 ```
 
 # Flowsheets
 
 ```{r,results='asis'}
 
-fsheet_plot <- function(x, group, tests_def){
-  s <- group$symbol
-  def <- tests_def[[s]]
+fsheet_plot <- function(x, symbol, tests_def){
+  def <- tests_def[[symbol]]
   if (nrow(x) > 0){
     title <- def$title
     range_mainly_low <- as.numeric(def$range_mainly_low)
@@ -173,7 +88,7 @@ fsheet_plot <- function(x, group, tests_def){
     range_discard_above <- as.numeric(def$range_discard_above)
     names_cuh <- def$names_cuh
 
-    title <- glue("{title} [{unique(group$symbol)}]")
+    title <- glue("{title} [{unique(symbol)}]")
     cat("\n\n##   ", title, "\n\n")
 
     df <-
@@ -204,10 +119,27 @@ fsheet_plot <- function(x, group, tests_def){
   }
 }
 
-if (!is.null(fsheet_data)){
-  fsheet_data %>%
-    group_by(symbol) %>%
-    group_walk(~ fsheet_plot(.x, .y, fsheet_def))
+fsheet_db <- tbl(db, "fsheet")
+nrow_fsheet <- fsheet_db %>%
+  count() %>%
+  pull(n)
+
+
+if (nrow_fsheet > 0){
+  symbols <- fsheet_db %>%
+    count(symbol) %>%
+    pull(symbol)
+
+  for (this_symbol in symbols){
+    fsheet_symbol <- fsheet_db %>%
+      filter(symbol == this_symbol) %>%
+      collect()
+    
+    fsheet_plot(fsheet_symbol, this_symbol, fsheet_def)
+  }
+  # fsheet_db %>%
+  #   group_by(symbol) %>%
+  #   group_walk(~ fsheet_plot(.x, .y, fsheet_def))
 }
 ```
 

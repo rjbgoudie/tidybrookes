@@ -83,3 +83,22 @@ qc_report <- function(adm_data,
     utils::browseURL(path)
   }
 }
+
+qc_report2 <- function(db,
+                       fsheet_def = fsheet_def,
+                       output_dir = getwd(),
+                      ...){
+  path <- rmarkdown::render(
+    input = paste0(system.file(package = "tidybrookes"), "/rmd/qc_report2.Rmd"),
+    params = list(db = db,
+                  fsheet_def = fsheet_def),
+    output_dir = output_dir,
+    ...
+  )
+  viewer <- getOption("viewer")
+  if (!is.null(viewer)){
+    rstudioapi::viewer(path)
+  } else {
+    utils::browseURL(path)
+  }
+}
