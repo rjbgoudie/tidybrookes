@@ -342,3 +342,24 @@ person_id_shorten <- function(person_id){
 flip_names_and_values <- function(x){
   setNames(names(x), x)
 }
+
+#' Return of write to annotation database
+#'
+#' @param x The input `tbl` to the `_annotate` function
+#' @param x_annotated The out of the `_annotate` function
+#' @param annotation_db A `tbl` database source
+#' @param id_cols A character vector of the columns to retain in the
+#'   annotations database (to enable linking)
+return_or_write_to_annotation_db <- function(x,
+                                             x_annotated,
+                                             annotation_db,
+                                             id_cols){
+  if (is.null(annotation_db)){
+    x_annotated
+  } else {
+    keep_cols <- c(id_cols, setdiff(colnames(x_annotated), colnames(x)))
+    dbAppendTable(annotation_db$src$con,
+                  annotation_db$lazy_query$x,
+                  x_annotated[, keep_cols])
+  }
+}

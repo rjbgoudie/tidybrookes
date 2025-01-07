@@ -465,34 +465,31 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
     arrange(measurement_datetime)
 }
 
-#' Extract fsheet data into tidy format
+#' Add annotations to fsheet data
 #'
 #' @param x Flowsheet data in renamed format (after applying `fsheet_rename`)
-#' @param fsheet_def A fsheet definition
-#' @param errors A function indicating what to do when an error is found
-#'
-#' @return
-#' A data frame with the following columns:
-#' `person_id`, `symbol`, `value_as_character`, `value_as_number`,
-#' `value_as_logical`, `censoring`, `comment`, `measurement_datetime`, `name`,
-#' `title`, `data_id`, `measurement_id`, `line_id`, `template`, `form`, `type`,
-#' `unit`
+#' @param fsheet_def A fsheet definition, or list of fsheet definitions
+#' @param annotation_db Either `NULL` or a `tbl` reference to the annotations
+#'   database table that the annotations should be stored in. If `NULL` the
+#'   annotations are added to `x` as additional columns.
 #' @author R.J.B. Goudie
-fsheet_label <- function(x,
-                         fsheet_def,
-                         fsheet_annotate){
-  fsheet_def <- wrap_def_if_single(wrap_def_if_single)
+fsheet_annotate <- function(x,
+                            fsheet_def,
+                            annotation_db = NULL){
+  fsheet_def <- wrap_def_if_single(fsheet_def)
 
-  lapply(fsheet_def, function(y){
+  out <- lapply(fsheet_def, function(y){
     symbol <- y$symbol
-    out <- fsheet_label_single(x, y, errors = errors) %>%
-      arrange(symbol, measurement_datetime)
-    keep_cols <- c("fsheet_id", setdiff(colnames(out), colnames(x)))
+    x_annotated <- fsheet_annotate_single(x, y, errors = errors)
 
-    dbAppendTable(fsheet_annotate$src$con,
-                  fsheet_annotate$lazy_query$x,
-                  out[, keep_cols])
+    return_or_write_to_annotation_db(x,
+                                     x_annotated,
+                                     annotation_db,
+                                     id_cols = "fsheet_id")
   })
+  if (is.null(annotation_db)){
+    bind_rows(out)
+  }
 }
 
 
@@ -541,7 +538,7 @@ schema_fsheet <- function(){
 }
 
 #' @export
-fsheet_label_single <- function(x, fsheet_def, errors = stop){
+fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
   out <- x %>%
     filter(name %in% fsheet_def$names)
 
