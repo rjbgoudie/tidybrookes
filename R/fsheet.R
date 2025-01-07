@@ -665,7 +665,7 @@ fsheet_label_single <- function(x, fsheet_def, errors = stop){
                          since = "due to coalescing")
 
   out <- out %>%
-    mutate(exclude = if_any(starts_with("exclude") & where(is_logical)))
+    mutate(exclude = if_any(starts_with("exclude_") & where(is_logical)))
 
   # Check expect_after condition
   out <- label_check_that_all(out,
