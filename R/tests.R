@@ -1,3 +1,27 @@
+# TODO make these the default
+censored_number_regex <-
+  paste0("^(?<censoring>(?:[<>](?:=)?)|Less than|More than)?(?:\\s)*",
+         "(?<value>(?:[-+])?(?:[.|\\d])*)$")
+
+censoring_default <- function(value_original){
+  censoring <-
+    str_match(value_original, censored_number_regex)[, "censoring"]
+
+  case_when(censoring %in% c(">", ">=", "More than") ~ "right",
+            censoring %in% c("<", "<=", "Less than") ~ "left",
+            TRUE ~ NA_character_)
+
+}
+
+value_as_number_default <- function(value_original, value_as_number, censoring){
+  censored_value <- str_match(value_original, censored_number_regex)[, "value"]
+  case_when(censoring %in% c("left", "right") ~
+              suppressWarnings({
+                as.numeric(censored_value)
+              }),
+            TRUE ~ value_as_number)
+}
+
 #' Add a new definition of a test item
 #'
 #' @param test_def A list of existing test definitions to add this to
