@@ -20,7 +20,6 @@ filter_inform <- function(x, ..., since = "for unknown reason"){
 #' Distinct, but report the filtering that occurs
 #'
 #' @param x A data frame
-#' @param since A character describing the reason for the filtering
 #' @noRd
 distinct_inform <- function(x){
   since <- "since rows were exact duplicates"
@@ -36,6 +35,13 @@ distinct_inform <- function(x){
   out
 }
 
+#' Apply function to a data frame and report the filtering that occurs
+#'
+#' @param x A data frame
+#' @param fn A function
+#' @param ... Arguments to the function `fn`
+#' @param since A character describing the reason for the filtering
+#' @noRd
 fn_inform <- function(x, fn, ..., since = "for unknown reason"){
   previous <- nrow(x)
   out <- fn(x, ...)
@@ -54,6 +60,8 @@ fn_inform <- function(x, fn, ..., since = "for unknown reason"){
 #' @param x A data frame
 #' @param condition A condition
 #' @param name Character string, a name for the condition
+#' @param summary A function that should be used to summarise unexpected
+#' rows
 #' @noRd
 check_that_all <- function(x,
                            condition,
