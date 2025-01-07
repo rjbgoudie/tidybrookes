@@ -138,9 +138,9 @@ distinct_inform <- function(x){
   out
 }
 
-label_duplicates_inform <- function(x, exclude){
+label_duplicates_inform <- function(x, ignore_columns){
   x <- x |>
-    mutate(is_duplicate_of = vctrs::vec_duplicate_id(pick(-{{ exclude }}))) |>
+    mutate(is_duplicate_of = vctrs::vec_duplicate_id(pick(-{{ ignore_columns }}))) |>
     mutate(is_duplicate = is_duplicate_of != row_number(),
            .before = is_duplicate_of)
 
@@ -155,8 +155,8 @@ label_duplicates_inform <- function(x, exclude){
   x
 }
 
-exclusion_label_duplicates_inform <- function(x, exclude){
-  label_duplicates_inform(x, exclude = {{ exclude }}) %>%
+exclusion_label_duplicates_inform <- function(...){
+  label_duplicates_inform(...) %>%
     mutate(exclude_is_duplicate = is_duplicate,
            exclude_is_duplicate_of_row_number = is_duplicate_of) %>%
     select(-is_duplicate,

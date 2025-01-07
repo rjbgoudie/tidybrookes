@@ -571,7 +571,7 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
 
   # Remove duplicate rows
   out <- out %>%
-    exclusion_label_duplicates_inform(exclude = fsheet_id)
+    exclusion_label_duplicates_inform(ignore_columns = fsheet_id)
 
   # Exclude NAs when requested
   out <- out %>%
