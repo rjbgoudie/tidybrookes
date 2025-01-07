@@ -61,8 +61,8 @@
 #' @export
 first_during <- function(...){
   summarise_during(...,
-                   type = "slice",
-                   formula = which.min(datetime),
+                   type = "slice_min",
+                   formula = datetime,
                    names_suffix = "first")
 }
 

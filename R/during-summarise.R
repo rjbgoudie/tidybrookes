@@ -207,6 +207,9 @@ grouped_summarise_or_slice <- function(x,
   if (type == "slice"){
     out <- x %>%
       slice(!! formula)
+  } else if (type == "slice_min"){
+    out <- x %>%
+      slice_min(!! formula)
   } else if (type == "summarise"){
     out <- x %>%
       summarise(!! formula)
@@ -247,7 +250,7 @@ split_by_type <- function(x){
 
   if (has_type_col){
     possible_types <- c("numeric", "character", "logical")
-    type_col_is_possible <- all(unique(x$type) %in% possible_types)
+    type_col_is_possible <- all(unique(pull(x, type)) %in% possible_types)
   }
 
   clearly_specifies_types <-

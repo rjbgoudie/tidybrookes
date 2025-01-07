@@ -57,7 +57,7 @@ all_during <- function(x,
     rename(datetime = {{datetime}}) %>%
     arrange(datetime)
 
-  inform_if_all_times_are_midnight(y$datetime)
+  inform_if_all_times_are_midnight(pull(y, datetime))
 
   common_cols <- intersect(colnames(x), colnames(y))
   if (!"person_id" %in% common_cols){
@@ -91,8 +91,14 @@ all_during <- function(x,
                       datetime >= visit_start_datetime &
                        datetime <= visit_end_datetime,
                     is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime)) %>%
-      mutate(days_since_visit_start = interval(visit_start_datetime, datetime)/ddays(1))
+                      datetime >= visit_start_datetime))
+
+    if (inherits(out, "tbl_dbi")){
+
+    } else {
+      out <- out %>%
+        mutate(days_since_visit_start = interval(visit_start_datetime, datetime)/days(1))
+    }
   } else if (during == "during_visit_initial_24h"){
     out <- x %>%
       join_fn(
