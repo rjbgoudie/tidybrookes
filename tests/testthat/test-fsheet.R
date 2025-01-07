@@ -28,6 +28,22 @@ test_that("Ignores irrelevant rows", {
       4125 * 28.35 / 1000,
       4035 * 28.35 / 1000
       ))
+
+  suppressMessages({
+    fsheet_data_test_annotate <- fsheet_annotate(fsheet_raw_test, fsheet_def)
+  })
+
+  fsheet_data_test_annotate_filtered <- fsheet_data_test_annotate |>
+    filter(!exclude) |>
+    arrange(measurement_datetime)
+
+  expect_equal(fsheet_data_test_annotate_filtered$unit, c("kg", "kg", "kg"))
+  expect_equal(
+    fsheet_data_test_annotate_filtered$value_as_number,
+    c(4025 * 28.35 / 1000,
+      4125 * 28.35 / 1000,
+      4035 * 28.35 / 1000
+    ))
 })
 
 test_that("discard values below", {
@@ -82,4 +98,36 @@ test_that("missing measurement date", {
   expect_identical(fsheet_data_test$value_as_number, 93)
   expect_identical(fsheet_data_test$symbol, "spo2")
   expect_equal(fsheet_data_test$measurement_datetime, ymd_hms(NA, tz = "Europe/London"))
+})
+
+
+test_that("fsheet extract and annotate give corresponding results", {
+  fsheet_raw_test <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("test_fsheet.csv"),
+      col_types = "fsheet") %>%
+    fsheet_rename %>%
+    filter(person_id == "AA")
+
+  fsheet_def <- list() %>%
+    fsheet_add(
+      symbol = "weight",
+      title = "Weight",
+      names = c("Weight"),
+      search_pattern = c("weight"),
+      search_exclude = c(),
+      unit_rescale_fn = case_when(TRUE ~ value_as_number * 28.35 / 1000),
+      unit_relabel_fn = case_when(TRUE ~ "kg"))
+
+  suppressMessages({
+    fsheet_data_test_extract <- fsheet_extract(fsheet_raw_test, fsheet_def)
+    fsheet_data_test_annotate <- fsheet_annotate(fsheet_raw_test, fsheet_def)
+  })
+
+  expect_identical(fsheet_data_test_extract,
+                   fsheet_data_test_annotate |>
+                     filter(!exclude) |>
+                     select(all_of(colnames(fsheet_data_test_extract))) |>
+                     arrange(measurement_datetime))
+
 })
