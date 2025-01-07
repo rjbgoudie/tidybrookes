@@ -662,7 +662,7 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
   coalesce_out <- function(x){
     x %>%
       mutate(exclude_is_coalesced = FALSE) %>%
-      group_by(person_id, visit_id, measurement_datetime) %>%
+      group_by(person_id, measurement_datetime) %>%
       (fsheet_def$coalesce_fn)() %>%
       ungroup()
   }
