@@ -16,7 +16,16 @@ database table that the annotations should be stored in. If \code{NULL} the
 annotations are added to \code{x} as additional columns.}
 }
 \description{
-Add annotations to fsheet data
+Annotate fsheet data to note rows that should be excluded etc.
+}
+\details{
+Annotations can either be added as additional columns (when
+\code{annotation_db = NULL}), or stored in a separate database table (by
+setting \code{annotation_db} to a database \code{tbl}).
+
+Note that when adding the annotations as additiona columns,
+the result will not be sorted, since it is left in the original
+order of \code{x}
 }
 \author{
 R.J.B. Goudie

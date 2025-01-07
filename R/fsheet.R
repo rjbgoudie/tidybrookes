@@ -467,6 +467,16 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
 
 #' Add annotations to fsheet data
 #'
+#' Annotate fsheet data to note rows that should be excluded etc.
+#'
+#' Annotations can either be added as additional columns (when
+#' `annotation_db = NULL`), or stored in a separate database table (by
+#' setting `annotation_db` to a database `tbl`).
+#'
+#' Note that when adding the annotations as additiona columns,
+#' the result will not be sorted, since it is left in the original
+#' order of `x`
+#'
 #' @param x Flowsheet data in renamed format (after applying `fsheet_rename`)
 #' @param fsheet_def A fsheet definition, or list of fsheet definitions
 #' @param annotation_db Either `NULL` or a `tbl` reference to the annotations
@@ -488,7 +498,8 @@ fsheet_annotate <- function(x,
                                      id_cols = "fsheet_id")
   })
   if (is.null(annotation_db)){
-    bind_rows(out)
+    x |>
+      left_join(bind_rows(out))
   }
 }
 
