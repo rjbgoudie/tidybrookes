@@ -442,7 +442,7 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
     rename(value_original = value)
 
   # Check expect_before condition
-  out <- label_check_that_all(out,
+  out <- exclusion_label_check_that_all(out,
                  !!fsheet_def$expect_before,
                  label = "expect_before",
                  summary = function(x){
@@ -490,7 +490,7 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
 
   if (fsheet_def$type == "numeric"){
     out <-
-      label_check_that_all(out,
+      exclusion_label_check_that_all(out,
                            suppressWarnings({!is.na(as.numeric(value_as_number))}),
                            label = "all_numeric")
   }
@@ -538,8 +538,8 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
                                    since = "due to coalescing")
 
   # Check expect_after condition
-  out <- label_check_that_all(out,
-                              exclude | (!!fsheet_def$expect_after),
+  out <- exclusion_label_check_that_all(out,
+                              (!!fsheet_def$expect_after),
                               label = "expect_after")
 
   # Return result

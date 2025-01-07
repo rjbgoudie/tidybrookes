@@ -18,9 +18,7 @@ label_condition_inform <- function(x,
                                    condition,
                                    since = "for unknown reason"){
   x <- x |>
-    mutate("{{ inform_col }}" :=
-             case_when(exclude ~ as.logical(NA),
-                       TRUE ~ {{ condition }}))
+    mutate("{{ inform_col }}" := {{ condition }})
 
   # removing NA since, for example, silently_exclude_when may not handle
   # cases that are already handled by silently_exclude_na_when
@@ -37,8 +35,15 @@ label_condition_inform <- function(x,
   x
 }
 
-exclusion_label_condition_inform <- function(...){
-  label_condition_inform(...) %>%
+exclusion_label_condition_inform <- function(x,
+                                             inform_col,
+                                             condition,
+                                             ...){
+  label_condition_inform(x,
+                         inform_col = {{ inform_col }},
+                         condition = case_when(exclude ~ as.logical(NA),
+                                              TRUE ~ {{ condition }}),
+                         ...) %>%
     update_exclude_labels()
 }
 
@@ -114,9 +119,8 @@ label_check_that_all <- function(x,
   condition <- enquo(condition)
   col <- rlang::englue("satisfies_{label}")
   x <- x %>%
-    mutate("satisfies_{label}" :=
-             case_when(exclude ~ as.logical(NA),
-                       TRUE ~ !!condition))
+    mutate("satisfies_{label}" := !!condition)
+
   unexpected_nrow <- x %>%
     filter(!if_any(all_of(col))) %>%
     nrow
@@ -130,4 +134,11 @@ label_check_that_all <- function(x,
         "{condition_str}"))
   }
   x
+}
+
+exclusion_label_check_that_all <- function(x, condition, ...){
+  label_check_that_all(x,
+                       condition = case_when(exclude ~ as.logical(NA),
+                                             TRUE ~ {{condition}}),
+                       ...)
 }
