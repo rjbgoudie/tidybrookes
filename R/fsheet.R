@@ -504,31 +504,15 @@ fsheet_annotate <- function(x,
 }
 
 
-schema_fsheet <- function(){
+fsheet_annotation_schema <- function(){
   tibble(
     fsheet_id = integer(0),
-    person_id = character(0),
     symbol = character(0),
-    measurement_id = character(0),
-    measurement_datetime = lubridate::POSIXct(0),
-    name = character(0),
     title = character(0),
     value_as_character = character(0),
     value_as_number = numeric(0),
     censoring = character(0),
     value_as_logical = logical(0),
-    template = character(0),
-    form = character(0),
-    unit = character(0),
-    visit_id = numeric(0),
-    visit_start_datetime = lubridate::POSIXct(0),
-    visit_end_datetime = lubridate::POSIXct(0),
-    measurement_year = numeric(0),
-    measurement_month = numeric(0),
-    visit_end_year = numeric(0),
-    visit_end_month = numeric(0),
-    visit_start_year = numeric(0),
-    visit_start_month = numeric(0),
     type = character(0),
     satisfies_expect_before = logical(0),
     satisfies_all_numeric = logical(0),
@@ -557,7 +541,7 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
     out <- collect(out)
   }
   out <- out %>%
-    bind_rows(schema_fsheet())
+    bind_rows(fsheet_annotation_schema())
 
   cli::cli_alert_info(
     c("Extracting {fsheet_def$title} ",
