@@ -552,7 +552,9 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
            title,
            type,
            range_mainly_low,
-           range_mainly_high, range_discard_below, range_discard_above)
+           range_mainly_high,
+           range_discard_below,
+           range_discard_above)
   # Add symbol and title
   out <- out %>%
     mutate(symbol = fsheet_def$symbol, .after = person_id) %>%
@@ -609,9 +611,10 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
     ungroup
 
   if (fsheet_def$type == "numeric"){
-    out <- out <- label_check_that_all(out,
-                   suppressWarnings({!is.na(as.numeric(value_as_number))}),
-                   label = "all_numeric")
+    out <-
+      label_check_that_all(out,
+                           suppressWarnings({!is.na(as.numeric(value_as_number))}),
+                           label = "all_numeric")
   }
 
   # Rescale units
