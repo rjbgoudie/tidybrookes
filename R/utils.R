@@ -101,10 +101,15 @@ label_condition_inform <- function(x,
                                    condition,
                                    since = "for unknown reason"){
   x <- x |>
-    mutate("{{ inform_col }}" := {{ condition }})
+    mutate("{{ inform_col }}" :=
+             case_when(exclude ~ as.logical(NA),
+                       TRUE ~ {{ condition }}))
+
+  # removing NA since, for example, silently_exclude_when may not handle
+  # cases that are already handled by silently_exclude_na_when
   n_labelled <- x %>%
     pull({{ inform_col }}) %>%
-    sum()
+    sum(na.rm = TRUE)
 
   if (n_labelled > 0){
     sign <- "labelled"
@@ -116,7 +121,8 @@ label_condition_inform <- function(x,
 }
 
 exclusion_label_condition_inform <- function(...){
-  label_condition_inform(...)
+  label_condition_inform(...) %>%
+    update_exclude_labels()
 }
 
 #' Distinct, but report the filtering that occurs
@@ -155,12 +161,14 @@ label_duplicates_inform <- function(x, ignore_columns){
   x
 }
 
+# TODO does this handle already excluded rows reasonably-enough?
 exclusion_label_duplicates_inform <- function(...){
   label_duplicates_inform(...) %>%
     mutate(exclude_is_duplicate = is_duplicate,
            exclude_is_duplicate_of_row_number = is_duplicate_of) %>%
     select(-is_duplicate,
-           -is_duplicate_of)
+           -is_duplicate_of) %>%
+    update_exclude_labels()
 }
 
 fn_inform <- function(x, fn, ..., since = "for unknown reason"){
@@ -182,10 +190,17 @@ label_fn_inform <- function(x,
                             inform_col,
                             since = "for unknown reason"){
   inform_col <- enquo(inform_col)
-  x <- fn(x, ...)
+
+  rows_to_consider <- !is.na(x$exclude) & !x$exclude
+  x[rows_to_consider, ] <- fn(x[rows_to_consider, ], ...)
+  x <- mutate(x,
+              "{{ inform_col }}" :=
+                case_when(exclude ~ as.logical(NA),
+                          TRUE ~ !!inform_col))
+
   n_labelled <- x %>%
     pull(!! inform_col) %>%
-    sum()
+    sum(na.rm = TRUE)
   if (n_labelled > 0){
     sign <- "labelled"
     change_abs <- n_labelled
@@ -194,6 +209,13 @@ label_fn_inform <- function(x,
   }
   x
 }
+
+
+exclusion_label_fn_inform <- function(...){
+  label_fn_inform(...) %>%
+    update_exclude_labels()
+}
+
 
 
 #' Check all rows of a data frame satisfy a condition
@@ -230,7 +252,9 @@ label_check_that_all <- function(x,
   condition <- enquo(condition)
   col <- rlang::englue("satisfies_{label}")
   x <- x %>%
-    mutate("satisfies_{label}" := !!condition)
+    mutate("satisfies_{label}" :=
+             case_when(exclude ~ as.logical(NA),
+                       TRUE ~ !!condition))
   unexpected_nrow <- x %>%
     filter(!if_any(all_of(col))) %>%
     nrow
@@ -240,7 +264,7 @@ label_check_that_all <- function(x,
     row <- if_else(unexpected_nrow == 1, "row", "rows")
     cli::cli_alert_warning(
       c("{unexpected_nrow} {row} not satisfying ",
-        "{name} condition: ",
+        "{label} condition: ",
         "{condition_str}"))
   }
   x
@@ -362,4 +386,10 @@ return_or_write_to_annotation_db <- function(x,
                   annotation_db$lazy_query$x,
                   x_annotated[, keep_cols])
   }
+}
+
+update_exclude_labels <- function(x){
+  mutate(x,
+         exclude = if_any(starts_with("exclude_") & where(is_logical),
+                          ~ !is.na(.) & .))
 }

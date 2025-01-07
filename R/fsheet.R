@@ -321,135 +321,13 @@ fsheet_extract <- function(x,
 }
 
 fsheet_extract_single <- function(x, fsheet_def, errors = stop){
-  out <- tribble(~person_id, ~symbol, ~name, ~measurement_datetime, ~value)
+  out <- fsheet_annotate_single(x, fsheet_def)
 
-  if (inherits(x, "data.frame")){
-    out <- x %>%
-      filter(name %in% fsheet_def$names)
-  } else if (inherits(x, "character")){
-    symbol <- fsheet_def$symbol
-    path <- x[symbol]
-    if (!file.exists(path)){
-    } else {
-    if (str_ends(x,".csv") || str_ends(x,".csv.gz")){
-      out <- read_csv(path, show_col_types = FALSE)
-    } else {
-      out <- readRDS(path)
-    }
-    }
-  } else if (inherits(x, "tbl_sql")){
-    out <- x %>%
-      filter(name %in% fsheet_def$names) %>%
-      collect()
-  }
-
-  cli::cli_alert_info(
-    c("Extracting {fsheet_def$title} ",
-      "({fsheet_def$symbol}) from {nrow(out)} raw rows"))
-
-  # Add symbol and title
   out <- out %>%
-    mutate(symbol = fsheet_def$symbol, .after = person_id) %>%
-    mutate(title = fsheet_def$title, .after = measurement_datetime) %>%
-    relocate(name, .after = measurement_datetime) %>%
-    rename(value_original = value) %>%
-    mutate(type = fsheet_def$type)
+    filter(!exclude)
 
-  # Check expect_before condition
-  check_that_all(out,
-                 !!fsheet_def$expect_before,
-                 "expect_before",
-                 summary = function(x){
-                   x %>% count(value_original)
-                 })
-
-  # Remove duplicate rows
-  out <- out %>%
-    distinct_inform
-
-  # Exclude NAs when requested
-  out <- out %>%
-    mutate(will_silently_exclude_na = (is.na(value_original) & !!fsheet_def$silently_exclude_na_when)) %>%
-    filter_inform(!will_silently_exclude_na,
-                  since = "since value was NA")
-
-  # Exclude other rows when requested
-  out <- out %>%
-    mutate(will_silently_exclude = (!!fsheet_def$silently_exclude_when)) %>%
-    filter_inform(!will_silently_exclude,
-                  since = "due to exclude_when condition")
-
-  # Convert values to numeric, and handle censoring
-  out <- out %>%
-    group_by(name) %>%
-    mutate(
-      value_as_character = suppressWarnings({
-        as.character(value_original)
-      }),
-      value_as_number = suppressWarnings({
-        as.numeric(value_original)
-      }),
-      value_as_logical = suppressWarnings({
-        as.logical(value_original)
-      }),
-      value_as_character = !!fsheet_def$value_as_character_fn,
-      value_as_number = !!fsheet_def$value_as_number_fn,
-      value_as_logical = !!fsheet_def$value_as_logical_fn,
-      censoring = !!fsheet_def$censoring_fn,
-      .after = value_original) %>%
-    relocate(censoring, .after = value_as_number) %>%
-    ungroup
-
-  if (fsheet_def$type == "numeric"){
-    check_that_all(out,
-                   suppressWarnings({!is.na(as.numeric(value_as_number))}),
-                   name = "all values being numeric")
-  }
-
-  # Rescale units
-  out <- out %>%
-    mutate(value_as_number = !!fsheet_def$unit_rescale_fn,
-           unit = !!fsheet_def$unit_relabel_fn)
-
-  # Discard too high values
-  if (!is.na(fsheet_def$range_discard_above)){
-    out <- out %>%
-      mutate(is_too_high = value_as_number > fsheet_def$range_discard_above) %>%
-      filter_inform(!is_too_high,
-                    since = glue("since >{fsheet_def$range_discard_above}"))
-  } else {
-    out <- out %>%
-      mutate(is_too_high = FALSE)
-  }
-
-  # Discard too low values
-  if (!is.na(fsheet_def$range_discard_below)){
-    out <- out %>%
-      mutate(is_too_low = value_as_number < fsheet_def$range_discard_below) %>%
-      filter_inform(!is_too_low,
-                    since = glue("since <{fsheet_def$range_discard_below}"))
-  } else {
-    out <- out %>%
-      mutate(is_too_low = FALSE)
-  }
-
-  coalesce_out <- function(x){
-    x %>%
-      group_by(person_id, measurement_datetime) %>%
-      (fsheet_def$coalesce_fn0)() %>%
-      ungroup()
-  }
-  # Handle coalesce
-  out <- fn_inform(out, coalesce_out, since = "due to coalescing")
-
-  # Check expect_after condition
-  check_that_all(out, !!fsheet_def$expect_after, "expect_after")
-
-  # Return result
   cli::cli_alert_info("{nrow(out)} rows extracted")
   out %>%
-    select(-will_silently_exclude, -will_silently_exclude_na,
-           -value_original, -is_too_high, -is_too_low) %>%
     relocate(person_id,
              symbol,
              measurement_datetime,
@@ -654,13 +532,10 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
       ungroup()
   }
   # Handle coalesce
-  out <- label_fn_inform(out,
-                         coalesce_out,
-                         inform_col = exclude_is_coalesced,
-                         since = "due to coalescing")
-
-  out <- out %>%
-    mutate(exclude = if_any(starts_with("exclude_") & where(is_logical)))
+  out <- exclusion_label_fn_inform(out,
+                                   coalesce_out,
+                                   inform_col = exclude_is_coalesced,
+                                   since = "due to coalescing")
 
   # Check expect_after condition
   out <- label_check_that_all(out,
