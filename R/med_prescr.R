@@ -98,15 +98,13 @@ med_prescr_add <- function(med_prescr_def,
 #' @rdname med_prescr_extract
 #' @export
 med_prescr_extract <- function(x, med_prescr_def, errors = stop){
-  if (length(med_prescr_def) == 1 & "symbol" %in% names(med_prescr_def)){
-    med_prescr_extract_single(x, med_prescr_def)
-  } else {
-    out <- bind_rows(lapply(med_prescr_def, function(y){
-      cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
-      med_prescr_extract_single(x, y, errors = errors)
-    }))
-    out %>% arrange(symbol, start_date)
-  }
+  med_prescr_def <- wrap_def_if_single(med_prescr_def)
+
+  out <- bind_rows(lapply(med_prescr_def, function(y){
+    cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
+    med_prescr_extract_single(x, y, errors = errors)
+  }))
+  out %>% arrange(symbol, start_date)
 }
 
 med_prescr_extract_single <- function(x, med_prescr_def, errors = stop){

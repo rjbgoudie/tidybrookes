@@ -302,23 +302,21 @@ fsheet_extract <- function(x,
                            errors = stop,
                            rds_only = FALSE,
                            rds_filepath_fn = NULL){
-  if (length(fsheet_def) == 1 & "symbol" %in% names(fsheet_def)){
-    fsheet_extract_single(x, fsheet_def)
-  } else {
-    if (!rds_only){
+  fsheet_def <- wrap_def_if_single(fsheet_def)
+
+  if (!rds_only){
     out <- bind_rows(lapply(fsheet_def, function(y){
       fsheet_extract_single(x, y, errors = errors)
     }))
     out %>% arrange(symbol, measurement_datetime)
-    } else if (rds_only){
-      lapply(fsheet_def, function(y){
-        symbol <- y$symbol
-        out <- fsheet_extract_single(x, y, errors = errors) %>%
-          arrange(symbol, measurement_datetime)
-        saveRDS(out,
-                file = rds_filepath_fn(symbol))
-      })
-    }
+  } else if (rds_only){
+    lapply(fsheet_def, function(y){
+      symbol <- y$symbol
+      out <- fsheet_extract_single(x, y, errors = errors) %>%
+        arrange(symbol, measurement_datetime)
+      saveRDS(out,
+              file = rds_filepath_fn(symbol))
+    })
   }
 }
 
@@ -483,25 +481,18 @@ fsheet_extract_single <- function(x, fsheet_def, errors = stop){
 fsheet_label <- function(x,
                          fsheet_def,
                          fsheet_annotate){
-  if (length(fsheet_def) == 1 & "symbol" %in% names(fsheet_def)){
-    out <- fsheet_label_single(x, fsheet_def)
+  fsheet_def <- wrap_def_if_single(wrap_def_if_single)
+
+  lapply(fsheet_def, function(y){
+    symbol <- y$symbol
+    out <- fsheet_label_single(x, y, errors = errors) %>%
+      arrange(symbol, measurement_datetime)
     keep_cols <- c("fsheet_id", setdiff(colnames(out), colnames(x)))
 
     dbAppendTable(fsheet_annotate$src$con,
-                  db_fsheet$lazy_query$x,
+                  fsheet_annotate$lazy_query$x,
                   out[, keep_cols])
-  } else {
-    lapply(fsheet_def, function(y){
-      symbol <- y$symbol
-      out <- fsheet_label_single(x, y, errors = errors) %>%
-        arrange(symbol, measurement_datetime)
-      keep_cols <- c("fsheet_id", setdiff(colnames(out), colnames(x)))
-
-      dbAppendTable(fsheet_annotate$src$con,
-                    fsheet_annotate$lazy_query$x,
-                    out[, keep_cols])
-    })
-  }
+  })
 }
 
 

@@ -131,14 +131,12 @@ fsheet_io_add <- function(fsheet_io_def,
 #' @author R.J.B. Goudie
 #' @rdname fsheet_io_extract
 fsheet_io_extract <- function(x, fsheet_io_def, errors = stop){
-  if (length(fsheet_io_def) == 1 & "symbol" %in% names(fsheet_io_def)){
-    fsheet_io_extract_single(x, fsheet_io_def)
-  } else {
-    out <- bind_rows(lapply(fsheet_io_def, function(y){
-      fsheet_io_extract_single(x, y, errors = errors)
-    }))
-    out %>% arrange(symbol, measurement_datetime)
-  }
+  fsheet_io_def <- wrap_def_if_single(fsheet_io_def)
+
+  out <- bind_rows(lapply(fsheet_io_def, function(y){
+    fsheet_io_extract_single(x, y, errors = errors)
+  }))
+  out %>% arrange(symbol, measurement_datetime)
 }
 
 

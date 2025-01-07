@@ -70,15 +70,14 @@ condition_add <- function(condition_def,
 #' @author R.J.B. Goudie
 #' @rdname condition_extract
 condition_extract <- function(x, condition_def, errors = stop){
-  if (length(condition_def) == 1 & "symbol" %in% names(condition_def)){
-    condition_extract_single(x, condition_def)
-  } else {
-    out <- bind_rows(lapply(condition_def, function(y){
-      cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
-      condition_extract_single(x, y, errors = errors)
-    }))
-    out %>% arrange(symbol, diagnosis_datetime)
-  }
+  condition_def <- wrap_def_if_single(condition_def)
+
+  out <- bind_rows(lapply(condition_def, function(y){
+    cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
+    condition_extract_single(x, y, errors = errors)
+  }))
+  out %>% arrange(symbol, diagnosis_datetime)
+
 }
 
 condition_extract_single <- function(x, condition_def, errors = stop){

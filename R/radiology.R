@@ -56,15 +56,13 @@ radiology_add <- function(radiology_def,
 #' @rdname radiology_extract
 #' @export
 radiology_extract <- function(x, radiology_def, errors = stop){
-  if (length(radiology_def) == 1 & "symbol" %in% names(radiology_def)){
-    radiology_extract_single(x, radiology_def)
-  } else {
-    out <- bind_rows(lapply(radiology_def, function(y){
-      cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
-      radiology_extract_single(x, y, errors = errors)
-    }))
-    out %>% arrange(symbol, procedure_datetime)
-  }
+  radiology_def <- wrap_def_if_single(radiology_def)
+
+  out <- bind_rows(lapply(radiology_def, function(y){
+    cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
+    radiology_extract_single(x, y, errors = errors)
+  }))
+  out %>% arrange(symbol, procedure_datetime)
 }
 
 radiology_extract_single <- function(x, radiology_def, errors = stop){

@@ -114,20 +114,16 @@ med_admin_extract <- function(x,
                               errors = stop,
                               rds_only = FALSE,
                               rds_filepath_fn = NULL){
-  if (length(med_admin_def) == 1 & "symbol" %in% names(med_admin_def)){
+  med_admin_def <- wrap_def_if_single(med_admin_def)
+
+  out <- bind_rows(lapply(med_admin_def, function(y){
+    cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
     med_admin_extract_single(x,
-                             med_admin_def,
-                             med_admin_units = med_admin_units)
-  } else {
-    out <- bind_rows(lapply(med_admin_def, function(y){
-      cli::cli_alert_info("Extracting {y$title} ({y$symbol})")
-      med_admin_extract_single(x,
-                               y,
-                               med_admin_units = med_admin_units,
-                               errors = errors)
-    }))
-    out %>% arrange(symbol, administered_datetime)
-  }
+                             y,
+                             med_admin_units = med_admin_units,
+                             errors = errors)
+  }))
+  out %>% arrange(symbol, administered_datetime)
 }
 
 med_admin_extract_single <- function(x,

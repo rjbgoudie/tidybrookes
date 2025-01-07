@@ -211,24 +211,20 @@ tests_extract <- function(x,
                           errors = stop,
                           rds_only = FALSE,
                           rds_filepath_fn = NULL){
-  if (length(tests_def) == 1 & "symbol" %in% names(tests_def)){
-    out <- tests_extract_single(x, tests_def)
+  tests_def <- wrap_def_if_single(tests_def)
+
+  if (!rds_only){
+    out <- bind_rows(lapply(tests_def, function(y){
+      tests_extract_single(x, y, errors = errors)
+    }))
     out %>% arrange(symbol, collected_datetime)
-  } else {
-    if (!rds_only){
-      out <- bind_rows(lapply(tests_def, function(y){
-        tests_extract_single(x, y, errors = errors)
-      }))
-      out %>% arrange(symbol, collected_datetime)
-    } else if (rds_only){
-      lapply(tests_def, function(y){
-        symbol <- y$symbol
-        out <- tests_extract_single(x, y, errors = errors)
-        out <- out %>% arrange(symbol, collected_datetime)
-        saveRDS(out,
-                file = rds_filepath_fn(symbol))
-      })
-    }
+  } else if (rds_only){
+    lapply(tests_def, function(y){
+      symbol <- y$symbol
+      out <- tests_extract_single(x, y, errors = errors)
+      out <- out %>% arrange(symbol, collected_datetime)
+      saveRDS(out, file = rds_filepath_fn(symbol))
+    })
   }
 }
 
