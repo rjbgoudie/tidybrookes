@@ -681,9 +681,6 @@ fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
                               label = "expect_after")
 
   # Return result
-
-  cli::cli_alert_info("{nrow(out)} rows extracted")
-  # Return result
   out %>%
     select(-value_original) %>%
     arrange(measurement_datetime)
