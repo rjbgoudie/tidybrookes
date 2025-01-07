@@ -128,7 +128,6 @@ all_during <- function(x,
                       datetime >= visit_start_datetime &
                       datetime <= visit_start_datetime + dhours(72)))
   } else if (during == "during_department"){
-    warning("Note that this only handle single icu_visit at the moment, at hosital visit level")
     out <- x %>%
       join_fn(
         y,
@@ -141,7 +140,6 @@ all_during <- function(x,
                     is.na(department_end_datetime) ~
                       datetime >= department_start_datetime))
   } else if (during == "during_department_after_48h"){
-    warning("Note that this only handle single icu_visit at the moment, at hosital visit level")
     out <- x %>%
       join_fn(
         y,
@@ -153,20 +151,45 @@ all_during <- function(x,
                       datetime <= department_end_datetime,
                     is.na(department_end_datetime) ~
                       datetime >= department_start_datetime + dhours(48)))
-  } else if (during == "during_icu"){
-    warning("Note that this only handle single icu_visit at the moment, at hosital visit level")
+  } else if (during == "during_icu_visit"){
     out <- x %>%
       join_fn(
         y,
         join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
+        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
         filter_condition =
-          case_when(!is.na(first_icu_level2_or_level3_end_datetime) ~
-                      datetime >= first_icu_level2_or_level3_start_datetime &
-                       datetime <= first_icu_level2_or_level3_end_datetime,
-                    is.na(first_icu_level2_or_level3_end_datetime) ~
-                      datetime >= first_icu_level2_or_level3_start_datetime))
-  } else if (during == "before_visit_initial_24h"){
+          case_when(!is.na(icu_visit_end_datetime) ~
+                      datetime >= icu_visit_start_datetime &
+                       datetime <= icu_visit_end_datetime,
+                    is.na(icu_visit_start_datetime) ~
+                      datetime >= icu_visit_start_datetime))
+  } else if (during == "during_icu_visit_initial_24h"){
+    out <- x %>%
+      join_fn(
+        y,
+        join_by = "person_id",
+        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
+        filter_condition =
+          case_when(!is.na(icu_visit_end_datetime) ~
+                      datetime >= icu_visit_start_datetime &
+                      datetime <= icu_visit_start_datetime + dhours(24) &
+                      datetime <= icu_visit_end_datetime,
+                    is.na(icu_visit_start_datetime) ~
+                      datetime >= icu_visit_start_datetime &
+                      datetime <= icu_visit_start_datetime + dhours(24)))
+    } else if (during == "during_icu_visit_after_24h"){
+      out <- x %>%
+        join_fn(
+          y,
+          join_by = "person_id",
+          filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
+          filter_condition =
+            case_when(!is.na(icu_visit_end_datetime) ~
+                        datetime >= icu_visit_start_datetime + dhours(24) &
+                        datetime <= icu_visit_end_datetime,
+                      is.na(icu_visit_start_datetime) ~
+                        datetime >= icu_visit_start_datetime + dhours(24)))
+    } else if (during == "before_visit_initial_24h"){
     out <- x %>%
       join_fn(
         y,
