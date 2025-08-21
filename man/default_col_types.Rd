@@ -4,7 +4,7 @@
 \alias{default_col_types}
 \title{Standard column specifications}
 \usage{
-default_col_types(col_types)
+default_col_types(col_types, database = FALSE)
 }
 \arguments{
 \item{col_types}{Either a string specifying the name of the table that the
@@ -14,6 +14,9 @@ value are \code{"adm"}, \code{"adt"}, \code{"demogs"}, \code{"fsheet"}, \code{"f
 
 Or a \code{\link[readr:cols]{readr::cols()}} format list of column names and types, which
 can be used where a nonstandard data format are supplied.}
+
+\item{database}{If \code{TRUE}, then the function returns database types, such
+as for use in \code{duckdb} rather than \code{\link[readr:cols]{readr::cols()}} format column types}
 }
 \value{
 A \code{\link[readr:cols]{readr::cols()}} specification.

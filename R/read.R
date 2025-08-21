@@ -64,8 +64,6 @@
 #' @seealso Named column types are extracted using [default_col_types()]. The
 #'   raw column names, which are messy, can be cleaned using e.g.
 #'   [fsheet_rename()]
-#' @importFrom readr read_csv cols col_character col_integer col_double locale
-#'   col_datetime
 #' @rdname read
 #' @export
 #'
@@ -125,7 +123,7 @@ read_tidybrookes_csv <- function(file,
                                           nonexistent = nonexistent,
                                           ambiguous = ambiguous)
 
-  out <- read_csv(file = file,
+  out <- readr::read_csv(file = file,
                   col_types = col_types,
                   locale = locale(tz = tz),
                   n_max = n_max,
@@ -140,7 +138,6 @@ read_tidybrookes_csv <- function(file,
   out
 }
 
-#' @importFrom readr read_delim
 #' @export
 #' @rdname read
 read_tidybrookes_delim <- function(file,
@@ -150,7 +147,7 @@ read_tidybrookes_delim <- function(file,
                                    na = c("", "NA"),
                                    quote = "\""){
   col_types <- default_col_types(col_types = col_types)
-  read_delim(file = file,
+  readr::read_delim(file = file,
              delim = delim,
              col_types = col_types,
              locale = locale(tz = "Europe/London"),
@@ -168,7 +165,6 @@ read_tidybrookes_delim <- function(file,
 #' @inheritParams read_tidybrookes_csv
 #' @param connection A `DBIConnection` object, as returned by [DBI::dbConnect()]
 #' @param table_name A table name, passed to [DBI::dbWriteTable()]
-#' @importFrom readr read_csv_chunked
 #' @importFrom DBI dbWriteTable
 #' @export
 #' @rdname db_write
@@ -182,7 +178,7 @@ db_write_tidybrookes_csv <- function(file,
                                      progress = TRUE){
   col_types <- default_col_types(col_types = col_types)
   cat("Loading..\n")
-  read_csv_chunked(
+  readr::read_csv_chunked(
     file = file,
     callback = function(chunk, index) {
       dbWriteTable(connection,
@@ -197,7 +193,6 @@ db_write_tidybrookes_csv <- function(file,
     progress = progress)
 }
 
-#' @importFrom readr read_delim_chunked
 #' @rdname db_write
 #' @export
 db_write_tidybrookes_delim <- function(file,
@@ -209,7 +204,7 @@ db_write_tidybrookes_delim <- function(file,
                                        quote = "\"",
                                        ...){
   col_types <- default_col_types(col_types = col_types)
-  read_delim_chunked(
+  readr::read_delim_chunked(
     file = file,
     callback = function(chunk, index) {
       dbWriteTable(connection,

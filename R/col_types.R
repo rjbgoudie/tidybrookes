@@ -12,6 +12,8 @@
 #'
 #'   Or a [readr::cols()] format list of column names and types, which
 #'   can be used where a nonstandard data format are supplied.
+#' @param database If `TRUE`, then the function returns database types, such
+#'   as for use in `duckdb` rather than [`readr::cols()`] format column types
 #' @returns A [`readr::cols()`] specification.
 #' @seealso [read_tidybrookes_csv()], [read_tidybrookes_csv()]
 #' @examples
@@ -20,13 +22,14 @@
 #'
 #' default_col_types("tests")
 #' @export
-default_col_types <- function(col_types){
+default_col_types <- function(col_types, database = FALSE){
   if (inherits(col_types, "col_spec")){
     col_types <- col_types
   } else if (col_types == "adm"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
-      PAT_ENC_CSN = col_integer(),
+      SUBJECT_ADMISSION_ID = "I",
+      PAT_ENC_CSN = "I",
       IN_DTTM = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       HOSP_DISCH_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       GENDER_DESC = col_character(),
@@ -35,44 +38,61 @@ default_col_types <- function(col_types){
       AGE_AT_ADM = col_integer(),
       ADM_SERVICE = col_character(),
       ADT_DEPARTMENT_NAME = col_character(),
+      ADT_DEPARTMENT_ID = "I",
+      HOSP_SERV_NAME = col_character(),
       DISCH_DEST = col_character(),
       DISCH_DECEASED = col_character(),
       READMIT_WITHIN_30 = col_character())
   } else if (col_types == "adt"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
       EVENT_TYPE_C = col_integer(),
       EVENT_TYPE = col_character(),
       IN_DTTM = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      OUT_DTTM = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       HOSP_DISCH_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       ADT_DEPARTMENT_NAME = col_character(),
       ROOM_NAME = col_character(),
       BED_LABEL = col_character(),
       ADT_SERV_AREA_NAME = col_character(),
       HOSP_SERV_NAME = col_character(),
-      PAT_ENC_CSN = col_integer())
+      PAT_ENC_CSN = "I",
+      SUBJECT_ADMISSION_ID = "I")
   } else if (col_types == "demogs"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
-      GENDER_DESC = col_character())
+      GENDER_DESC = col_character(),
+      SUBJECT_ADMISSION_ID = "I",
+      AGE_AT_ADM = col_integer(),
+      READM_WITHIN_7_DAYS = col_logical(),
+      READM_WITHIN_30_DAYS = col_logical(),
+      DEATH_WITHIN_7_DAYS_DISCHARGE = col_logical(),
+      DEATH_WITHIN_30_DAYS_DISCHARGE = col_logical(),
+      DISCH_DECEASED = col_logical()
+      )
   } else if (col_types == "fsheet"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
-      fsd_id = col_character(),
-      line = col_integer(),
-      `flo-meas_id` = col_character(),
+      fsd_id = "I",
+      line = "I",
+      FLO_MEAS_ID = "I",
+      `flo-meas_id` = "I",
       MEASURE_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       disp_name = col_character(),
+      DISP_NAME = col_character(),
       measured_value = col_character(),
+      MEASURED_VALUE = col_character(),
       meas_comment = col_character(),
       template = col_character(),
-      form = col_character())
+      TEMPLATE = col_character(),
+      form = col_character(),
+      FORM = col_character())
   } else if (col_types == "fsheet_io"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
-      fsd_id = col_integer(),
-      line = col_integer(),
-      `flo-meas_id` = col_character(),
+      fsd_id = "I",
+      line = "I",
+      `flo-meas_id` = "I",
       MEASURE_TIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       disp_name = col_character(),
       measured_value = col_character(),
@@ -81,8 +101,9 @@ default_col_types <- function(col_types){
       form = col_character(),
       FLO_MEAS_NAME = col_character())
   } else if (col_types == "tests"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
+      SUBJECT_ADMISSION_ID = "I",
       TestGroupName = col_character(),
       TestName = col_character(),
       ResultValue = col_character(),
@@ -95,10 +116,21 @@ default_col_types <- function(col_types){
       COLLECTED_DATETIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       ORDERED_DATETIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       RECEIVED_DATETIME = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
-      OrderProcId = col_character())
+      OrderProcId = "I",
+      PROC_CODE  = col_character(),
+      TestNameAbbreviated = col_character(),
+      ResultFlag = col_character(),
+      ResultNumeric = col_double(),
+      ResultInRange = col_character(),
+      RESULT_STATUS = col_character(),
+      TypeId = col_integer(),
+      RESULTING_LAB_NAME = col_character(),
+      RESULTING_SECTION_NAME = col_character()
+      )
   } else if (col_types == "med_admin"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
+      SUBJECT_ADMISSION_ID = "I",
       TimeAdministered = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       DrugName = col_character(),
       DoseAsLabelled = col_character(),
@@ -106,10 +138,11 @@ default_col_types <- function(col_types){
       DoseUnitAbbreviated = col_character(),
       RouteOfMedicationAbbreviated = col_character(),
       DepartmentName = col_character(),
-      MAR_ENC_CSN = col_integer(),
-      MARAction = col_character())
+      MAR_ENC_CSN = "I",
+      MARAction = col_character(),
+      LINE = col_integer())
   } else if (col_types == "med_prescr"){
-    col_types <- cols(
+    col_types <- readr::cols(
       "STUDY_SUBJECT_DIGEST" = col_character(),
       "DrugName" = col_character(),
       "StartDate" = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
@@ -124,12 +157,12 @@ default_col_types <- function(col_types){
       "THERA_CLASS" = col_character(),
       "PHARM_CLASS" = col_character(),
       "PHARM_SUBCLASS" = col_character(),
-      "PAT_ENC_CSN_ID" = col_integer(),
+      "PAT_ENC_CSN_ID" = "I",
       "OrderStatusCat" = col_character(),
       "ProviderType" = col_character(),
       "Order_Class" = col_character())
   } else if (col_types == "diagnosis_pl"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
       DX_DESCRIPTION = col_character(),
       DX_DESC_DISPLAYED = col_character(),
@@ -145,17 +178,17 @@ default_col_types <- function(col_types){
       ICD10_LIST = col_character(),
       SNOMED_CONCEPTS = col_character())
   }  else if (col_types == "med_hist"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
       CONTACT_DATE = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
       DX_NAME = col_character(),
       MEDICAL_HX_DATE = col_character(),
       COMMENTS = col_character(),
       MED_HX_ANNOTATION = col_character(),
-      HX_LNK_ENC_CSN = col_integer(),
+      HX_LNK_ENC_CSN = "I",
       CURRENT_ICD10_LIST = col_character())
   } else if (col_types == "radiology"){
-    col_types <- cols(
+    col_types <- readr::cols(
       STUDY_SUBJECT_DIGEST = col_character(),
       Proc_Name = col_character(),
       Proc_Date = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
@@ -163,9 +196,20 @@ default_col_types <- function(col_types){
       Proc_Narrative = col_character(),
       Proc_Impression = col_character(),
       Proc_Addenda = col_character(),
-      Proc_Assessment = col_character())
+      Proc_Assessment = col_character(),
+      Ordering_Date = col_datetime(format = "%Y-%m-%d %H:%M:%S"))
+  } else if (col_types == "procedures"){
+    col_types <- readr::cols(
+      STUDY_SUBJECT_DIGEST = col_character(),
+      ProcedureDate = col_datetime(format = "%Y-%m-%d %H:%M:%S"),
+      ProcedureDesc = col_character(),
+      OPCSCode = col_character())
   }
-  col_types
+  if (database){
+    col_types_rewrite_as_database(col_types)
+  } else {
+    col_types
+  }
 }
 
 col_is_datetime <- function(x){
@@ -225,4 +269,17 @@ col_types_rewrite_if_clock <- function(col_types,
     col_types <- col_types_rewrite_datetime_as_character(col_types)
   }
   col_types
+}
+
+col_types_rewrite_as_database <- function(x){
+  collector_class <- purrr::map_chr(x$cols, \(c) class(c)[1])
+  n <- names(collector_class)
+  case_match(collector_class,
+             "collector_character" ~ "VARCHAR",
+             "collector_datetime" ~ "TIMESTAMP",
+             "collector_integer" ~ "INTEGER",
+             "collector_double" ~ "DOUBLE",
+             "collector_logical" ~ "BOOLEAN",
+             "collector_big_integer" ~ "BIGINT") |>
+    setNames(n)
 }
