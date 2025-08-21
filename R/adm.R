@@ -20,16 +20,36 @@
 #'   relocate(visit_length_days, person_id_short)
 #' @export
 adm_annotate <- function(x){
-  check_that_all(x,
-                 gender %in% c("Female", "Male", "Unknown"),
-                 name = "gender are Female, Male or Unknown")
+  label_check_that_all(x,
+                 gender %in% c("Female", "Male", "Unknown", "Not specified"),
+                 label = "gender_all_female_male_unknown")
   original_groups <- group_vars(x)
 
+  # duplication due to difftime() and interval() translation not yet in
+  # duckdb
+  if (inherits(x, "tbl_sql")){
+    x %>%
+      ungroup() %>%
+      mutate(visit_length_days =
+               date_diff('seconds',
+                         visit_start_datetime,
+                         visit_end_datetime)/(24 * 60 * 60),
+             visit_length_hours =
+               date_diff('seconds',
+                         visit_start_datetime,
+                         visit_end_datetime)/(60 * 60)) |>
+      # collect() |>
+      # mutate(person_id_short = person_id_shorten(person_id)) %>%
+      group_by(across(all_of(original_groups)))
+  } else {
   x %>%
     ungroup() %>%
     mutate(visit_length_days =
-             as.numeric(visit_end_datetime - visit_start_datetime,
-                        units = "days"),
+             interval(visit_start_datetime, visit_end_datetime)/ddays(1),
+           visit_length_hours =
+             interval(visit_start_datetime, visit_end_datetime)/dhours(1),
            person_id_short = person_id_shorten(person_id)) %>%
     group_by(across(all_of(original_groups)))
+  }
 }
+
