@@ -391,6 +391,7 @@ fsheet_annotation_schema <- function(){
     value_as_number = numeric(0),
     censoring = character(0),
     value_as_logical = logical(0),
+    unit = character(0),
     type = character(0),
     satisfies_expect_before = logical(0),
     satisfies_all_numeric = logical(0),
