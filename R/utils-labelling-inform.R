@@ -185,7 +185,8 @@ label_check_that_all <- function(x,
 
   unexpected_nrow <- x %>%
     filter(!if_any(all_of(col))) %>%
-    nrow
+    count() %>%
+    pull(n)
 
   if (unexpected_nrow > 0){
     condition_str <- expr_print(condition)
