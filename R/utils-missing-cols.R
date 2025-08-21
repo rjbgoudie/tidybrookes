@@ -40,5 +40,5 @@ rename_ignoring_missing <- function(...){
 #' @importFrom dplyr relocate
 #' @noRd
 relocate_ignoring_missing <- function(...){
-  fn_ignoring_missing(rename, ...)
+  fn_ignoring_missing(relocate, ...)
 }
