@@ -229,31 +229,113 @@ tests_extract <- function(x,
 }
 
 
-tests_extract_single <- function(x, test_def, errors = stop){
+tests_extract_single <- function(x, tests_def, errors = stop){
+  out <- tests_annotate_single(x, tests_def)
+
+  out <- out %>%
+    filter(!exclude)
+
+  cli::cli_alert_info("{nrow(out)} rows extracted")
+  out %>%
+    relocate(person_id,
+             symbol,
+             measurement_datetime,
+             value_as_number,
+             censoring,
+             value_as_logical,
+             value_as_character,
+             name,
+             unit,
+             type,
+             template,
+             form) %>%
+    arrange(collected_datetime)
+}
 
 
+#' Add annotations to tests data
+#'
+#' Annotate tests data to note rows that should be excluded etc.
+#'
+#' Annotations can either be added as additional columns (when
+#' `annotation_db = NULL`), or stored in a separate database table (by
+#' setting `annotation_db` to a database `tbl`).
+#'
+#' Note that when adding the annotations as additiona columns,
+#' the result will not be sorted, since it is left in the original
+#' order of `x`
+#'
+#' @param x Tests data in renamed format (after applying `tests_rename`)
+#' @param tests_def A tests definition, or list of tests definitions
+#' @param annotation_db Either `NULL` or a `tbl` reference to the annotations
+#'   database table that the annotations should be stored in. If `NULL` the
+#'   annotations are added to `x` as additional columns.
+#' @author R.J.B. Goudie
+tests_annotate <- function(x,
+                           tests_def,
+                           annotation_db = NULL){
+  tests_def <- wrap_def_if_single(tests_def)
 
-    out <- tribble(~person_id, ~symbol, ~name, ~collected_datetime, ~value_as_number)
+  out <- lapply(tests_def, function(y){
+    symbol <- y$symbol
+    x_annotated <- tests_annotate_single(x, y, errors = errors)
 
-  if (inherits(x, "data.frame")){
-    out <- x %>%
-      filter(name %in% test_def$names_cuh)
-  } else if (inherits(x, "character")){
-    symbol <- test_def$symbol
-    path <- x[symbol]
-    if (!file.exists(path)){
-    } else {
-      if (str_ends(x,".csv") || str_ends(x,".csv.gz")){
-        out <- read_csv(path, show_col_types = FALSE)
-      } else {
-        out <- readRDS(path)
-      }
-    }
+    return_or_write_to_annotation_db(x,
+                                     x_annotated,
+                                     annotation_db,
+                                     id_cols = "tests_id")
+  })
+  if (is.null(annotation_db)){
+    x |>
+      left_join(bind_rows(out))
+  }
+}
+
+
+tests_annotation_schema <- function(){
+  tibble(
+    tests_id = integer(0),
+    symbol = character(0),
+    title = character(0),
+    value_as_character = character(0),
+    value_as_number = numeric(0),
+    censoring = character(0),
+    value_as_logical = logical(0),
+    type = character(0),
+    satisfies_expect_before = logical(0),
+    satisfies_all_numeric = logical(0),
+    satisfies_expect_after = logical(0),
+    exclude = logical(0),
+    exclude_is_duplicate = logical(0),
+    exclude_is_duplicate_of_row_number = integer(0),
+    exclude_is_silently_exclude_na = logical(0),
+    exclude_is_silently_exclude = logical(0),
+    # exclude_is_coalesced = logical(0),
+    exclude_is_too_high = logical(0),
+    exclude_is_too_low = logical(0),
+    range_mainly_low = numeric(0),
+    range_mainly_high = numeric(0),
+    range_discard_below = numeric(0),
+    range_discard_above = numeric(0),
+    unit = character(0)
+  )
+}
+
+
+tests_annotate_single <- function(x, test_def, errors = stop){
+  cli::cli_alert_info(
+    c("Extracting {test_def$title} ",
+      "({test_def$symbol}) from {nrow(out)} raw rows"))
+
+  out <- x |>
+    filter(name %in% test_def$names_cuh)
+
+  if (inherits(x, "tbl_sql")){
+    out <- collect(out)
   }
 
-    cli::cli_alert_info(
-      c("Extracting {test_def$title} ",
-        "({test_def$symbol}) from {nrow(out)} raw rows"))
+  out <- out %>%
+    bind_rows(tests_annotation_schema())
 
   # possible_new <- tests_check_for_new(x, test_def)
   # if (nrow(possible_new) > 0){
@@ -264,38 +346,53 @@ tests_extract_single <- function(x, test_def, errors = stop){
   #     immediate. = TRUE)
   # }
 
+  # TODO fsheet_info vs test_info
+  # make more similar and add , exclude_lists = TRUE
+  info <- fsheet_info(list(test_def), exclude_lists = TRUE) |>
+    select(-any_of(c("names_cuh",
+                     "names_external",
+                     "search_pattern",
+                     "search_exclude",
+                     "search_exclude_group")))
+
+  if (nrow(out) == 0){
+    cli::cli_alert_info("{nrow(out)} rows extracted")
+    return(out)
+  }
   # Add symbol and title
   out <- out %>%
     mutate(symbol = test_def$symbol, .after = person_id) %>%
-    mutate(title = test_def$title, .after = unit) %>%
+    rows_update(info, by = "symbol") %>%
+    relocate(title, .after = unit) %>%
     relocate(name, .after = unit) %>%
-    rename(value_original = value) %>%
-    mutate(type = test_def$type)
+    rename(value_original = value)
 
   # Check expect_before condition
-  check_that_all(out,
-                 !!test_def$expect_before,
-                 "expect_before",
-                 summary = function(x){
-                   x %>%
-                     count(name, unit, value_original)
-                 })
+  out <- exclusion_label_check_that_all(out,
+                                        !!test_def$expect_before,
+                                        label = "expect_before",
+                                        summary = function(x){
+                                          x %>%
+                                            count(name, unit, value_original)
+                                        })
 
   # Remove duplicate rows
   out <- out %>%
-    distinct_inform
+    exclusion_label_duplicates_inform(ignore_columns = tests_id)
 
   # Exclude NAs when requested
   out <- out %>%
-    mutate(will_silently_exclude_na = (is.na(value_original) & !!test_def$silently_exclude_na_when)) %>%
-    filter_inform(!will_silently_exclude_na,
-                  since = "since value was NA")
+    exclusion_label_condition_inform(
+      exclude_is_silently_exclude_na,
+      (is.na(value_original) & !!test_def$silently_exclude_na_when),
+      since = "since value was NA")
 
   # Exclude other rows when requested
   out <- out %>%
-    mutate(will_silently_exclude = (!!test_def$silently_exclude_when)) %>%
-    filter_inform(!will_silently_exclude,
-                  since = "due to exclude_when condition")
+    exclusion_label_condition_inform(
+      exclude_is_silently_exclude,
+      (!!test_def$silently_exclude_when),
+      since = "due to exclude_when condition")
 
   if (nrow(out) == 0){
     out %>% select(-will_silently_exclude,
@@ -326,12 +423,10 @@ tests_extract_single <- function(x, test_def, errors = stop){
     # Check for nonnumeric values in the post-exclusion and
     # post-handling-censoring data frame
     if (test_def$type == "numeric"){
-      check_that_all(out,
-                     suppressWarnings({!is.na(as.numeric(value_as_number))}),
-                     name = "all values being numeric",
-                     summary = function(x){
-                       x %>% count(value_original)
-                     })
+      out <-
+        exclusion_label_check_that_all(out,
+                                       suppressWarnings({!is.na(as.numeric(value_as_number))}),
+                                       label = "all_numeric")
     }
 
     # Rescale units
@@ -342,38 +437,36 @@ tests_extract_single <- function(x, test_def, errors = stop){
     # Discard too high values
     if (!is.null(test_def$range_discard_above)){
       out <- out %>%
-        mutate(is_too_high = value_as_number > test_def$range_discard_above) %>%
-        filter_inform(!is_too_high,
-                      since = glue("since >{test_def$range_discard_above}"))
+        exclusion_label_condition_inform(
+          exclude_is_too_high,
+          value_as_number > test_def$range_discard_above,
+          since = glue("since >{test_def$range_discard_above}"))
     } else {
       out <- out %>%
-        mutate(is_too_high = FALSE)
+        mutate(exclude_is_too_high = FALSE)
     }
 
     # Discard too low values
     if (!is.null(test_def$range_discard_below)){
       out <- out %>%
-        mutate(is_too_low = value_as_number < test_def$range_discard_below) %>%
-        filter_inform(!is_too_low,
-                      since = glue("since <{test_def$range_discard_below}"))
+        exclusion_label_condition_inform(
+          exclude_is_too_low,
+          value_as_number < test_def$range_discard_below,
+          since = glue("since <{test_def$range_discard_below}"))
     } else {
       out <- out %>%
-        mutate(is_too_low = FALSE)
+        mutate(exclude_is_too_low = FALSE)
     }
 
     # Check expect_after condition
-    check_that_all(out,
-                   !!test_def$expect_after,
-                   "expect_after",
-                   summary = function(x){
-                     x %>% count(value_as_number, value_as_character, unit)
-                   })
+    out <- exclusion_label_check_that_all(out,
+                                          (!!test_def$expect_after),
+                                          label = "expect_after")
 
     # Return result
     cli::cli_alert_info("{nrow(out)} rows extracted")
     out %>%
-      select(-will_silently_exclude, -will_silently_exclude_na,
-             -value_original, -is_too_high, -is_too_low) %>%
+      select(-value_original) %>%
       arrange(collected_datetime)
   }
 }
@@ -554,6 +647,7 @@ tests_info <- function(tests_def){
 tests_info_single <- function(test_def){
   tibble(symbol = test_def$symbol,
          title = test_def$title,
+         type = test_def$type,
          names_cuh = list(test_def$names_cuh %||% character(0)),
          names_external = list(test_def$names_external %||% character(0)),
          range_mainly_low = test_def$range_mainly_low,
