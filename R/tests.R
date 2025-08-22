@@ -235,20 +235,12 @@ tests_extract_single <- function(x, tests_def, errors = stop){
   out <- out %>%
     filter(!exclude)
 
-  cli::cli_alert_info("{nrow(out)} rows extracted")
+  cli::cli_alert_info("{nrow(out)} row{?s} extracted")
   out %>%
     relocate(person_id,
              symbol,
-             measurement_datetime,
-             value_as_number,
-             censoring,
-             value_as_logical,
-             value_as_character,
-             name,
-             unit,
-             type,
-             template,
-             form) %>%
+             collected_datetime,
+             value_as_number) %>%
     arrange(collected_datetime)
 }
 
