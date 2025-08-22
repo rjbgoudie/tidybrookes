@@ -55,7 +55,8 @@ summarise_during <- function(x,
                datetime = !! datetime,
                during = during,
                names_from = names_from,
-               join = "inner")
+               join = "inner",
+               arrange = FALSE)
 
   cli::cli_alert_info("Summarising/slicing")
   out <- out %>%

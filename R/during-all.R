@@ -52,10 +52,10 @@ all_during <- function(x,
                        datetime,
                        during,
                        names_from = "symbol",
-                       join = "left"){
+                       join = "left",
+                       arrange = TRUE){
   y <- y %>%
-    rename(datetime = {{datetime}}) %>%
-    arrange(datetime)
+    rename(datetime = {{datetime}})
 
   inform_if_all_times_are_midnight(y, datetime)
 
@@ -279,7 +279,12 @@ all_during <- function(x,
     stop("all_during does not know how to hangle this `during` value:",
          during)
   }
-  out
+  if (arrange){
+    out %>%
+      arrange(datetime)
+  } else {
+    out
+  }
 }
 
 #' Left join according to a filter and summarise in one

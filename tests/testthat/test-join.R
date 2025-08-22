@@ -46,6 +46,55 @@ test_that("chooses within visit", {
     ymd_hms("2021-01-03 17:00:00", tz = "Europe/London"))
 })
 
+test_that("reverse sorted fsheet data doesn't cause problems", {
+  fsheet_raw_test <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("test_fsheet.csv"),
+      col_types = "fsheet"
+    ) %>%
+    fsheet_rename %>%
+    filter(person_id == "AA")
+
+  fsheet_def <- list() %>%
+    fsheet_add(
+      symbol = "weight",
+      title = "Weight",
+      names = c("Weight"),
+      search_pattern = c("weight"),
+      search_exclude = c(),
+      unit_rescale_fn = case_when(TRUE ~ value_as_number * 28.35 / 1000),
+      unit_relabel_fn = case_when(TRUE ~ "kg"))
+
+  suppressMessages({
+    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def) |>
+      # deliberately reverse order of fsheet data
+      arrange(desc(measurement_datetime))
+  })
+
+  demo_adm_raw <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("test_adm.csv"),
+      col_types = "adm"
+    ) %>%
+    adm_rename %>%
+    filter(person_id == "AA")
+
+  suppressMessages({
+    joined <- demo_adm_raw %>%
+      first_during(fsheet_data_test,
+                   datetime = measurement_datetime,
+                   during = "during_visit")
+  })
+
+  expect_equal(
+    joined$weight_first_during_visit,
+    4125 * 28.35 / 1000)
+  expect_equal(
+    joined$weight_first_during_visit_datetime,
+    ymd_hms("2021-01-03 17:00:00", tz = "Europe/London"))
+})
+
+
 test_that("chooses first within visit", {
   fsheet_raw_test <-
     read_tidybrookes_csv(
