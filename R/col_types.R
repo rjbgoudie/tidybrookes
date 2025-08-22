@@ -283,3 +283,8 @@ col_types_rewrite_as_database <- function(x){
              "collector_big_integer" ~ "BIGINT") |>
     setNames(n)
 }
+
+filter_col_spec <- function(x, names){
+  x$cols <- purrr::keep_at(x$cols, names)
+  x
+}

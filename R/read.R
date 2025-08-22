@@ -123,6 +123,13 @@ read_tidybrookes_csv <- function(file,
                                           nonexistent = nonexistent,
                                           ambiguous = ambiguous)
 
+  colnames_present <- readr::read_csv(file = file,
+                                      n_max = 0,
+                                      show_col_types = FALSE) |>
+    colnames()
+
+  col_types <- filter_col_spec(col_types, names = colnames_present)
+
   out <- readr::read_csv(file = file,
                   col_types = col_types,
                   locale = locale(tz = tz),
@@ -147,6 +154,14 @@ read_tidybrookes_delim <- function(file,
                                    na = c("", "NA"),
                                    quote = "\""){
   col_types <- default_col_types(col_types = col_types)
+
+  colnames_present <- readr::read_delium(file = file,
+                                         n_max = 0,
+                                         show_col_types = FALSE) |>
+    colnames()
+
+  col_types <- filter_col_spec(col_types, names = colnames_present)
+
   readr::read_delim(file = file,
              delim = delim,
              col_types = col_types,
