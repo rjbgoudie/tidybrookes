@@ -323,9 +323,7 @@ tests_annotation_schema <- function(){
 
 
 tests_annotate_single <- function(x, test_def, errors = stop){
-  cli::cli_alert_info(
-    c("Extracting {test_def$title} ",
-      "({test_def$symbol}) from {nrow(out)} raw rows"))
+  cli::cli_alert_info("Extracting {test_def$title} ({test_def$symbol})")
 
   out <- x |>
     filter(name %in% test_def$names_cuh)
@@ -333,6 +331,8 @@ tests_annotate_single <- function(x, test_def, errors = stop){
   if (inherits(x, "tbl_sql")){
     out <- collect(out)
   }
+
+  cli::cli_alert_info("{nrow(out)} row{?s} of raw data")
 
   out <- out %>%
     bind_rows(tests_annotation_schema())

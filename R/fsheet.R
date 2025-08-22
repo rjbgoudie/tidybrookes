@@ -413,18 +413,19 @@ fsheet_annotation_schema <- function(){
 
 #' @export
 fsheet_annotate_single <- function(x, fsheet_def, errors = stop){
+  cli::cli_alert_info("Extracting {fsheet_def$title} ({fsheet_def$symbol})")
+
   out <- x %>%
     filter(name %in% fsheet_def$names)
 
   if (inherits(x, "tbl_sql")){
     out <- collect(out)
   }
+
+  cli::cli_alert_info("{nrow(out)} row{?s} of raw data")
+
   out <- out %>%
     bind_rows(fsheet_annotation_schema())
-
-  cli::cli_alert_info(
-    c("Extracting {fsheet_def$title} ",
-      "({fsheet_def$symbol}) from {nrow(out)} raw rows"))
 
   info <- fsheet_info(list(fsheet_def), exclude_lists = TRUE) |>
     select(symbol,
