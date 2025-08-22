@@ -77,12 +77,24 @@ format_as_argument <- function(x){
 #'
 #' @param x A `POSIXct` datetime
 #' @noRd
-inform_if_all_times_are_midnight <- function(x){
-  if (inherits(x, "POSIXct")){
-    h <- lubridate:::hour(x)
-    m <- lubridate:::minute(x)
-    s <- lubridate:::second(x)
-    if (all(h == 0L & m == 0L & s == 0)){
+inform_if_all_times_are_midnight <- function(x, datetime){
+  is_posixct <- x |>
+    head(1) |>
+    pull({{ datetime }}) |>
+    inherits("POSIXct")
+
+  if (is_posixct){
+    is_midnight_distinct <- x |>
+      mutate(
+        is_midnight =
+          {{ datetime }} == lubridate::floor_date({{ datetime }},
+                                                  unit = "day")
+      ) |>
+      ungroup() |>
+      distinct(is_midnight) |>
+      pull(is_midnight)
+
+    if (isTRUE(is_midnight_distinct)){
       cli::cli_alert_danger(
         c("Supplied datetime column is all midnight - ",
           "did you mean to use _date?"))

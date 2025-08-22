@@ -57,7 +57,7 @@ all_during <- function(x,
     rename(datetime = {{datetime}}) %>%
     arrange(datetime)
 
-  inform_if_all_times_are_midnight(pull(y, datetime))
+  inform_if_all_times_are_midnight(y, datetime)
 
   common_cols <- intersect(colnames(x), colnames(y))
   if (!"person_id" %in% common_cols){

@@ -568,3 +568,89 @@ test_that("last_during_before_event works", {
   ))
 })
 
+
+
+test_that("all_during flags if all datetime are midnight if posixct", {
+  fsheet_raw_test <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("test_fsheet.csv"),
+      col_types = "fsheet"
+    ) %>%
+    fsheet_rename %>%
+    filter(person_id == "AA")
+
+  fsheet_def <- list() %>%
+    fsheet_add(
+      symbol = "weight",
+      title = "Weight",
+      names = c("Weight"),
+      search_pattern = c("weight"),
+      search_exclude = c(),
+      unit_rescale_fn = case_when(TRUE ~ value_as_number * 28.35 / 1000),
+      unit_relabel_fn = case_when(TRUE ~ "kg"))
+
+  suppressMessages({
+    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def) |>
+      mutate(measurement_datetime =
+               lubridate::floor_date(measurement_datetime, "day"))
+  })
+
+  demo_adm_raw <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("test_adm.csv"),
+      col_types = "adm"
+    ) %>%
+    adm_rename %>%
+    filter(person_id == "AA")
+
+  expect_message({
+    demo_adm_raw %>%
+      all_during(fsheet_data_test,
+                 datetime = measurement_datetime,
+                 during = "during_visit")
+  },
+  "midnight")
+})
+
+
+test_that("all_during does not flag if all datetime are midnight if Date", {
+  fsheet_raw_test <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("test_fsheet.csv"),
+      col_types = "fsheet"
+    ) %>%
+    fsheet_rename %>%
+    filter(person_id == "AA")
+
+  fsheet_def <- list() %>%
+    fsheet_add(
+      symbol = "weight",
+      title = "Weight",
+      names = c("Weight"),
+      search_pattern = c("weight"),
+      search_exclude = c(),
+      unit_rescale_fn = case_when(TRUE ~ value_as_number * 28.35 / 1000),
+      unit_relabel_fn = case_when(TRUE ~ "kg"))
+
+  suppressMessages({
+    fsheet_data_test <- fsheet_extract(fsheet_raw_test, fsheet_def) |>
+      mutate(measurement_datetime =
+               as.Date(lubridate::floor_date(measurement_datetime, "day")))
+  })
+
+  demo_adm_raw <-
+    read_tidybrookes_csv(
+      file = tidybrookes_example("test_adm.csv"),
+      col_types = "adm"
+    ) %>%
+    adm_rename %>%
+    filter(person_id == "AA")
+
+  expect_no_message({
+    demo_adm_raw %>%
+      all_during(fsheet_data_test,
+                 datetime = measurement_datetime,
+                 during = "during_visit")
+  })
+})
+
