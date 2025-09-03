@@ -16,9 +16,12 @@
 <url><loc>/reference/db_write.html</loc></url>
 <url><loc>/reference/default_col_types.html</loc></url>
 <url><loc>/reference/dose_in_grid.html</loc></url>
+<url><loc>/reference/duckdb_read.html</loc></url>
+<url><loc>/reference/duckdb_tidybrookes_connect.html</loc></url>
 <url><loc>/reference/during_functions.html</loc></url>
 <url><loc>/reference/extremes_during.html</loc></url>
 <url><loc>/reference/filter.html</loc></url>
+<url><loc>/reference/fsheet_annotate.html</loc></url>
 <url><loc>/reference/fsheet_extract.html</loc></url>
 <url><loc>/reference/fsheet_infer_fio2.html</loc></url>
 <url><loc>/reference/fsheet_info.html</loc></url>
@@ -56,13 +59,18 @@
 <url><loc>/reference/read.html</loc></url>
 <url><loc>/reference/reexports.html</loc></url>
 <url><loc>/reference/rename.html</loc></url>
+<url><loc>/reference/return_or_write_to_annotation_db.html</loc></url>
 <url><loc>/reference/summarise_during.html</loc></url>
+<url><loc>/reference/tbl_raw.html</loc></url>
+<url><loc>/reference/tbl_raw_unrenamed.html</loc></url>
 <url><loc>/reference/tests_abg.html</loc></url>
+<url><loc>/reference/tests_annotate.html</loc></url>
 <url><loc>/reference/tests_extract.html</loc></url>
 <url><loc>/reference/tests_info.html</loc></url>
 <url><loc>/reference/tests_pivot_longer_order.html</loc></url>
 <url><loc>/reference/tests_pivot_wider_order.html</loc></url>
 <url><loc>/reference/tidybrookes_example.html</loc></url>
 <url><loc>/reference/unrename.html</loc></url>
+<url><loc>/reference/wrap_def_if_single.html</loc></url>
 </urlset>
 

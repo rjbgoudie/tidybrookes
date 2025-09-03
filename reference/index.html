@@ -31,9 +31,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="data-loading">Data loading<a class="anchor" aria-label="anchor" href="#data-loading"></a></h2>
+      <h2 id="local-data-loading">Local data loading<a class="anchor" aria-label="anchor" href="#local-data-loading"></a></h2>
 
-      <div class="section-desc"><p>Loading raw CSV files exported by clinical informatics into R or a database, and basic renaming</p></div>
+      <div class="section-desc"><p>Loading raw CSV files exported by clinical informatics into R and basic renaming</p></div>
 
 
     </div><div class="section level2">
@@ -49,12 +49,6 @@
         <dd>Load data from Epic in delimited (including CSV) format</dd>
       </dl><dl><dt>
 
-          <code><a href="db_write.html">db_write_tidybrookes_csv()</a></code> <code><a href="db_write.html">db_write_tidybrookes_delim()</a></code>
-
-        </dt>
-        <dd>Load data from Epic in delimited format (including CSV) into a database</dd>
-      </dl><dl><dt>
-
           <code><a href="default_col_types.html">default_col_types()</a></code>
 
         </dt>
@@ -67,10 +61,57 @@
         <dd>Rename to tidy column names</dd>
       </dl><dl><dt>
 
+          <code><a href="tbl_raw_unrenamed.html">tbl_raw_unrenamed()</a></code>
+
+        </dt>
+        <dd>Pointer to raw unrenamed table in duckdb</dd>
+      </dl><dl><dt>
+
           <code><a href="unrename.html">adm_unrename()</a></code> <code><a href="unrename.html">adt_unrename()</a></code> <code><a href="unrename.html">demogs_unrename()</a></code> <code><a href="unrename.html">diagnosis_pl_unrename()</a></code> <code><a href="unrename.html">fsheet_io_unrename()</a></code> <code><a href="unrename.html">fsheet_unrename()</a></code> <code><a href="unrename.html">med_admin_unrename()</a></code> <code><a href="unrename.html">med_prescr_unrename()</a></code> <code><a href="unrename.html">radiology_unrename()</a></code> <code><a href="unrename.html">procedures_unrename()</a></code> <code><a href="unrename.html">tests_unrename()</a></code>
 
         </dt>
         <dd>Rename from tidy to raw column names</dd>
+      </dl></div><div class="section level2">
+      <h2 id="duckdb-data-loading">Duckdb data Loading<a class="anchor" aria-label="anchor" href="#duckdb-data-loading"></a></h2>
+
+      <div class="section-desc"><p>Loading raw CSV files exported by clinical informatics into a duckdb database</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="duckdb_tidybrookes_connect.html">duckdb_tidybrookes_connect()</a></code>
+
+        </dt>
+        <dd>Connect to duckdb database with suitable defaults</dd>
+      </dl><dl><dt>
+
+          <code><a href="duckdb_read.html">duckdb_read_tidybrookes_csv()</a></code>
+
+        </dt>
+        <dd>Load data from CUH in delimited (including CSV) format into duckdb</dd>
+      </dl><dl><dt>
+
+          <code><a href="tbl_raw.html">tbl_raw()</a></code>
+
+        </dt>
+        <dd>Renamed view of raw data to tidy column names</dd>
+      </dl><dl><dt>
+
+          <code><a href="tbl_raw_unrenamed.html">tbl_raw_unrenamed()</a></code>
+
+        </dt>
+        <dd>Pointer to raw unrenamed table in duckdb</dd>
+      </dl><dl><dt>
+
+          <code><a href="db_write.html">db_write_tidybrookes_csv()</a></code> <code><a href="db_write.html">db_write_tidybrookes_delim()</a></code>
+
+        </dt>
+        <dd>Load data from Epic in delimited format (including CSV) into a database</dd>
       </dl></div><div class="section level2">
       <h2 id="defining-and-extracting">Defining and extracting<a class="anchor" aria-label="anchor" href="#defining-and-extracting"></a></h2>
 
@@ -124,6 +165,30 @@
 
         </dt>
         <dd>Add a new definition of a test item</dd>
+      </dl><dl><dt>
+
+          <code><a href="adm_annotate.html">adm_annotate()</a></code>
+
+        </dt>
+        <dd>Basic checks and annotation of ADM data</dd>
+      </dl><dl><dt>
+
+          <code><a href="adt_annotate.html">adt_annotate()</a></code>
+
+        </dt>
+        <dd>Basic cleanup, checks, and annotation of ADT data</dd>
+      </dl><dl><dt>
+
+          <code><a href="fsheet_annotate.html">fsheet_annotate()</a></code>
+
+        </dt>
+        <dd>Add annotations to fsheet data</dd>
+      </dl><dl><dt>
+
+          <code><a href="tests_annotate.html">tests_annotate()</a></code>
+
+        </dt>
+        <dd>Add annotations to tests data</dd>
       </dl></div><div class="section level2">
       <h2 id="quality-checking">Quality checking<a class="anchor" aria-label="anchor" href="#quality-checking"></a></h2>
 
@@ -514,7 +579,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>

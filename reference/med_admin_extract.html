@@ -62,7 +62,14 @@ Extract med_admin data into tidy format"></head><body>
 <span>  expect_after <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">med_admin_extract</span><span class="op">(</span><span class="va">x</span>, <span class="va">med_admin_def</span>, <span class="va">med_admin_units</span>, errors <span class="op">=</span> <span class="va">stop</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">med_admin_extract</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  <span class="va">med_admin_def</span>,</span>
+<span>  <span class="va">med_admin_units</span>,</span>
+<span>  errors <span class="op">=</span> <span class="va">stop</span>,</span>
+<span>  rds_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  rds_filepath_fn <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -198,7 +205,7 @@ EXCLUDED.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>
