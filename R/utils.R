@@ -152,6 +152,7 @@ flip_names_and_values <- function(x){
 #' @param annotation_db A `tbl` database source
 #' @param id_cols A character vector of the columns to retain in the
 #'   annotations database (to enable linking)
+#' @keywords internal
 return_or_write_to_annotation_db <- function(x,
                                              x_annotated,
                                              annotation_db,

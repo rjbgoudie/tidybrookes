@@ -4,6 +4,7 @@
 #' enclosing list, so that they can be handled using lapply etc.
 #'
 #' @param def A definition list
+#' @keywords internal
 wrap_def_if_single <- function(def){
   if (length(def) > 5 & "symbol" %in% names(def)){
     list(def)

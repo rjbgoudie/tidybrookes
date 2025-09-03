@@ -32,6 +32,7 @@ reference:
   contents:
   - ends_with("_add")
   - ends_with("_extract")
+  - ends_with("_annotate")
 
 - title: Quality checking
   contents:
