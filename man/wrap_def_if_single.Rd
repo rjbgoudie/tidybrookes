@@ -13,3 +13,4 @@ wrap_def_if_single(def)
 Makes handling single-item definition lists easier by wrapping them in an
 enclosing list, so that they can be handled using lapply etc.
 }
+\keyword{internal}

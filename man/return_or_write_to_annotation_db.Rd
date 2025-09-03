@@ -19,3 +19,4 @@ annotations database (to enable linking)}
 \description{
 Return of write to annotation database
 }
+\keyword{internal}
