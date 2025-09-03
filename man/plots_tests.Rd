@@ -41,8 +41,8 @@ tests_plot_numeric(tests,
                    tests$range_discard_below,
                    tests$range_discard_above)
 
-tests_histogram_time_of_day(tests)
-tests_histogram_by_date(tests)
-tests_histogram_by_weekday(tests)
+# tests_histogram_time_of_day(tests)
+# tests_histogram_by_date(tests)
+# tests_histogram_by_weekday(tests)
 
 }
