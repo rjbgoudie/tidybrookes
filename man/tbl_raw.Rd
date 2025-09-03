@@ -4,7 +4,7 @@
 \alias{tbl_raw}
 \title{Renamed view of raw data to tidy column names}
 \usage{
-tbl_raw(src, table, names)
+tbl_raw(src, table, names = c())
 }
 \arguments{
 \item{src}{A \code{DBIConnection} object produced by \link{duckdb_tidybrookes_connect}

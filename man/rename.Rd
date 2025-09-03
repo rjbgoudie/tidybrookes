@@ -21,32 +21,34 @@ default_rename(x)
 
 adm_rename(x, names = default_rename("adm"))
 
-adt_rename(x, names = default_rename("adt"))
+adt_rename(x, names = c())
 
-demogs_rename(x, names = default_rename("demogs"))
+demogs_rename(x, names = c())
 
-diagnosis_pl_rename(x, names = default_rename("diagnosis_pl"))
+diagnosis_pl_rename(x, names = c())
 
-fsheet_io_rename(x, names = default_rename("fsheet_io"))
+fsheet_io_rename(x, names = c())
 
-fsheet_rename(x, names = default_rename("fsheet"))
+fsheet_rename(x, names = c())
 
-med_admin_rename(x, names = default_rename("med_admin"))
+med_admin_rename(x, names = c())
 
-med_hist_rename(x, names = default_rename("med_hist"))
+med_hist_rename(x, names = c())
 
-med_prescr_rename(x, names = default_rename("med_prescr"))
+med_prescr_rename(x, names = c())
 
-radiology_rename(x, names = default_rename("radiology"))
+radiology_rename(x, names = c())
 
-procedures_rename(x, names = default_rename("procedures"))
+procedures_rename(x, names = c())
 
-tests_rename(x, names = default_rename("tests"))
+tests_rename(x, names = c())
 }
 \arguments{
 \item{x}{A data frame of raw adm data}
 
-\item{names}{A vector of new_name = old_name pairs}
+\item{names}{A vector of new_name = old_name pairs that will override
+the default renaming (the default renaming is merged with these names,
+with these names taking priority)}
 }
 \value{
 The supplied data frame, with column names in tidy-column-name format
@@ -76,10 +78,9 @@ default_rename("fsheet")
 
 colnames(fsheet_rename(fsheet_imported_example))
 
-# A warning is issued if columns are missing
+# Provided names override the defaults
 fsheet_imported_example \%>\%
-  select(-MEASURE_TIME) \%>\%
-  fsheet_rename
+  fsheet_rename(names = c(custom_person_id = "STUDY_SUBJECT_DIGEST"))
 }
 \seealso{
 \link{unrename} to reverse this process

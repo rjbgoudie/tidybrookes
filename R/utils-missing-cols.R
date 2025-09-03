@@ -8,11 +8,6 @@
 fn_ignoring_missing <- function(fn, x, ...){
   name_change <- c(...)
   missing_cols <- name_change[!name_change %in% colnames(x)]
-  if (length(missing_cols) > 0){
-    cli::cli_alert_warning(
-      c("Some columns were missing: ",
-        glue::glue_collapse(missing_cols, ",", last = " and ")))
-  }
   x %>%
     fn(any_of(name_change))
 }

@@ -172,19 +172,12 @@ tbl_raw_unrenamed <- function(src, table){
 #' @param names A vector of new_name = old_name pairs
 #' @author R.J.B. Goudie
 #' @export
-tbl_raw <- function(src, table, names){
-  if (missing(names)){
-    names <- c()
-  }
-  merged_rename <-
-    unlist(modifyList(
-      as.list(default_rename(table)),
-      as.list(names)
-    ))
+tbl_raw <- function(src, table, names = c()){
+  names <- c(names, default_rename(table))
   name <- glue("{table}_raw")
 
   tbl_raw_unrenamed(src, table) |>
-    relocate_ignoring_missing(merged_rename) |>
+    relocate_ignoring_missing(names) |>
     as_view(name)
 }
 

@@ -10,7 +10,9 @@
 #' using the `names` argument.
 #'
 #' @param x A data frame of raw adm data
-#' @param names A vector of new_name = old_name pairs
+#' @param names A vector of new_name = old_name pairs that will override
+#'   the default renaming (the default renaming is merged with these names,
+#'   with these names taking priority)
 #' @return The supplied data frame, with column names in tidy-column-name format
 #' @author R.J.B. Goudie
 #' @seealso [unrename] to reverse this process
@@ -29,10 +31,9 @@
 #'
 #' colnames(fsheet_rename(fsheet_imported_example))
 #'
-#' # A warning is issued if columns are missing
+#' # Provided names override the defaults
 #' fsheet_imported_example %>%
-#'   select(-MEASURE_TIME) %>%
-#'   fsheet_rename
+#'   fsheet_rename(names = c(custom_person_id = "STUDY_SUBJECT_DIGEST"))
 NULL
 
 #' Rename from tidy to raw column names
@@ -79,17 +80,23 @@ default_rename <- function(x){
   } else if (x == "fsheet"){
     c(person_id = "STUDY_SUBJECT_DIGEST",
       name = "disp_name",
+      name = "DISP_NAME",
       value = "measured_value",
+      value = "MEASURED_VALUE",
       comment = "meas_comment",
       measurement_datetime = "MEASURE_TIME",
       data_id = "fsd_id",
       measurement_id = "flo-meas_id",
+      measurement_id = "FLO_MEAS_ID",
       line_id = "line",
       template = "template",
-      form = "form")
+      template = "TEMPLATE",
+      form = "form",
+      form = "FORM")
   } else if (x == "adt"){
     c(person_id = "STUDY_SUBJECT_DIGEST",
       visit_id = "PAT_ENC_CSN",
+      visit_id = "SUBJECT_ADMISSION_ID",
       event_type = "EVENT_TYPE",
       start_datetime = "IN_DTTM",
       end_datetime = "OUT_DTTM",
@@ -103,6 +110,7 @@ default_rename <- function(x){
   } else if (x == "adm"){
     c(person_id = "STUDY_SUBJECT_DIGEST",
       visit_id = "PAT_ENC_CSN",
+      visit_id = "SUBJECT_ADMISSION_ID",
       visit_start_datetime = "IN_DTTM",
       visit_end_datetime = "HOSP_DISCH_TIME",
       gender = "GENDER_DESC",
@@ -110,13 +118,23 @@ default_rename <- function(x){
       death_date = "DATE_OF_DEATH",
       age_at_visit_start = "AGE_AT_ADM",
       adm_service = "ADM_SERVICE",
+      service_name = "HOSP_SERV_NAME",
       ward = "ADT_DEPARTMENT_NAME",
+      adt_department_id = "ADT_DEPARTMENT_ID",
       discharge_destination = "DISCH_DEST",
       discharged_deceased = "DISCH_DECEASED",
       readmitted_within_30_days = "READMIT_WITHIN_30")
   } else if (x == "demogs"){
     c(person_id = "STUDY_SUBJECT_DIGEST",
-      gender = "GENDER_DESC")
+      gender = "GENDER_DESC",
+      visit_id = "SUBJECT_ADMISSION_ID",
+      age_at_visit_start = "AGE_AT_ADM",
+      discharge_destination = "DISCH_DEST",
+      discharged_deceased = "DISCH_DECEASED",
+      readmitted_within_7_days_visit_end = "READM_WITHIN_7_DAYS",
+      readmitted_within_30_days_visit_end = "READM_WITHIN_30_DAYS",
+      death_within_7_days_visit_end = "DEATH_WITHIN_7_DAYS_DISCHARGE",
+      death_within_30_days_visit_end = "DEATH_WITHIN_30_DAYS_DISCHARGE")
   } else if (x == "diagnosis_pl"){
     c(person_id = "STUDY_SUBJECT_DIGEST",
       icd10_list = "ICD10_LIST",
@@ -228,7 +246,8 @@ adm_unrename <- function(x,
 #' @export
 #' @rdname rename
 adt_rename <- function(x,
-                       names = default_rename("adt")){
+                       names = c()){
+  names <- c(names, default_rename("adt"))
   relocate_ignoring_missing(x, names)
 }
 
@@ -243,7 +262,8 @@ adt_unrename <- function(x,
 #' @export
 #' @rdname rename
 demogs_rename <- function(x,
-                          names = default_rename("demogs")){
+                          names = c()){
+  names <- c(names, default_rename("demogs"))
   relocate_ignoring_missing(x, names)
 }
 
@@ -258,7 +278,8 @@ demogs_unrename <- function(x,
 #' @export
 #' @rdname rename
 diagnosis_pl_rename <- function(x,
-                                names = default_rename("diagnosis_pl")){
+                                names = c()){
+  names <- c(names, default_rename("diagnosis_pl"))
   x %>%
     relocate_ignoring_missing(names) %>%
     mutate(source = "problem_list", .after = resolved_datetime)
@@ -275,7 +296,8 @@ diagnosis_pl_unrename <-
 #' @export
 #' @rdname rename
 fsheet_io_rename <- function(x,
-                             names = default_rename("fsheet_io")){
+                             names = c()){
+  names <- c(names,  default_rename("fsheet_io"))
   relocate_ignoring_missing(x, names)
 }
 
@@ -290,7 +312,8 @@ fsheet_io_unrename <-
 #' @export
 #' @rdname rename
 fsheet_rename <- function(x,
-                          names = default_rename("fsheet")){
+                          names = c()){
+  names <- c(names,  default_rename("fsheet"))
   relocate_ignoring_missing(x, names)
 }
 
@@ -305,7 +328,8 @@ fsheet_unrename <-
 #' @export
 #' @rdname rename
 med_admin_rename <- function(x,
-                             names = default_rename("med_admin")){
+                             names = c()){
+  names <- c(names,  default_rename("med_admin"))
   relocate_ignoring_missing(x, names)
 }
 
@@ -320,7 +344,8 @@ med_admin_unrename <-
 #' @export
 #' @rdname rename
 med_hist_rename <- function(x,
-                            names = default_rename("med_hist")){
+                            names = c()){
+  names <- c(names,  default_rename("med_hist"))
   x %>%
     relocate_ignoring_missing(names) %>%
     mutate(source = "past_medical_history", .after = entered_datetime)
@@ -329,7 +354,8 @@ med_hist_rename <- function(x,
 #' @export
 #' @rdname rename
 med_prescr_rename <- function(x,
-                              names = default_rename("med_prescr")){
+                              names = c()){
+  names <- c(names,  default_rename("med_prescr"))
   relocate_ignoring_missing(x, names)
 }
 
@@ -344,7 +370,8 @@ med_prescr_unrename <-
 #' @export
 #' @rdname rename
 radiology_rename <- function(x,
-                             names = default_rename("radiology")){
+                             names = c()){
+  names <- c(names,  default_rename("radiology"))
   relocate_ignoring_missing(x, names)
 }
 
@@ -359,7 +386,8 @@ radiology_unrename <-
 #' @export
 #' @rdname rename
 procedures_rename <- function(x,
-                             names = default_rename("procedures")){
+                             names = c()){
+  names <- c(names,  default_rename("procedures"))
   relocate_ignoring_missing(x, names)
 }
 
@@ -377,7 +405,8 @@ procedures_unrename <- function(x,
 #' @export
 #' @rdname rename
 tests_rename <- function(x,
-                         names = default_rename("tests")){
+                         names = c()){
+  names <- c(names,  default_rename("tests"))
   relocate_ignoring_missing(x, names)
 }
 
