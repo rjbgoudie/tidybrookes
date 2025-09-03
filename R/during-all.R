@@ -44,7 +44,7 @@
 #'            fsheet_news2_example,
 #'            datetime = measurement_datetime,
 #'            during = "during_visit") %>%
-#'   select(person_id, visit_id, symbol, datetime, value_as_number)
+#'   select(person_id, visit_id, symbol, measurement_datetime, value_as_number)
 #' @author R.J.B. Goudie
 #' @export
 all_during <- function(x,
