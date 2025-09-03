@@ -19,6 +19,7 @@ Imports:
     dplyr,
     duckdb,
     forcats,
+    ggplot2,
     glue,
     hms,
     knitr,

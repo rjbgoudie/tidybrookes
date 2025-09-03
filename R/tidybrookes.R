@@ -12,6 +12,7 @@
 #' @importFrom clock date_time_parse
 #' @importFrom cli cli_alert_info cli_alert_danger cli_alert_warning cli_warn cli_abort
 #' @importFrom vctrs vec_duplicate_id
+#' @import ggplot2
 NULL
 
 #' @importFrom tibble tibble
