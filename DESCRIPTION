@@ -18,8 +18,10 @@ Imports:
     dbplyr,
     dplyr,
     duckdb,
+    forcats,
     glue,
     hms,
+    knitr,
     lubridate,
     magrittr,
     patchwork,
@@ -27,9 +29,14 @@ Imports:
     purrr,
     readr,
     rlang,
+    rmarkdown,
+    rstudioapi,
+    scales,
     stringr,
     tibble,
     tidyr,
+    usethis,
+    utils,
     vctrs
 Suggests:
     testthat (>= 3.0.0)
