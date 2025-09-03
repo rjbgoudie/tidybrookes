@@ -63,7 +63,7 @@ all_during(adm_data_example,
            fsheet_news2_example,
            datetime = measurement_datetime,
            during = "during_visit") \%>\%
-  select(person_id, visit_id, symbol, datetime, value_as_number)
+  select(person_id, visit_id, symbol, measurement_datetime, value_as_number)
 }
 \seealso{
 If only a summary of the values during a timeperiod is needed,
