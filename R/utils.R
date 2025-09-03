@@ -110,7 +110,8 @@ is_all_midnight <- function(x, datetime){
   ) |>
     ungroup() |>
     distinct(is_midnight) |>
-    pull(is_midnight)
+    pull(is_midnight) |>
+    all()
 }
 
 #' Find shortest possible unique person_id
