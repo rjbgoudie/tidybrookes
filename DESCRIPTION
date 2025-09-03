@@ -16,6 +16,7 @@ Imports:
     clock,
     DBI,
     dplyr,
+    duckdb,
     glue,
     hms,
     lubridate,
@@ -27,7 +28,8 @@ Imports:
     rlang,
     stringr,
     tibble,
-    tidyr
+    tidyr,
+    vctrs
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
