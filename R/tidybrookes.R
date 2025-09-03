@@ -1,5 +1,5 @@
 #' @importFrom dplyr select filter mutate relocate distinct group_by ungroup if_else case_when bind_rows arrange left_join full_join first last rename_with slice summarise count pull lag lead n rows_update if_any row_number slice_min collect
-#' @importFrom rlang enquo as_label expr_print is_logical
+#' @importFrom rlang enquo as_label expr_print is_logical %||%
 #' @importFrom glue glue glue_collapse
 #' @importFrom lubridate ymd ymd_hms dhours dseconds dminutes ddays dweeks dyears dmonths interval int_length intersect POSIXct
 #' @importFrom tidyr pivot_wider separate replace_na
