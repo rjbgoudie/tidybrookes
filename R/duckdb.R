@@ -150,7 +150,7 @@ duckdb_read_tidybrookes_csv <- function(src,
 #'   `med_prescr`, `diagnosis_pl`, `med_hist`, `radiology`
 #' @export
 tbl_raw_unrenamed <- function(src, table){
-  tbl(src, glue("{table}_raw_unrenamed"))
+  dplyr::tbl(src, glue("{table}_raw_unrenamed"))
 }
 
 #' Renamed view of raw data to tidy column names
@@ -206,4 +206,26 @@ as_duckdb_list <- function(x){
 as_duckdb_params <- function(x){
   n <- names(x)
   glue_collapse(glue("{n} = {x}"), sep = ",")
+}
+
+db_create_view <- function(db_connection, tbl_name, view_name) {
+  sql_query <- glue(
+    "CREATE OR REPLACE VIEW {view_name} AS\n",
+    "{db_sql_render(db_connection, tbl_name)}\n"
+  )
+  DBI::dbExecute(db_connection, as.character(sql_query))
+}
+
+db_from_tbl <- function(tbl){
+  tbl$src$con
+}
+
+as_view <- function(x, view_name) {
+  db_connection <- db_from_tbl(x)
+  sql_query <- glue(
+    "CREATE OR REPLACE VIEW {view_name} AS\n",
+    "{dbplyr::db_sql_render(db_connection, x)}\n"
+  )
+  DBI::dbExecute(db_connection, as.character(sql_query))
+  dplyr::tbl(db_connection, view_name)
 }
