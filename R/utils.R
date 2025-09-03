@@ -83,23 +83,34 @@ inform_if_all_times_are_midnight <- function(x, datetime){
     pull({{ datetime }}) |>
     inherits("POSIXct")
 
+  # Check first 10 (then 1000) rows first, so we can exit quickly if
+  # non-midnight times are present
   if (is_posixct){
-    is_midnight_distinct <- x |>
-      mutate(
-        is_midnight =
-          {{ datetime }} == lubridate::floor_date({{ datetime }},
-                                                  unit = "day")
-      ) |>
-      ungroup() |>
-      distinct(is_midnight) |>
-      pull(is_midnight)
-
-    if (isTRUE(is_midnight_distinct)){
-      cli::cli_alert_danger(
-        c("Supplied datetime column is all midnight - ",
-          "did you mean to use _date?"))
+    head10_all_midnight <- is_all_midnight(head(x, n = 10), {{ datetime }})
+    if (head10_all_midnight){
+      head1000_all_midnight <- is_all_midnight(head(x, n = 1000), {{ datetime }})
+      if (head1000_all_midnight){
+        all_midnight <- is_all_midnight(x, {{ datetime }})
+        if (all_midnight){
+          cli::cli_alert_danger(
+            c("Supplied datetime column is all midnight - ",
+              "did you mean to use _date?"))
+        }
+      }
     }
   }
+}
+
+is_all_midnight <- function(x, datetime){
+  x |>
+    mutate(
+    is_midnight =
+      {{ datetime }} == lubridate::floor_date({{ datetime }},
+                                              unit = "day")
+  ) |>
+    ungroup() |>
+    distinct(is_midnight) |>
+    pull(is_midnight)
 }
 
 #' Find shortest possible unique person_id
