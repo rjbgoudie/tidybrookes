@@ -6,16 +6,25 @@ code:
   width: 200
 
 reference:
-- title: Data loading
+- title: Local data loading
   desc: >
-    Loading raw CSV files exported by clinical informatics into R or a
-    database, and basic renaming
+    Loading raw CSV files exported by clinical informatics into R and basic
+    renaming
   contents:
   - starts_with("read_")
-  - starts_with("db_write")
   - default_col_types
   - contains("_rename")
   - contains("_unrename")
+
+- title: Duckdb data Loading
+  desc: >
+    Loading raw CSV files exported by clinical informatics into a duckdb
+    database
+  contents:
+  - duckdb_tidybrookes_connect
+  - duckdb_read_tidybrookes_csv
+  - contains("tbl")
+  - starts_with("db_write")
 
 - title: Defining and extracting
   desc: >

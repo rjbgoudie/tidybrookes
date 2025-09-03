@@ -28,6 +28,6 @@ CC,10909029,60,10,2021-01-01 07:00:00,SpO2,70,,IP Vitals,Vital signs
 CC,10926333,239,1234,2021-01-01 08:59:00,NEWS2 score,5,,IP Vitals,Vital signs
 CC,10926333,239,1234,2021-01-03 17:00:00,NEWS2 score,7,,IP Vitals,Vital signs
 CC,10926333,239,1234,2021-01-04 09:00:00,NEWS2 score,6,,IP Vitals,Vital signs
-CC,10926333,239,1234,2021-01-02 08:59:00,NEWS2 score, ,,IP Vitals,Vital signs
+CC,10926333,239,1234,2021-01-02 08:59:00,NEWS2 score,,,IP Vitals,Vital signs
 CC,10909029,60,10,,SpO2,93,,IP Vitals,Vital signs
 ,,,,,,,,,
