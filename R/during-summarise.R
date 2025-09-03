@@ -121,7 +121,8 @@ pivot_value_wider_spec <- function(x,
     tidyr::unnest(values_from) |>
     mutate(.name = glue("{magic_prefix}{symbol}{names_suffix}_{values_from}"),
            .value = values_from) |>
-    select(-values_from, -type)
+    select(-values_from, -type) |>
+    filter(.value %in% values_from)
 
   cli::cli_progress_step("Pivoting wider")
   if (inherits(x, "tbl_sql")){
