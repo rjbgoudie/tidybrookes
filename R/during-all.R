@@ -48,16 +48,14 @@
 #' @author R.J.B. Goudie
 #' @export
 all_during <- function(x,
-                       y,
-                       datetime,
-                       during,
-                       names_from = "symbol",
-                       join = "left",
-                       arrange = TRUE){
-  y <- y %>%
-    rename(datetime = {{datetime}})
-
-  inform_if_all_times_are_midnight(y, datetime)
+                        y,
+                        datetime,
+                        during,
+                        names_from = "symbol",
+                        join = "inner",
+                        arrange = TRUE){
+  cli::cli_progress_step("Checking datetime is not all midnight")
+  inform_if_all_times_are_midnight(y, {{ datetime }})
 
   common_cols <- intersect(colnames(x), colnames(y))
   if (!"person_id" %in% common_cols){
@@ -67,221 +65,180 @@ all_during <- function(x,
                 format_as_argument(setdiff(common_cols, "person_id"))))
   }
 
+  cli::cli_progress_step("Joining tables")
   if (join == "left"){
-    join_fn <- left_join_filter
+    join_fn <- dplyr::left_join
   } else if (join == "inner"){
-    join_fn <- inner_join_filter
+    join_fn <- dplyr::inner_join
   }
   if (during == "anytime"){
     out <- x %>%
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          TRUE)
+        by = dplyr::join_by(person_id))
   } else if (during == "during_visit"){
     out <- x %>%
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime &
-                       datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime))
-
+        by = dplyr::join_by(person_id,
+                     visit_start_datetime <= {{ datetime }},
+                     visit_end_datetime >= {{ datetime }}))
     if (inherits(out, "tbl_dbi")){
 
     } else {
       out <- out %>%
-        mutate(days_since_visit_start = interval(visit_start_datetime, datetime)/days(1))
+        mutate(days_since_visit_start = interval(visit_start_datetime, {{ datetime }})/days(1))
     }
   } else if (during == "during_visit_initial_24h"){
     out <- x %>%
+      mutate(temp_internal_visit_initial_24h_datetime = visit_start_datetime + dhours(24)) |>
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime &
-                       datetime <= visit_start_datetime + dhours(24) &
-                       datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime &
-                      datetime <= visit_start_datetime + dhours(24)))
+        by = dplyr::join_by(person_id,
+                            visit_start_datetime <= {{ datetime }},
+                            temp_internal_visit_initial_24h_datetime >= {{ datetime }},
+                            visit_end_datetime >= {{ datetime }})) |>
+      select(-temp_internal_visit_initial_24h_datetime)
   } else if (during == "during_visit_initial_72h"){
     out <- x %>%
+      mutate(temp_internal_visit_initial_72h_datetime = visit_start_datetime + dhours(72)) |>
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime &
-                       datetime <= visit_start_datetime + dhours(72) &
-                       datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime &
-                      datetime <= visit_start_datetime + dhours(72)))
+        by = dplyr::join_by(person_id,
+                            visit_start_datetime <= {{ datetime }},
+                            temp_internal_visit_initial_72h_datetime >= {{ datetime }},
+                            visit_end_datetime >= {{ datetime }})) |>
+      select(-temp_internal_visit_initial_72h_datetime)
   } else if (during == "during_department"){
     out <- x %>%
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", "department_visit_index", names_from),
-        filter_condition =
-          case_when(!is.na(department_end_datetime) ~
-                      datetime >= department_start_datetime &
-                      datetime <= department_end_datetime,
-                    is.na(department_end_datetime) ~
-                      datetime >= department_start_datetime))
-  } else if (during == "during_department_after_48h"){
+        by = dplyr::join_by(person_id,
+                            department_start_datetime <= {{ datetime }},
+                            department_start_datetime >= {{ datetime }}))
+  # } else if (during == "during_department_after_48h"){
+  #   out <- x %>%
+  #     join_fn(
+  #       y,
+  #       join_by = "person_id",
+  #       filter_by = c("person_id", "visit_id", "department_visit_index", names_from),
+  #       filter_condition =
+  #         case_when(!is.na(department_end_datetime) ~
+  #                     datetime >= department_start_datetime + dhours(48) &
+  #                     datetime <= department_end_datetime,
+  #                   is.na(department_end_datetime) ~
+  #                     datetime >= department_start_datetime + dhours(48)))
+  # } else if (during == "during_icu_visit"){
+  #   out <- x %>%
+  #     join_fn(
+  #       y,
+  #       join_by = "person_id",
+  #       filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
+  #       filter_condition =
+  #         case_when(!is.na(icu_visit_end_datetime) ~
+  #                     datetime >= icu_visit_start_datetime &
+  #                     datetime <= icu_visit_end_datetime,
+  #                   is.na(icu_visit_start_datetime) ~
+  #                     datetime >= icu_visit_start_datetime))
+  # } else if (during == "during_icu_visit_initial_24h"){
+  #   out <- x %>%
+  #     join_fn(
+  #       y,
+  #       join_by = "person_id",
+  #       filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
+  #       filter_condition =
+  #         case_when(!is.na(icu_visit_end_datetime) ~
+  #                     datetime >= icu_visit_start_datetime &
+  #                     datetime <= icu_visit_start_datetime + dhours(24) &
+  #                     datetime <= icu_visit_end_datetime,
+  #                   is.na(icu_visit_start_datetime) ~
+  #                     datetime >= icu_visit_start_datetime &
+  #                     datetime <= icu_visit_start_datetime + dhours(24)))
+  # } else if (during == "during_icu_visit_after_24h"){
+  #   out <- x %>%
+  #     join_fn(
+  #       y,
+  #       join_by = "person_id",
+  #       filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
+  #       filter_condition =
+  #         case_when(!is.na(icu_visit_end_datetime) ~
+  #                     datetime >= icu_visit_start_datetime + dhours(24) &
+  #                     datetime <= icu_visit_end_datetime,
+  #                   is.na(icu_visit_start_datetime) ~
+  #                     datetime >= icu_visit_start_datetime + dhours(24)))
+  } else if (during == "before_visit_initial_24h"){
     out <- x %>%
+      mutate(temp_internal_visit_initial_24h_datetime = visit_start_datetime + dhours(24)) |>
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", "department_visit_index", names_from),
-        filter_condition =
-          case_when(!is.na(department_end_datetime) ~
-                      datetime >= department_start_datetime + dhours(48) &
-                      datetime <= department_end_datetime,
-                    is.na(department_end_datetime) ~
-                      datetime >= department_start_datetime + dhours(48)))
-  } else if (during == "during_icu_visit"){
-    out <- x %>%
-      join_fn(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(icu_visit_end_datetime) ~
-                      datetime >= icu_visit_start_datetime &
-                       datetime <= icu_visit_end_datetime,
-                    is.na(icu_visit_start_datetime) ~
-                      datetime >= icu_visit_start_datetime))
-  } else if (during == "during_icu_visit_initial_24h"){
-    out <- x %>%
-      join_fn(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(icu_visit_end_datetime) ~
-                      datetime >= icu_visit_start_datetime &
-                      datetime <= icu_visit_start_datetime + dhours(24) &
-                      datetime <= icu_visit_end_datetime,
-                    is.na(icu_visit_start_datetime) ~
-                      datetime >= icu_visit_start_datetime &
-                      datetime <= icu_visit_start_datetime + dhours(24)))
-    } else if (during == "during_icu_visit_after_24h"){
-      out <- x %>%
-        join_fn(
-          y,
-          join_by = "person_id",
-          filter_by = c("person_id", "visit_id", "icu_visit_id", names_from),
-          filter_condition =
-            case_when(!is.na(icu_visit_end_datetime) ~
-                        datetime >= icu_visit_start_datetime + dhours(24) &
-                        datetime <= icu_visit_end_datetime,
-                      is.na(icu_visit_start_datetime) ~
-                        datetime >= icu_visit_start_datetime + dhours(24)))
-    } else if (during == "before_visit_initial_24h"){
-    out <- x %>%
-      join_fn(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime <= visit_start_datetime + dhours(24) &
-                       datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime <= visit_start_datetime + dhours(24)))
+        by = dplyr::join_by(person_id,
+                            temp_internal_visit_initial_24h_datetime >= {{ datetime }},
+                            visit_end_datetime >= {{ datetime }})) |>
+      select(-temp_internal_visit_initial_24h_datetime)
   } else if (during == "14_days_before_visit_until_visit_end"){
     out <- x %>%
+      mutate(temp_internal_14_days_before_visit_datetime = visit_start_datetime - ddays(14)) |>
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - ddays(14) &
-                       datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - ddays(14)))
+        by = dplyr::join_by(person_id,
+                            temp_internal_14_days_before_visit_datetime <= {{ datetime }},
+                            visit_end_datetime >= {{ datetime }})) |>
+      select(-temp_internal_14_days_before_visit_datetime)
+
   } else if (during == "year_before_visit_until_visit_end"){
     out <- x %>%
+      mutate(temp_internal_year_before_visit_datetime = visit_start_datetime - dyears(1)) |>
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - dyears(1) &
-                      datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - dyears(1)))
+        by = dplyr::join_by(person_id,
+                            temp_internal_year_before_visit_datetime <= {{ datetime }},
+                            visit_end_datetime >= {{ datetime }})) |>
+      select(-temp_internal_year_before_visit_datetime)
   } else if (during == "before_visit_end"){
     out <- x %>%
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      TRUE))
-  } else if (during == "30_days_before_visit_start"){
+        by = dplyr::join_by(person_id,
+                            visit_end_datetime >= {{ datetime }}))
+  } else if (during == "30_days_before_visit"){
     out <- x %>%
+      mutate(temp_internal_30_days_before_visit_datetime = visit_start_datetime - ddays(30)) |>
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - ddays(30) &
-                       datetime <= visit_start_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - ddays(30) &
-                      datetime <= visit_start_datetime))
-  } else if (during == "year_before_initial_24h"){
+        by = dplyr::join_by(person_id,
+                            temp_internal_30_days_before_visit_datetime <= {{ datetime }},
+                            visit_start_datetime >= {{ datetime }})) |>
+      select(-temp_internal_30_days_before_visit_datetime)
+  } else if (during == "year_before_visit_initial_24h"){
     out <- x %>%
+      mutate(temp_internal_year_before_visit_datetime = visit_start_datetime - dyears(1),
+             temp_internal_visit_initial_24h_datetime = visit_start_datetime + dhours(24)) |>
       join_fn(
         y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - dyears(1) &
-                       datetime <= visit_start_datetime + dhours(24) &
-                       datetime <= visit_end_datetime,
-                    is.na(visit_end_datetime) ~
-                      datetime >= visit_start_datetime - dyears(1) &
-                      datetime <= visit_start_datetime + dhours(24)))
-  } else if (during == "during_value"){
-    out <- x %>%
-      join_fn(
-        y,
-        join_by = "person_id",
-        filter_by = c("person_id", "visit_id", names_from),
-        filter_condition =
-          case_when(!is.na(value_end_datetime) ~
-                      datetime >= value_start_datetime &
-                      datetime <= value_end_datetime,
-                    is.na(value_end_datetime) ~
-                      datetime >= value_start_datetime))
+        by = dplyr::join_by(person_id,
+                            temp_internal_year_before_visit_datetime <= {{ datetime }},
+                            temp_internal_visit_initial_24h_datetime >= {{ datetime }},
+                            visit_end_datetime >= {{ datetime }})) |>
+      select(-temp_internal_visit_initial_24h_datetime)
+  # } else if (during == "during_value"){
+  #   out <- x %>%
+  #     join_fn(
+  #       y,
+  #       join_by = "person_id",
+  #       filter_by = c("person_id", "visit_id", names_from),
+  #       filter_condition =
+  #         case_when(!is.na(value_end_datetime) ~
+  #                     datetime >= value_start_datetime &
+  #                     datetime <= value_end_datetime,
+  #                   is.na(value_end_datetime) ~
+  #                     datetime >= value_start_datetime))
   } else {
-    stop("all_during does not know how to hangle this `during` value:",
+    stop("all_during does not know how to handle this `during` value:",
          during)
   }
   if (arrange){
     out %>%
-      arrange(datetime)
+      arrange({{ datetime }})
   } else {
     out
   }
