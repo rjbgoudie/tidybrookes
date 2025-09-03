@@ -9,6 +9,7 @@ read_tidybrookes_csv(
   file,
   col_types,
   n_max = Inf,
+  trim_ws = FALSE,
   na = c("", "NA"),
   quote = "\\"",
   tz = "Europe/London",
@@ -21,6 +22,7 @@ read_tidybrookes_delim(
   col_types,
   delim = "|",
   n_max = Inf,
+  trim_ws = FALSE,
   na = c("", "NA"),
   quote = "\\""
 )
@@ -39,6 +41,9 @@ Or a \code{\link[readr:cols]{readr::cols()}} format list of column names and typ
 used where a nonstandard data format are supplied.}
 
 \item{n_max}{Maximum number of lines to read.}
+
+\item{trim_ws}{Should leading and trailing whitespace (ASCII spaces and tabs)
+be trimmed from each field before parsing it?}
 
 \item{na}{Character vector of strings to interpret as missing values. Set
 this option to \code{character()} to indicate no missing values.}

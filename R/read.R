@@ -23,6 +23,8 @@
 #'   used where a nonstandard data format are supplied.
 #' @param delim Single character used to separate fields within a record.
 #' @param n_max Maximum number of lines to read.
+#' @param trim_ws Should leading and trailing whitespace (ASCII spaces and tabs)
+#'   be trimmed from each field before parsing it?
 #' @param na Character vector of strings to interpret as missing values. Set
 #'   this option to `character()` to indicate no missing values.
 #' @param quote Single character used to quote strings
@@ -112,6 +114,7 @@
 read_tidybrookes_csv <- function(file,
                                  col_types,
                                  n_max = Inf,
+                                 trim_ws = FALSE,
                                  na = c("", "NA"),
                                  quote = "\"",
                                  tz = "Europe/London",
@@ -135,7 +138,8 @@ read_tidybrookes_csv <- function(file,
                   locale = locale(tz = tz),
                   n_max = n_max,
                   quote = quote,
-                  na = na)
+                  na = na,
+                  trim_ws = trim_ws)
   out <- parse_datetime_cols_if_clock(out,
                                       col_types_original,
                                       tz = tz,
@@ -151,6 +155,7 @@ read_tidybrookes_delim <- function(file,
                                    col_types,
                                    delim = "|",
                                    n_max = Inf,
+                                   trim_ws = FALSE,
                                    na = c("", "NA"),
                                    quote = "\""){
   col_types <- default_col_types(col_types = col_types)
