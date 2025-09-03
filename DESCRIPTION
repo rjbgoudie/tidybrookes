@@ -15,6 +15,7 @@ Imports:
     cli,
     clock,
     DBI,
+    dbplyr,
     dplyr,
     duckdb,
     glue,
