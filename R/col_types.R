@@ -12,8 +12,6 @@
 #'
 #'   Or a [readr::cols()] format list of column names and types, which
 #'   can be used where a nonstandard data format are supplied.
-#' @param database If `TRUE`, then the function returns database types, such
-#'   as for use in `duckdb` rather than [`readr::cols()`] format column types
 #' @returns A [`readr::cols()`] specification.
 #' @seealso [read_tidybrookes_csv()], [read_tidybrookes_csv()]
 #' @examples
@@ -22,7 +20,7 @@
 #'
 #' default_col_types("tests")
 #' @export
-default_col_types <- function(col_types, database = FALSE){
+default_col_types <- function(col_types){
   if (inherits(col_types, "col_spec")){
     col_types <- col_types
   } else if (col_types == "adm"){
@@ -205,11 +203,7 @@ default_col_types <- function(col_types, database = FALSE){
       ProcedureDesc = col_character(),
       OPCSCode = col_character())
   }
-  if (database){
-    col_types_rewrite_as_database(col_types)
-  } else {
-    col_types
-  }
+  col_types
 }
 
 col_is_datetime <- function(x){
@@ -274,13 +268,13 @@ col_types_rewrite_if_clock <- function(col_types,
 col_types_rewrite_as_database <- function(x){
   collector_class <- purrr::map_chr(x$cols, \(c) class(c)[1])
   n <- names(collector_class)
-  case_match(collector_class,
-             "collector_character" ~ "VARCHAR",
-             "collector_datetime" ~ "TIMESTAMP",
-             "collector_integer" ~ "INTEGER",
-             "collector_double" ~ "DOUBLE",
-             "collector_logical" ~ "BOOLEAN",
-             "collector_big_integer" ~ "BIGINT") |>
+  dplyr::case_match(collector_class,
+                    "collector_character" ~ "VARCHAR",
+                    "collector_datetime" ~ "TIMESTAMPTZ",
+                    "collector_integer" ~ "INTEGER",
+                    "collector_double" ~ "DOUBLE",
+                    "collector_logical" ~ "BOOLEAN",
+                    "collector_big_integer" ~ "BIGINT") |>
     setNames(n)
 }
 
