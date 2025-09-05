@@ -270,7 +270,12 @@ col_types_rewrite_as_database <- function(x){
   n <- names(collector_class)
   dplyr::case_match(collector_class,
                     "collector_character" ~ "VARCHAR",
-                    "collector_datetime" ~ "TIMESTAMPTZ",
+
+                    # don't use TIMESTAMPTZ with duckdb unless/until
+                    # https://github.com/duckdb/duckdb-r/issues/184
+                    # is fixed
+                    "collector_datetime" ~ "TIMESTAMP",
+
                     "collector_integer" ~ "INTEGER",
                     "collector_double" ~ "DOUBLE",
                     "collector_logical" ~ "BOOLEAN",
